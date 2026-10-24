@@ -572,7 +572,7 @@
         const attachmentMarkup = (message.attachments || []).map((attachment) => attachment.image
           ? '<div class="attachment-chip"><img src="' + escapeHtml(attachment.image) + '" alt=""><span>' + escapeHtml(attachment.name) + '</span></div>'
           : '<div class="attachment-chip"><span aria-hidden="true">▤</span><span>' + escapeHtml(attachment.name) + '</span></div>').join("");
-        const metricsMarkup = message.role === "assistant" && (Number.isFinite(message.durationMs) || Number.isFinite(message.totalTokens))
+        const metricsMarkup = message.role === "assistant" && Number.isFinite(message.durationMs) && message.durationMs >= 60000
           ? '<div class="response-metrics"><span>Worked for ' + escapeHtml(formatDuration(message.durationMs)) + '</span><span>Token Consumed ' + (Number.isFinite(message.totalTokens) ? escapeHtml(message.totalTokens.toLocaleString()) : "—") + '</span></div>'
           : "";
         row.innerHTML = '<div class="message-content">' + metricsMarkup + '<div class="message-text">' + formatText(message.displayContent ?? message.content ?? "") + '</div>' + (attachmentMarkup ? '<div class="message-attachments">' + attachmentMarkup + '</div>' : '') + '</div>';
