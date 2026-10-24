@@ -6,7 +6,8 @@ import { fileURLToPath } from "node:url";
 const app = express();
 const port = Number(process.env.PORT) || 3000;
 const root = path.dirname(fileURLToPath(import.meta.url));
-const defaultModel = "llama-3.3-70b-versatile";
+const defaultModel = process.env.GROQ_MODEL || "openai/gpt-oss-20b";
+const complexModel = process.env.GROQ_COMPLEX_MODEL || "openai/gpt-oss-120b";
 
 app.disable("x-powered-by");
 app.use(express.json({ limit: "1mb" }));
@@ -17,7 +18,8 @@ app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
     configured: Boolean(process.env.GROQ_API_KEY),
-    model: process.env.GROQ_MODEL || defaultModel
+    model: defaultModel,
+    complexModel
   });
 });
 
@@ -61,6 +63,44 @@ function getFeedbackSummary() {
   return { total: feedbackByMessage.size, thumbsUp: feedbackTotals.up, thumbsDown: feedbackTotals.down };
 }
 
+function lastUserMessage(messages) {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    if (messages[i].role === "user") return messages[i].content;
+  }
+  return "";
+}
+
+// A deterministic server-side router keeps trivial exchanges on 20B and sends
+// difficult implementation, research, and multi-step work to GPT-OSS 120B.
+function shouldUseComplexModel(messages) {
+  const current = lastUserMessage(messages);
+  const followUp = /^(continue|go on|do it|proceed|finish it|implement it|make it|fix it|now do that)[.!\s]*$/i.test(current.trim());
+  const recentContext = messages.slice(-8).map((message) => message.content).join("\n");
+  const target = followUp ? recentContext : current;
+  let score = 0;
+
+  if (/\b(deep research|comprehensive|in-depth|step[- ]by[- ]step|multi[- ]step|end[- ]to[- ]end|from scratch|production[- ]ready|full implementation|complete implementation|root cause|system architecture|refactor|debug|optimi[sz]e|migration|prove|derive|investigate|research|architect)\b/i.test(target)) score += 2;
+  if (/\b(build|implement|design|analy[sz]e|compare|integrate|deploy|create|write|plan)\b/i.test(current)) score += 1;
+  if (/\b(codebase|repository|compiler|backend|frontend|database schema|distributed|algorithm|multiple files|entire application|full project)\b/i.test(target)) score += 1;
+  if (/\b(and then|after that|in addition|also make sure|multiple requirements|all of the following)\b/i.test(current)) score += 1;
+  if (current.length >= 1200) score += 1;
+  const actionCount = (current.match(/\b(build|create|implement|design|test|deploy|document|debug|refactor|integrate|optimi[sz]e)\b/gi) || []).length;
+  if (actionCount >= 3) score += 1;
+
+  return score >= 2;
+}
+
+// Browser search is enabled only when it can materially improve freshness or evidence.
+// Groq executes the built-in browser_search tool server-side when required.
+function shouldUseWebSearch(messages) {
+  const current = lastUserMessage(messages);
+  const lower = current.toLowerCase();
+  const explicitSearch = /\b(web\s*search|websearch|search (the )?(web|internet|online)|browse (the )?web|look up online|find online|deep research|fact[- ]?check|verify (this|these|whether|if)|provide sources|with citations|cite sources|research (this|the|current|latest)?|search for)\b/i.test(current);
+  const freshness = /\b(latest|most recent|currently|current status|today|tonight|right now|this week|this month|recent news|breaking|price|pricing|availability|release date|new version|updated version|schedule|election|regulation|regulations|law|legal requirements|weather|exchange rate|stock price|CEO|president|launch|released|releases|2026|2025)\b/i.test(lower);
+  const dynamicTopic = /\b(product recommendation|compare products|software library|API documentation|version support|company policy|travel|restaurant|hotel|event|public figure|market|economic indicator|security advisory|vulnerability|scientific development)\b/i.test(lower);
+  return explicitSearch || freshness || dynamicTopic;
+}
+
 app.post("/api/chat", async (req, res) => {
   res.set("Cache-Control", "no-store");
   const apiKey = process.env.GROQ_API_KEY;
@@ -88,7 +128,27 @@ app.post("/api/chat", async (req, res) => {
     if (!systemPrompt) {
       return res.status(500).json({ error: "Elia's system instructions are empty. Check systempromt.md." });
     }
-    const groqMessages = [{ role: "system", content: systemPrompt }, ...messages.filter((message) => message.role !== "system")];
+
+    const selectedComplexModel = shouldUseComplexModel(messages);
+    const selectedModel = selectedComplexModel ? complexModel : defaultModel;
+    const useWebSearch = shouldUseWebSearch(messages);
+    const groqMessages = [
+      { role: "system", content: systemPrompt },
+      ...messages.filter((message) => message.role !== "system")
+    ];
+    const requestBody = {
+      model: selectedModel,
+      messages: groqMessages,
+      temperature: 1,
+      reasoning_effort: selectedComplexModel ? "high" : "medium",
+      max_completion_tokens: selectedComplexModel ? 16384 : 8192,
+      stream: false
+    };
+
+    if (useWebSearch) {
+      requestBody.tools = [{ type: "browser_search" }];
+      requestBody.tool_choice = "required";
+    }
 
     const upstream = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -96,13 +156,8 @@ app.post("/api/chat", async (req, res) => {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        model: process.env.GROQ_MODEL || defaultModel,
-        messages: groqMessages,
-        temperature: 0.7,
-        stream: false
-      }),
-      signal: AbortSignal.timeout(90000)
+      body: JSON.stringify(requestBody),
+      signal: AbortSignal.timeout(useWebSearch ? 120000 : 90000)
     });
 
     const data = await upstream.json().catch(() => ({}));
@@ -126,7 +181,9 @@ app.post("/api/chat", async (req, res) => {
     const totalTokens = Number.isFinite(data?.usage?.total_tokens) ? data.usage.total_tokens : null;
     return res.json({
       reply,
-      model: data.model || process.env.GROQ_MODEL || defaultModel,
+      model: data.model || selectedModel,
+      modelRoute: selectedComplexModel ? "complex" : "standard",
+      webSearchUsed: useWebSearch,
       durationMs,
       totalTokens
     });
