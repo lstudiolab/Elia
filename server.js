@@ -128,6 +128,44 @@ function shouldUseWebSearch(messages) {
   return explicitSearch || freshness || dynamicTopic;
 }
 
+app.post("/api/title", async (req, res) => {
+  res.set("Cache-Control", "no-store");
+  const apiKey = process.env.GROQ_API_KEY;
+  const conversationText = String(req.body?.text || "").trim().slice(0, 3000);
+  if (!apiKey) return res.status(503).json({ error: "Title generation is unavailable." });
+  if (!conversationText) return res.status(400).json({ error: "Conversation text is required." });
+
+  try {
+    const upstream = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: defaultModel,
+        messages: [
+          { role: "system", content: "You name conversations for Elia, an AI assistant. Produce one concise, specific title of 2–6 words that captures the user's main intent. No quotes, no punctuation at the end, no prefix, no explanation. Preserve technical names when relevant." },
+          { role: "user", content: "Create a title for this conversation:\n\n" + conversationText }
+        ],
+        temperature: 0.2,
+        max_completion_tokens: 40,
+        stream: false
+      }),
+      signal: AbortSignal.timeout(15000)
+    });
+    const data = await upstream.json().catch(() => ({}));
+    if (!upstream.ok) {
+      console.error("[title generation] Provider request failed:", upstream.status);
+      return res.status(502).json({ error: "Could not generate a conversation title." });
+    }
+    const title = String(data?.choices?.[0]?.message?.content || "").replace(/^["'“”]+|["'“”]+$/g, "").replace(/[.!?]+$/g, "").replace(/\s+/g, " ").trim().slice(0, 60);
+    if (!title) return res.status(502).json({ error: "The title model returned an empty title." });
+    console.log("[title generation] " + JSON.stringify({ model: data.model || defaultModel }));
+    return res.json({ title });
+  } catch (error) {
+    console.error("[title generation] Request failed:", error?.name || "Error");
+    return res.status(504).json({ error: "Title generation timed out." });
+  }
+});
+
 app.post("/api/chat", async (req, res) => {
   res.set("Cache-Control", "no-store");
   const apiKey = process.env.GROQ_API_KEY;
