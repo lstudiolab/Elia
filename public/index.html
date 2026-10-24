@@ -351,8 +351,10 @@
     }
 
   
-    .thinking-status { display: inline-flex; align-items: center; gap: 10px; min-height: 30px; }
-    .thinking-status .typing { flex: 0 0 auto; }
+    .thinking-status { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 30px; }
+    .thinking-status .typing { flex: 0 0 auto; margin-left: auto; }
+    .thinking-details { display: flex; flex-direction: column; gap: 5px; margin-bottom: 7px; }
+    .thinking-metrics { color: var(--muted); font-size: 11px; line-height: 1.4; font-variant-numeric: tabular-nums; }
     .working-label {
       color: #8e8e93;
       font-size: 13px;
@@ -592,7 +594,7 @@
         const row = document.createElement("article");
         row.className = "message assistant";
         row.id = "typingIndicator";
-        row.innerHTML = '<div class="message-content"><div class="thinking-status"><div class="typing" aria-label="Elia is thinking"><span></span><span></span><span></span></div><span class="working-label">Working with it</span></div></div>';
+        row.innerHTML = '<div class="message-content"><div class="thinking-details"><div class="thinking-metrics" id="workingTokenCount">Token Consumed —</div><div class="thinking-status"><span class="working-label">Working</span><div class="typing" aria-label="Elia is thinking"><span></span><span></span><span></span></div></div></div></div>';
         thread.appendChild(row);
         scrollToLatest();
       };
