@@ -615,11 +615,11 @@
           while (walker.nextNode()) textNodes.push(walker.currentNode);
           let wordIndex = 0;
           for (const textNode of textNodes) {
-            const parts = textNode.nodeValue.match(/\\s+|[^\\s]+/g) || [];
-            if (!parts.some((part) => !/^\\s+$/.test(part))) continue;
+            const parts = textNode.nodeValue.match(/\s+|[^\s]+/g) || [];
+            if (!parts.some((part) => !/^\s+$/.test(part))) continue;
             const fragment = document.createDocumentFragment();
             for (const part of parts) {
-              if (/^\\s+$/.test(part)) {
+              if (/^\s+$/.test(part)) {
                 fragment.appendChild(document.createTextNode(part));
               } else {
                 const word = document.createElement("span");
