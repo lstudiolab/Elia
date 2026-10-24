@@ -227,6 +227,12 @@
       background: #e5e5ea; color: #1d1d1f;
       border-radius: 22px 22px 7px 22px;
     }
+    .feedback-actions { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
+    .feedback-button { display: inline-grid; place-items: center; width: 32px; height: 30px; border: 1px solid transparent; border-radius: 9px; background: transparent; color: var(--muted); cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+    .feedback-button:hover { background: rgba(118,118,128,.12); color: var(--ink); }
+    .feedback-button.selected { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); border-color: color-mix(in srgb, var(--accent) 22%, transparent); }
+    .feedback-button svg { width: 17px; height: 17px; display: block; }
+    .feedback-button:disabled { cursor: default; opacity: .65; }
     .response-metrics { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 0 9px; color: var(--muted); font-size: 11px; line-height: 1.4; font-variant-numeric: tabular-nums; }
     .response-metrics span { display: inline-flex; align-items: center; gap: 4px; }
     .message-text { color: var(--ink); font-size: 15px; line-height: 1.72; }
@@ -593,7 +599,12 @@
         const metricsMarkup = message.role === "assistant" && Number.isFinite(message.durationMs) && message.durationMs >= 60000
           ? '<div class="response-metrics"><span>Worked for ' + escapeHtml(formatDuration(message.durationMs)) + '</span><span>Token Consumed ' + (Number.isFinite(message.totalTokens) ? escapeHtml(message.totalTokens.toLocaleString()) : "—") + '</span></div>'
           : "";
-        row.innerHTML = '<div class="message-content">' + metricsMarkup + '<div class="message-text">' + formatText(message.displayContent ?? message.content ?? "") + '</div>' + (attachmentMarkup ? '<div class="message-attachments">' + attachmentMarkup + '</div>' : '') + '</div>';
+        const feedbackMarkup = message.role === "assistant"
+          ? '<div class="feedback-actions" aria-label="Rate this response" data-message-id="' + escapeHtml(message.id || (message.id = uid())) + '">'
+            + '<button class="feedback-button ' + (message.feedback === "up" ? "selected" : "") + '" type="button" data-feedback="up" aria-label="Thumbs up" aria-pressed="' + String(message.feedback === "up") + '" title="Thumbs up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3Zm0 0 5-8c2 0 3 2 2 4l-1 4h6a2 2 0 0 1 2 2l-2 7a2 2 0 0 1-2 2H7"/></svg></button>'
+            + '<button class="feedback-button ' + (message.feedback === "down" ? "selected" : "") + '" type="button" data-feedback="down" aria-label="Thumbs down" aria-pressed="' + String(message.feedback === "down") + '" title="Thumbs down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 14V3H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3Zm0 0 5 8c2 0 3-2 2-4l-1-4h6a2 2 0 0 0 2-2l-2-7a2 2 0 0 0-2-2H7"/></svg></button>'
+            + '</div>' : "";
+        row.innerHTML = '<div class="message-content">' + metricsMarkup + '<div class="message-text">' + formatText(message.displayContent ?? message.content ?? "") + '</div>' + (attachmentMarkup ? '<div class="message-attachments">' + attachmentMarkup + '</div>' : '') + feedbackMarkup + '</div>';
         thread.appendChild(row);
         scrollToLatest();
       };
@@ -666,6 +677,7 @@
           $("#typingIndicator")?.remove();
           if (!response.ok) throw new Error(data.error || "Something went wrong. Please try again.");
           conversation.messages.push({
+            id: uid(),
             role: "assistant",
             content: data.reply,
             durationMs: Number.isFinite(data.durationMs) ? data.durationMs : null,
@@ -689,6 +701,46 @@
           scrollToLatest();
         }
       };
+
+      thread.addEventListener("click", async (event) => {
+        const button = event.target.closest("button[data-feedback]");
+        if (!button || button.disabled) return;
+        const actions = button.closest(".feedback-actions");
+        const conversation = getCurrent();
+        const message = conversation?.messages.find((item) => item.role === "assistant" && item.id === actions?.dataset.messageId);
+        if (!message) return;
+        const vote = button.dataset.feedback;
+        const previousVote = message.feedback || null;
+        if (previousVote === vote) return;
+        message.feedback = vote;
+        actions.querySelectorAll("[data-feedback]").forEach((item) => {
+          const selected = item.dataset.feedback === vote;
+          item.classList.toggle("selected", selected);
+          item.setAttribute("aria-pressed", String(selected));
+        });
+        save();
+        button.disabled = true;
+        try {
+          const response = await fetch("/api/feedback", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messageId: message.id, vote, previousVote })
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(data.error || "Feedback could not be saved.");
+        } catch {
+          message.feedback = previousVote;
+          actions.querySelectorAll("[data-feedback]").forEach((item) => {
+            const selected = item.dataset.feedback === previousVote;
+            item.classList.toggle("selected", selected);
+            item.setAttribute("aria-pressed", String(selected));
+          });
+          showToast("Could not send feedback. Try again.");
+          save();
+        } finally {
+          button.disabled = false;
+        }
+      });
 
       $("#chatForm").addEventListener("submit", (event) => {
         event.preventDefault();
