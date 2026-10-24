@@ -348,6 +348,23 @@
       .attach-button { width: 40px; height: 40px; }
     }
 
+  
+    .thinking-status { display: inline-flex; align-items: center; gap: 10px; min-height: 30px; }
+    .thinking-status .typing { flex: 0 0 auto; }
+    .working-label {
+      color: #8e8e93;
+      font-size: 13px;
+      line-height: 1.4;
+      animation: working-fade 1.8s ease-in-out infinite;
+    }
+    @keyframes working-fade {
+      0%, 100% { opacity: .35; }
+      50% { opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .working-label { animation: none; opacity: .7; }
+    }
+
   </style>
 </head>
 <body>
@@ -565,7 +582,7 @@
         const row = document.createElement("article");
         row.className = "message assistant";
         row.id = "typingIndicator";
-        row.innerHTML = '<div class="message-content"><div class="typing" aria-label="Elia is thinking"><span></span><span></span><span></span></div></div>';
+        row.innerHTML = '<div class="message-content"><div class="thinking-status"><div class="typing" aria-label="Elia is thinking"><span></span><span></span><span></span></div><span class="working-label">Working with it</span></div></div>';
         thread.appendChild(row);
         scrollToLatest();
       };
