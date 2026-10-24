@@ -734,7 +734,84 @@
       box-shadow:0 8px 24px rgba(25,35,50,.08),inset 0 1px 0 rgba(255,255,255,.9)!important;
     }
 
-  </style>
+  
+
+    /* Compact sizing pass: tighter spacing and smaller controls, especially on phones. */
+    .app { grid-template-columns: 220px minmax(0, 1fr); }
+    .sidebar { padding: 18px 12px 12px; }
+    .brand { gap: 8px; padding: 0 8px 20px; }
+    .brand-mark { width: 27px; height: 27px; border-radius: 9px; font-size: 16px; }
+    .brand-name { font-size: 17px; }
+    .new-chat { min-height: 36px; padding: 8px 11px; font-size: 12px; border-radius: 10px; }
+    .section-label { padding: 19px 8px 8px; font-size: 9px; }
+    .history-item { min-height: 33px; padding: 7px 8px; font-size: 11px; }
+    .status-card { padding: 9px 8px; }
+    .topbar { height: 54px; padding: 0 22px; }
+    .icon-button { width: 36px; height: 36px; border-radius: 10px; }
+    .model-pill { padding: 5px 8px; font-size: 10px; }
+    .workspace { width: min(100%, 800px); padding: 24px 22px 16px; }
+    .welcome { padding: 28px 0 36px; }
+    .welcome-mark { width: 44px; height: 44px; margin-bottom: 18px; border-radius: 14px; font-size: 23px; }
+    h1 { font-size: clamp(25px, 3.4vw, 35px); margin: 10px 0 8px; }
+    .welcome-copy { max-width: 360px; font-size: 13px; line-height: 1.6; }
+    .suggestions { width: min(100%, 520px); gap: 8px; margin-top: 24px; }
+    .suggestion { min-height: 76px; padding: 11px 12px; border-radius: 13px; gap: 5px; }
+    .suggestion-title { font-size: 12px; }
+    .suggestion-desc { font-size: 10px; }
+    .thread, .thread.visible { gap: 22px; }
+    .thread { padding: 12px 0 170px; }
+    .message-content { max-width: min(82%, 620px); }
+    .message.user .message-content { padding: 9px 13px; border-radius: 17px 17px 5px 17px; }
+    .message-text { font-size: 14px; line-height: 1.65; }
+    .message-text pre { padding: 11px; border-radius: 10px; }
+    .feedback-actions { gap: 4px; margin-top: 7px; }
+    .feedback-button { width: 28px; height: 27px; }
+    .feedback-button svg { width: 15px; height: 15px; }
+    .composer-dock { left: 220px; padding: 18px 22px max(12px, env(safe-area-inset-bottom)); }
+    .composer-inner { width: min(100%, 640px); gap: 9px; padding-left: 8px; }
+    .composer { min-height: 44px; gap: 8px; padding: 6px 7px 6px 14px; }
+    .attach-button { width: 38px; height: 38px; font-size: 21px; }
+    .send-button { width: 30px; height: 30px; }
+    #prompt { min-height: 22px; font-size: 14px; }
+    .attach-menu { width: 170px; bottom: 48px; border-radius: 12px; }
+    .attach-option { min-height: 36px; padding: 8px; font-size: 12px; }
+    .toast { padding: 8px 11px; font-size: 11px; }
+    @media (max-width: 760px) {
+      .topbar { height: 50px; padding: 0 13px; }
+      .mobile-brand { gap: 6px; font-size: 14px; }
+      .mobile-brand .brand-mark { width: 23px; height: 23px; border-radius: 7px; font-size: 14px; }
+      .model-pill { padding: 4px 7px; font-size: 9px; }
+      .icon-button { width: 32px; height: 32px; }
+      .workspace { padding: 12px 13px max(10px, env(safe-area-inset-bottom)); }
+      .welcome { padding: 26px 0 30px; }
+      .welcome-mark { width: 40px; height: 40px; margin-bottom: 15px; font-size: 21px; }
+      h1 { font-size: clamp(24px, 7vw, 31px); letter-spacing: -1px; }
+      .welcome-copy { max-width: 310px; font-size: 12px; }
+      .suggestions { gap: 7px; margin-top: 20px; }
+      .suggestion { min-height: 68px; padding: 10px; border-radius: 12px; }
+      .suggestion-title { font-size: 11px; }
+      .suggestion-desc { font-size: 10px; }
+      .thread, .thread.visible { gap: 18px; }
+      .thread { padding-top: 8px; padding-bottom: 120px; }
+      .message-content { max-width: 88%; }
+      .message-text { font-size: 14px; line-height: 1.6; }
+      .message.user .message-content { padding: 8px 11px; }
+      .composer-dock { left: 0; right: 0; padding: 12px 12px max(10px, env(safe-area-inset-bottom)); }
+      .composer-inner { gap: 7px; padding-left: 0; }
+      .attach-button { width: 34px; height: 34px; font-size: 19px; }
+      .composer { min-height: 42px; padding: 5px 6px 5px 12px; gap: 6px; }
+      #prompt { font-size: 15px; max-height: 90px; }
+      .send-button { width: 29px; height: 29px; }
+      .attach-menu { bottom: 42px; }
+    }
+    @media (max-width: 390px) {
+      .suggestions { grid-template-columns: 1fr; }
+      .suggestion { min-height: 58px; }
+      .composer-dock { padding-left: 10px; padding-right: 10px; }
+      .composer-inner { gap: 6px; }
+      .attach-button { width: 32px; height: 32px; }
+    }
+</style>
 </head>
 <body>
   <div class="app">
