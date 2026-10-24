@@ -74,34 +74,34 @@ function lastUserMessage(messages) {
 // difficult implementation, research, and multi-step work to GPT-OSS 120B.
 function isCodingOrDebuggingTask(messages) {
   const current = lastUserMessage(messages);
-  const recentContext = messages.slice(-6).map((message) => message.content).join("\\n");
-  const target = current.length < 100 && /\\b(it|that|those|this|these|the bug|the error|the code|the fix|the issue)\\b/i.test(current)
+  const recentContext = messages.slice(-6).map((message) => message.content).join("\n");
+  const target = current.length < 100 && /\b(it|that|those|this|these|the bug|the error|the code|the fix|the issue)\b/i.test(current)
     ? recentContext
     : current;
 
   // Treat concrete code changes, errors, and debugging as complex work rather than
   // waiting for a broad complexity score to accumulate.
-  return /\\b(cod(e|ing)|program(ming)?|debug(ging)?|bug|fix|error|exception|stack trace|compile(r|s|d|ing)?|syntax|runtime|not working|doesn.t work|broken|fails? to|failing|crash(es|ed|ing)?|refactor|implement|codebase|repository|script|function|class|api endpoint|server.js|index.html|typescript|javascript|python|c\\+\\+|rust|swift|lua|html|css|sql|git(hub)?|pull request|patch|regression|test failure)\\b/i.test(target);
+  return /\b(cod(e|ing)|program(ming)?|debug(ging)?|bug|fix|error|exception|stack trace|compile(r|s|d|ing)?|syntax|runtime|not working|doesn.t work|broken|fails? to|failing|crash(es|ed|ing)?|refactor|implement|codebase|repository|script|function|class|api endpoint|server.js|index.html|typescript|javascript|python|c\+\+|rust|swift|lua|html|css|sql|git(hub)?|pull request|patch|regression|test failure)\b/i.test(target);
 }
 
 function shouldUseComplexModel(messages) {
   if (isCodingOrDebuggingTask(messages)) return true;
 
   const current = lastUserMessage(messages);
-  const followUp = /^(continue|go on|do it|proceed|finish it|implement it|make it|make all of that|make everything|fix it|now do that|apply those changes|do all of that|handle the rest)[.!\\s]*$/i.test(current.trim());
-  const recentContext = messages.slice(-8).map((message) => message.content).join("\\n");
-  const target = followUp || (current.length < 90 && /\\b(it|that|those|these|everything|all of it|the changes)\\b/i.test(current)) ? recentContext : current;
+  const followUp = /^(continue|go on|do it|proceed|finish it|implement it|make it|make all of that|make everything|fix it|now do that|apply those changes|do all of that|handle the rest)[.!\s]*$/i.test(current.trim());
+  const recentContext = messages.slice(-8).map((message) => message.content).join("\n");
+  const target = followUp || (current.length < 90 && /\b(it|that|those|these|everything|all of it|the changes)\b/i.test(current)) ? recentContext : current;
   let score = 0;
 
-  if (/\\b(deep research|comprehensive|in-depth|step[- ]by[- ]step|multi[- ]step|end[- ]to[- ]end|from scratch|production[- ]ready|full implementation|complete implementation|root cause|system architecture|refactor|debug|optimi[sz]e|migration|prove|derive|investigate|research|architect)\\b/i.test(target)) score += 2;
-  if (/\\b(build|implement|design|analy[sz]e|compare|integrate|deploy|create|write|plan|configure|rewrite|migrate)\\b/i.test(current)) score += 1;
-  if (/\\b(codebase|repository|compiler|backend|frontend|database schema|distributed|algorithm|multiple files|entire application|full project)\\b/i.test(target)) score += 1;
-  if (/\\b(and then|after that|in addition|also make sure|multiple requirements|all of the following)\\b/i.test(current)) score += 1;
+  if (/\b(deep research|comprehensive|in-depth|step[- ]by[- ]step|multi[- ]step|end[- ]to[- ]end|from scratch|production[- ]ready|full implementation|complete implementation|root cause|system architecture|refactor|debug|optimi[sz]e|migration|prove|derive|investigate|research|architect)\b/i.test(target)) score += 2;
+  if (/\b(build|implement|design|analy[sz]e|compare|integrate|deploy|create|write|plan|configure|rewrite|migrate)\b/i.test(current)) score += 1;
+  if (/\b(codebase|repository|compiler|backend|frontend|database schema|distributed|algorithm|multiple files|entire application|full project)\b/i.test(target)) score += 1;
+  if (/\b(and then|after that|in addition|also make sure|multiple requirements|all of the following)\b/i.test(current)) score += 1;
   if (current.length >= 800) score += 1;
-  const actionCount = (current.match(/\\b(build|create|implement|design|test|deploy|document|debug|refactor|integrate|optimi[sz]e|make|write|add|remove|delete|configure|update|change|specify|clarify|compare|research|explain|analy[sz]e|plan|connect|migrate)\\b/gi) || []).length;
+  const actionCount = (current.match(/\b(build|create|implement|design|test|deploy|document|debug|refactor|integrate|optimi[sz]e|make|write|add|remove|delete|configure|update|change|specify|clarify|compare|research|explain|analy[sz]e|plan|connect|migrate)\b/gi) || []).length;
   if (actionCount >= 3) score += 2;
   else if (actionCount >= 2) score += 1;
-  const requirementCount = (current.match(/\\b(and|also|plus|then|while|including|as well as)\\b/gi) || []).length;
+  const requirementCount = (current.match(/\b(and|also|plus|then|while|including|as well as)\b/gi) || []).length;
   if (requirementCount >= 3) score += 1;
 
   return score >= 2;
@@ -112,8 +112,8 @@ function shouldEscalateWeakAnswer(messages, reply) {
   if (!isCodingOrDebuggingTask(messages)) return false;
 
   const answer = reply.trim();
-  const explicitFailure = /\\b(i can.t|i cannot|i\\u2019m unable|i am unable|unable to (fix|solve|debug|implement|determine)|i don.t know how|cannot help with this|not enough information to (fix|solve)|i couldn.t resolve)\\b/i.test(answer);
-  const tooShortToBeUseful = answer.length < 180 && !/\\b(no code changes needed|the issue is|the fix is|change .* to|replace .* with)\\b/i.test(answer);
+  const explicitFailure = /\b(i can.t|i cannot|i\u2019m unable|i am unable|unable to (fix|solve|debug|implement|determine)|i don.t know how|cannot help with this|not enough information to (fix|solve)|i couldn.t resolve)\b/i.test(answer);
+  const tooShortToBeUseful = answer.length < 180 && !/\b(no code changes needed|the issue is|the fix is|change .* to|replace .* with)\b/i.test(answer);
   return explicitFailure || tooShortToBeUseful;
 }
 
