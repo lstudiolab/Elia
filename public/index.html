@@ -35,6 +35,11 @@
     .brand-caption { margin-top: 2px; color: var(--muted); font-size: 11px; letter-spacing: .15px; }
     .new-chat { display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; padding: 12px 14px; border: 1px solid #deded7; border-radius: 12px; background: #fff; cursor: pointer; font-size: 13px; font-weight: 570; transition: background .15s, transform .15s; }
     .new-chat:hover { background: #fafaf8; transform: translateY(-1px); }
+
+    .sidebar-tools { display: flex; justify-content: flex-end; gap: 5px; margin-top: 8px; }
+    .sidebar-tools .icon-button { border: 1px solid var(--line); background: var(--panel); }
+    .sidebar-tools .icon-button:hover { background: rgba(118,118,128,.12); }
+
     .section-label { padding: 25px 10px 10px; color: #9a9b94; font-size: 10px; font-weight: 700; letter-spacing: 1.25px; text-transform: uppercase; }
     .history { display: flex; flex-direction: column; gap: 3px; overflow-y: auto; }
     .history-item { display: flex; align-items: center; gap: 9px; width: 100%; padding: 10px; border: 0; border-radius: 9px; background: transparent; text-align: left; cursor: pointer; color: #686961; font-size: 12px; }
@@ -404,6 +409,14 @@
         <div><div class="brand-name">elia</div><div class="brand-caption">A little space to think</div></div>
       </div>
       <button class="new-chat" id="newChat"><span aria-hidden="true">＋</span> New conversation</button>
+      <div class="sidebar-tools" aria-label="Conversation actions">
+        <button class="icon-button" id="exportChat" title="Export conversation" aria-label="Export conversation">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 17v3h14v-3"/></svg>
+        </button>
+        <button class="icon-button" id="clearChat" title="Clear current conversation" aria-label="Clear current conversation">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>
+        </button>
+      </div>
       <div class="section-label">Recent conversations</div>
       <div class="history" id="history"><div class="history-empty">Your conversations will appear here.</div></div>
       <div class="sidebar-bottom">
@@ -415,20 +428,7 @@
     </aside>
 
     <main class="main">
-      <header class="topbar">
-        <div class="top-left">
-          <div class="mobile-brand"><div class="brand-mark">e</div><span>elia</span></div>
-          <div class="model-pill"><span class="model-spark">✳</span><span class="model-name" id="modelName">Groq AI</span><span aria-hidden="true">⌄</span></div>
-        </div>
-        <div class="top-actions">
-          <button class="icon-button desktop-only" id="exportChat" title="Export conversation" aria-label="Export conversation">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3v12m-4-4 4 4 4-4M5 17v3h14v-3"/></svg>
-          </button>
-          <button class="icon-button" id="clearChat" title="Clear current conversation" aria-label="Clear current conversation">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>
-          </button>
-        </div>
-      </header>
+
 
       <section class="workspace">
         <section class="welcome" id="welcome">
@@ -712,8 +712,6 @@
             totalTokens: Number.isFinite(data.totalTokens) ? data.totalTokens : null
           });
           conversation.updatedAt = Date.now();
-          health.model = data.model || health.model;
-          $("#modelName").textContent = health.model.replace(/-versatile$/, "").replace(/-/g, " ");
           appendMessage(conversation.messages[conversation.messages.length - 1], { animateWords: true });
           save();
           renderHistory();
@@ -846,7 +844,6 @@
         $("#statusDot").classList.toggle("online", Boolean(data.ok && data.configured));
         $("#statusTitle").textContent = data.configured ? "Ready to chat" : "API key not configured";
         $("#statusSub").textContent = data.configured ? "Connected through a secure server" : "Add GROQ_API_KEY in Render";
-        $("#modelName").textContent = (data.model || "Groq AI").replace(/-versatile$/, "").replace(/-/g, " ");
       }).catch(() => {
         $("#statusTitle").textContent = "Connection unavailable";
         $("#statusSub").textContent = "Check the server and try again";
