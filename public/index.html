@@ -811,6 +811,29 @@
       .composer-inner { gap: 6px; }
       .attach-button { width: 32px; height: 32px; }
     }
+
+    /* Further reduce the size of all toolbar and utility buttons. */
+    .icon-button { width: 30px; height: 30px; border-radius: 9px; }
+    .top-actions { gap: 5px; }
+    .sidebar-tools { gap: 4px; }
+    .new-chat { min-height: 32px; padding: 7px 9px; }
+    .feedback-button { width: 25px; height: 25px; }
+    .feedback-button svg { width: 14px; height: 14px; }
+    .attach-wrap { height: 34px; }
+    .attach-button { width: 34px; height: 34px; min-width: 34px; font-size: 19px; }
+    .send-button { width: 27px; height: 27px; }
+    .attach-option { min-height: 32px; padding: 7px 8px; font-size: 11px; }
+    @media (max-width: 760px) {
+      .icon-button { width: 28px; height: 28px; }
+      .attach-wrap { height: 32px; }
+      .attach-button { width: 32px; height: 32px; min-width: 32px; }
+      .composer { height: 42px; min-height: 42px; }
+      .send-button { width: 27px; height: 27px; }
+    }
+    @media (max-width: 390px) {
+      .attach-wrap { height: 30px; }
+      .attach-button { width: 30px; height: 30px; min-width: 30px; }
+    }
 </style>
 </head>
 <body>
@@ -1024,6 +1047,7 @@
         });
       };
       const setConversationPage = (show) => {
+        try { localStorage.setItem("elia-library-open-v1", show ? "1" : "0"); } catch {}
         document.body.classList.toggle("conversation-library-open", show);
         $("#conversationsPage").hidden = !show;
         $("#chatWorkspace").hidden = show;
@@ -1344,10 +1368,19 @@
       const navigationEntry = performance.getEntriesByType("navigation")[0];
       const isRefresh = navigationEntry && navigationEntry.type === "reload";
       let savedCurrentId = null;
-      try { savedCurrentId = localStorage.getItem("elia-current-conversation-v1"); } catch {}
-      if (isRefresh && savedCurrentId && conversations.some((item) => item.id === savedCurrentId)) {
-        currentId = savedCurrentId; renderHistory(); renderChat();
-      } else { newConversation(false); }
+      let savedLibraryOpen = false;
+      try {
+        savedCurrentId = localStorage.getItem("elia-current-conversation-v1");
+        savedLibraryOpen = localStorage.getItem("elia-library-open-v1") === "1";
+      } catch {}
+      if (savedCurrentId && conversations.some((item) => item.id === savedCurrentId)) {
+        currentId = savedCurrentId;
+        renderHistory();
+        renderChat();
+      } else {
+        newConversation(false);
+      }
+      if (isRefresh && savedLibraryOpen) setConversationPage(true);
       resizePrompt();
       fetch("/api/health").then((response) => response.json()).then((data) => {
         health = data;
