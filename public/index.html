@@ -316,6 +316,38 @@
       html:focus-within { scroll-behavior: auto; }
       *, *::before, *::after { scroll-behavior: auto !important; }
     }
+  
+    /* Final composer and neutral accent refinements. */
+    :root { --accent: #8e8e93; --accent-ink: #ffffff; }
+    .composer-inner { align-items: center; }
+    .composer {
+      min-height: 46px;
+      padding: 5px 8px 5px 16px;
+      border-color: var(--line);
+      box-shadow: 0 3px 14px rgba(0,0,0,.045);
+    }
+    .composer:focus-within {
+      border-color: var(--line);
+      box-shadow: 0 3px 14px rgba(0,0,0,.045);
+    }
+    #prompt:focus, #prompt:focus-visible { outline: none !important; box-shadow: none !important; }
+    .attach-button {
+      width: 46px; height: 46px;
+      color: var(--ink);
+      border-color: var(--line);
+    }
+    .send-button { background: var(--accent); color: var(--accent-ink); }
+    .model-spark { color: var(--muted); }
+    @media (max-width: 760px) {
+      .composer { min-height: 42px; padding: 4px 7px 4px 14px; }
+      .attach-button { width: 42px; height: 42px; }
+      #prompt { min-height: 24px; }
+    }
+    @media (max-width: 390px) {
+      .composer { min-height: 40px; }
+      .attach-button { width: 40px; height: 40px; }
+    }
+
   </style>
 </head>
 <body>
