@@ -143,7 +143,7 @@ app.post("/api/chat", async (req, res) => {
       model: selectedModel,
       messages: groqMessages,
       temperature: 1,
-      reasoning_effort: selectedComplexModel ? "high" : "medium",
+      reasoning_effort: "high",
       max_completion_tokens: selectedComplexModel ? 16384 : 8192,
       stream: false
     };
