@@ -1140,8 +1140,30 @@
       const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
       const getCurrent = () => conversations.find((item) => item.id === currentId);
       const save = () => {
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations)); if (currentId) localStorage.setItem("elia-current-conversation-v1", currentId); }
-        catch { showToast("Could not save chat history on this device."); }
+        try {
+          const serialized = JSON.stringify(conversations);
+          localStorage.setItem(STORAGE_KEY, serialized);
+          if (currentId) localStorage.setItem("elia-current-conversation-v1", currentId);
+          // Keep a second durable copy in IndexedDB for browsers that evict or reject localStorage.
+          if ("indexedDB" in window) {
+            const request = indexedDB.open("elia-local-history-v1", 1);
+            request.onupgradeneeded = () => {
+              if (!request.result.objectStoreNames.contains("state")) request.result.createObjectStore("state");
+            };
+            request.onsuccess = () => {
+              const db = request.result;
+              try {
+                const transaction = db.transaction("state", "readwrite");
+                transaction.objectStore("state").put({ conversations: serialized, currentId, savedAt: Date.now() }, "latest");
+                transaction.oncomplete = () => db.close();
+                transaction.onerror = () => db.close();
+              } catch { db.close(); }
+            };
+            request.onerror = () => {};
+          }
+        } catch {
+          showToast("Could not save chat history on this device.");
+        }
       };
       const showToast = (text) => {
         const toast = $("#toast");
@@ -1545,6 +1567,23 @@
         anchor.click(); URL.revokeObjectURL(url);
       });
 
+      const restoreIndexedDbHistory = () => new Promise((resolve) => {
+        if (!("indexedDB" in window)) return resolve(null);
+        let request;
+        try { request = indexedDB.open("elia-local-history-v1", 1); } catch { return resolve(null); }
+        request.onupgradeneeded = () => {
+          if (!request.result.objectStoreNames.contains("state")) request.result.createObjectStore("state");
+        };
+        request.onerror = () => resolve(null);
+        request.onsuccess = () => {
+          const db = request.result;
+          let read;
+          try { read = db.transaction("state", "readonly").objectStore("state").get("latest"); }
+          catch { db.close(); return resolve(null); }
+          read.onsuccess = () => { const value = read.result || null; db.close(); resolve(value); };
+          read.onerror = () => { db.close(); resolve(null); };
+        };
+      });
       try {
         const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
         if (Array.isArray(stored)) conversations = stored.filter((item) => item && typeof item.id === "string" && Array.isArray(item.messages));
@@ -1566,6 +1605,30 @@
       }
       if (isRefresh && savedLibraryOpen) setConversationPage(true);
       resizePrompt();
+      // Persist synchronously when the page is backgrounded/closed, and restore a backup
+      // only when the localStorage copy is empty or unreadable.
+      const persistBeforeExit = () => {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations));
+          if (currentId) localStorage.setItem("elia-current-conversation-v1", currentId);
+        } catch {}
+      };
+      window.addEventListener("pagehide", persistBeforeExit);
+      document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") persistBeforeExit(); });
+      restoreIndexedDbHistory().then((backup) => {
+        if (!backup || conversations.length) return;
+        try {
+          const recovered = JSON.parse(backup.conversations || "[]");
+          if (!Array.isArray(recovered) || !recovered.length) return;
+          conversations = recovered.filter((item) => item && typeof item.id === "string" && Array.isArray(item.messages));
+          if (backup.currentId && conversations.some((item) => item.id === backup.currentId)) currentId = backup.currentId;
+          if (currentId) localStorage.setItem("elia-current-conversation-v1", currentId);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations));
+          renderHistory();
+          renderChat();
+          renderConversationCards();
+        } catch {}
+      });
       fetch("/api/health").then((response) => response.json()).then((data) => {
         health = data;
         $("#statusDot").classList.toggle("online", Boolean(data.ok && data.configured));
