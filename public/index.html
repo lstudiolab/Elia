@@ -70,16 +70,42 @@
     .suggestion-desc { color: #85867f; font-size: 11px; line-height: 1.5; }
     .thread { display: none; flex-direction: column; gap: 26px; padding: 14px 0 34px; }
     .thread.visible { display: flex; }
-    .message { display: grid; grid-template-columns: 30px minmax(0,1fr); gap: 13px; animation: appear .25s ease both; }
-    .message-avatar { width: 29px; height: 29px; display: grid; place-items: center; border-radius: 10px; background: #e9e9e3; color: #414238; font-size: 13px; font-weight: 650; }
-    .message.user .message-avatar { background: #dfe5da; color: #405341; }
-    .message-content { min-width: 0; padding-top: 3px; }
-    .message-author { margin-bottom: 8px; font-size: 11px; font-weight: 650; color: #77786f; }
+    .thread { gap: 30px; padding: 18px 0 210px; }
+    .message { display: flex; width: 100%; min-width: 0; animation: appear .25s ease both; }
+    .message.user { justify-content: flex-end; }
+    .message.assistant { justify-content: flex-start; }
+    .message-content { min-width: 0; max-width: min(82%, 690px); padding: 0; }
+    .message.user .message-content { padding: 12px 16px; border-radius: 22px 22px 6px 22px; background: #e9e9e4; color: #292a24; }
+    .message.assistant .message-content { max-width: 100%; width: 100%; padding: 0 4px; }
     .message-text { color: #33342e; font-size: 14px; line-height: 1.8; overflow-wrap: anywhere; white-space: pre-wrap; }
+    .message.user .message-text { line-height: 1.65; }
     .message-text code { padding: 2px 5px; border-radius: 5px; background: #efefea; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9em; }
     .message-text pre { max-width: 100%; overflow-x: auto; padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: #f3f3ef; white-space: pre; }
     .message-text pre code { padding: 0; background: transparent; }
     .message-text strong { font-weight: 650; }
+    .message-avatar, .message-author { display: none !important; }
+    .message-attachments { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 9px; }
+    .attachment-chip { display: flex; align-items: center; gap: 7px; max-width: 230px; padding: 7px 9px; border: 1px solid #deded6; border-radius: 10px; background: rgba(255,255,255,.75); color: #55564e; font-size: 11px; }
+    .attachment-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .attachment-chip img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; }
+    .composer-dock { position: fixed; z-index: 4; left: 252px; right: 0; bottom: 0; padding: 38px 28px max(14px, env(safe-area-inset-bottom)); background: linear-gradient(180deg, rgba(247,247,245,0), rgba(247,247,245,.94) 25%, var(--bg) 55%); }
+    .composer-inner { width: min(100%, 850px); margin: 0 auto; display: flex; align-items: flex-end; gap: 12px; padding-left: 18px; }
+    .composer-wrap { position: static; flex: 1; min-width: 0; padding: 0; background: transparent; }
+    .composer { border-radius: 28px; padding: 13px 13px 12px 19px; gap: 12px; }
+    #chatForm { min-width: 0; }
+    .composer-meta, .footer-note { display: none; }
+    .attach-wrap { position: relative; flex: 0 0 auto; }
+    .attach-button { width: 46px; height: 46px; display: grid; place-items: center; border: 1px solid #e3e3dc; border-radius: 50%; background: white; box-shadow: 0 7px 24px rgba(40,40,30,.05); cursor: pointer; font-size: 25px; color: #55564e; }
+    .attach-button:hover { background: #f0f0ec; }
+    .attach-menu { position: absolute; left: 0; bottom: 56px; display: none; width: 190px; padding: 6px; border: 1px solid var(--line); border-radius: 15px; background: white; box-shadow: 0 14px 40px rgba(30,30,20,.13); }
+    .attach-menu.open { display: block; animation: appear .12s ease both; }
+    .attach-option { display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 10px; border: 0; border-radius: 9px; background: transparent; text-align: left; font-size: 12px; cursor: pointer; }
+    .attach-option:hover { background: #f3f3ef; }
+    .pending-attachments { display: flex; flex-wrap: wrap; gap: 7px; margin: 0 0 8px; }
+    .pending-attachment { display: flex; align-items: center; gap: 7px; max-width: 230px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 11px; background: white; font-size: 11px; }
+    .pending-attachment span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .pending-attachment button { border: 0; background: transparent; color: #85867f; cursor: pointer; font-size: 16px; }
+    .attachment-note { margin: 0 0 8px 3px; color: #85867f; font-size: 10px; }
     .typing { display: inline-flex; gap: 4px; align-items: center; padding: 7px 0; }
     .typing span { width: 5px; height: 5px; border-radius: 50%; background: #9a9b91; animation: pulse 1.1s infinite ease-in-out; }
     .typing span:nth-child(2) { animation-delay: .15s; } .typing span:nth-child(3) { animation-delay: .3s; }
@@ -118,14 +144,22 @@
       .suggestions { gap: 8px; margin-top: 27px; }
       .suggestion { min-height: 93px; padding: 13px; }
       .thread { gap: 23px; padding-top: 10px; }
-      .message { grid-template-columns: 27px minmax(0,1fr); gap: 10px; }
-      .message-avatar { width: 27px; height: 27px; }
+      .message { width: 100%; }
+      .message-content { max-width: 88%; }
+      .message.assistant .message-content { max-width: 100%; }
       .message-text { font-size: 13px; }
+      .composer-dock { left: 0; padding: 28px 13px max(12px, env(safe-area-inset-bottom)); }
+      .composer-inner { gap: 9px; padding-left: 0; }
+      .attach-button { width: 43px; height: 43px; }
+      .thread { padding-bottom: 180px; }
       .composer { padding: 12px 11px 10px 14px; border-radius: 16px; gap: 8px; }
       #prompt { font-size: 16px; }
       .composer-meta { font-size: 9px; }
     }
     @media (max-width: 390px) {
+      .composer-inner { gap: 7px; }
+      .attach-button { width: 40px; height: 40px; }
+      .composer { padding-left: 15px; }
       .suggestions { grid-template-columns: 1fr; }
       .suggestion { min-height: 72px; }
       .model-pill .model-name { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -182,19 +216,33 @@
         </section>
 
         <section class="thread" id="thread" aria-live="polite" aria-label="Chat messages"></section>
-        <div class="composer-wrap">
-          <div class="notice" id="notice" role="alert"></div>
-          <form id="chatForm">
-            <div class="composer">
-              <textarea id="prompt" rows="1" maxlength="12000" placeholder="Message Elia…" aria-label="Message Elia"></textarea>
-              <button class="send-button" id="sendButton" type="submit" aria-label="Send message" disabled>
-                <svg id="sendIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 19V5m-6 6 6-6 6 6"/></svg>
-              </button>
+      </section>
+      <div class="composer-dock">
+        <div class="composer-inner">
+          <div class="attach-wrap">
+            <button class="attach-button" id="attachButton" type="button" aria-label="Add photos or files" aria-expanded="false">+</button>
+            <div class="attach-menu" id="attachMenu" role="menu">
+              <button class="attach-option" type="button" data-picker="image"><span aria-hidden="true">▧</span> Add photos</button>
+              <button class="attach-option" type="button" data-picker="file"><span aria-hidden="true">↥</span> Add files</button>
             </div>
-            <div class="composer-meta"><span>Press <strong>Enter</strong> to send · <strong>Shift + Enter</strong> for a new line</span><span id="charCount">0 / 12000</span></div>
-          </form>
-          <div class="footer-note">Elia can make mistakes. Check important information.</div>
+          </div>
+          <div class="composer-wrap">
+            <div class="notice" id="notice" role="alert"></div>
+            <div class="pending-attachments" id="pendingAttachments"></div>
+            <div class="attachment-note" id="attachmentNote"></div>
+            <form id="chatForm">
+              <div class="composer">
+                <textarea id="prompt" rows="1" maxlength="12000" placeholder="Message Elia…" aria-label="Message Elia"></textarea>
+                <button class="send-button" id="sendButton" type="submit" aria-label="Send message" disabled>
+                  <svg id="sendIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 19V5m-6 6 6-6 6 6"/></svg>
+                </button>
+              </div>
+            </form>
+            <input id="imagePicker" type="file" accept="image/*" multiple hidden>
+            <input id="filePicker" type="file" accept=".txt,.md,.csv,.json,.html,.css,.js,.ts,.py,.c,.cpp,.h,.hpp,.xml,.yaml,.yml,.log,.pdf,.doc,.docx,.xlsx,.pptx" multiple hidden>
+          </div>
         </div>
+      </div>
       </section>
     </main>
   </div>
@@ -216,6 +264,36 @@
       let busy = false;
       let health = { configured: false, model: "Groq AI" };
       let toastTimer;
+      let pendingFiles = [];
+      const scrollToLatest = (behavior = "smooth") => requestAnimationFrame(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior }));
+      const fileTextExtensions = /\.(txt|md|csv|json|html|css|js|ts|py|c|cpp|h|hpp|xml|yaml|yml|log)$/i;
+      const readTextFile = (file) => new Promise((resolve) => {
+        if (file.size > 200000) return resolve("[File " + file.name + " is too large to include as text.]");
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => resolve("[Could not read " + file.name + ".]");
+        reader.readAsText(file);
+      });
+      const renderPendingFiles = () => {
+        const wrap = $("#pendingAttachments");
+        wrap.innerHTML = pendingFiles.map((item, index) => '<div class="pending-attachment"><span>' + escapeHtml(item.file.name) + '</span><button type="button" data-remove-file="' + index + '" aria-label="Remove ' + escapeHtml(item.file.name) + '">×</button></div>').join("");
+        wrap.querySelectorAll("[data-remove-file]").forEach((button) => button.addEventListener("click", () => {
+          pendingFiles.splice(Number(button.dataset.removeFile), 1);
+          renderPendingFiles();
+          resizePrompt();
+        }));
+        $("#attachmentNote").textContent = pendingFiles.some((item) => item.file.type.startsWith("image/")) ? "Images can be attached, but GPT-OSS 20B currently processes text only." : "";
+      };
+      const pickFiles = (files) => {
+        for (const file of Array.from(files || [])) {
+          if (pendingFiles.length >= 5) { showToast("Attach up to 5 files per message."); break; }
+          if (file.size > 8 * 1024 * 1024) { showToast(file.name + " is larger than 8 MB."); continue; }
+          if (pendingFiles.some((item) => item.file.name === file.name && item.file.size === file.size)) continue;
+          pendingFiles.push({ file, text: "", preview: file.type.startsWith("image/") ? URL.createObjectURL(file) : "" });
+        }
+        renderPendingFiles();
+        resizePrompt();
+      };
 
       const uid = () => (globalThis.crypto?.randomUUID?.() || String(Date.now()) + Math.random().toString(36).slice(2));
       const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
@@ -237,7 +315,7 @@
       };
       const setBusy = (value) => {
         busy = value;
-        sendButton.disabled = value || !promptBox.value.trim();
+        sendButton.disabled = value || (!promptBox.value.trim() && !pendingFiles.length);
         sendIcon.innerHTML = value
           ? '<path d="M6 6h12v12H6z"/>'
           : '<path d="M12 19V5m-6 6 6-6 6 6"/>';
@@ -285,14 +363,12 @@
       const appendMessage = (message) => {
         const row = document.createElement("article");
         row.className = "message " + message.role;
-        const isUser = message.role === "user";
-        row.innerHTML = `
-          <div class="message-avatar" aria-hidden="true">${isUser ? "Y" : "e"}</div>
-          <div class="message-content">
-            <div class="message-author">${isUser ? "You" : "Elia"}</div>
-            <div class="message-text">${formatText(message.content)}</div>
-          </div>`;
+        const attachmentMarkup = (message.attachments || []).map((attachment) => attachment.image
+          ? '<div class="attachment-chip"><img src="' + escapeHtml(attachment.image) + '" alt=""><span>' + escapeHtml(attachment.name) + '</span></div>'
+          : '<div class="attachment-chip"><span aria-hidden="true">▤</span><span>' + escapeHtml(attachment.name) + '</span></div>').join("");
+        row.innerHTML = '<div class="message-content"><div class="message-text">' + formatText(message.content || "") + '</div>' + (attachmentMarkup ? '<div class="message-attachments">' + attachmentMarkup + '</div>' : '') + '</div>';
         thread.appendChild(row);
+        scrollToLatest();
       };
       const renderChat = () => {
         const conversation = getCurrent();
@@ -307,23 +383,39 @@
         const row = document.createElement("article");
         row.className = "message assistant";
         row.id = "typingIndicator";
-        row.innerHTML = '<div class="message-avatar" aria-hidden="true">e</div><div class="message-content"><div class="message-author">Elia</div><div class="typing" aria-label="Elia is thinking"><span></span><span></span><span></span></div></div>';
+        row.innerHTML = '<div class="message-content"><div class="typing" aria-label="Elia is thinking"><span></span><span></span><span></span></div></div>';
         thread.appendChild(row);
-        requestAnimationFrame(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }));
+        scrollToLatest();
       };
       const resizePrompt = () => {
         promptBox.style.height = "auto";
         promptBox.style.height = Math.min(promptBox.scrollHeight, 180) + "px";
         $("#charCount").textContent = promptBox.value.length.toLocaleString() + " / 12000";
-        sendButton.disabled = busy || !promptBox.value.trim();
+        sendButton.disabled = busy || (!promptBox.value.trim() && !pendingFiles.length);
       };
       const send = async (rawText) => {
         const text = String(rawText || "").trim();
-        if (!text || busy) return;
+        if ((!text && !pendingFiles.length) || busy) return;
         setNotice("");
         if (!currentId || !getCurrent()) newConversation(false);
         const conversation = getCurrent();
-        conversation.messages.push({ role: "user", content: text });
+        const filesToSend = pendingFiles.slice();
+        pendingFiles = [];
+        renderPendingFiles();
+        const attachmentMeta = filesToSend.map((item) => ({ name: item.file.name, image: item.preview || "" }));
+        let promptText = text;
+        for (const item of filesToSend) {
+          if (fileTextExtensions.test(item.file.name) && !item.file.type.startsWith("image/")) {
+            const extracted = await readTextFile(item.file);
+            promptText += (promptText ? "\\n\\n" : "") + "[Attached file: " + item.file.name + "]\\n" + extracted;
+          } else if (item.file.type.startsWith("image/")) {
+            promptText += (promptText ? "\\n\\n" : "") + "[Attached image: " + item.file.name + ". The current model cannot inspect image pixels.]";
+          } else {
+            promptText += (promptText ? "\\n\\n" : "") + "[Attached file: " + item.file.name + " (" + item.file.type + ", " + item.file.size + " bytes). This file type is attached for reference but its contents were not extracted.]";
+          }
+        }
+        if (!promptText.trim()) promptText = "Please review the attached file(s).";
+        conversation.messages.push({ role: "user", content: promptText, displayContent: text, attachments: attachmentMeta });
         conversation.title = titleFor(conversation.messages);
         conversation.updatedAt = Date.now();
         promptBox.value = "";
@@ -361,13 +453,32 @@
         } finally {
           setBusy(false);
           promptBox.focus();
-          requestAnimationFrame(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }));
+          scrollToLatest();
         }
       };
 
       $("#chatForm").addEventListener("submit", (event) => {
         event.preventDefault();
         send(promptBox.value);
+      });
+      $("#attachButton").addEventListener("click", () => {
+        const menu = $("#attachMenu");
+        const open = !menu.classList.contains("open");
+        menu.classList.toggle("open", open);
+        $("#attachButton").setAttribute("aria-expanded", String(open));
+      });
+      document.querySelectorAll("[data-picker]").forEach((button) => button.addEventListener("click", () => {
+        $("#attachMenu").classList.remove("open");
+        $("#attachButton").setAttribute("aria-expanded", "false");
+        (button.dataset.picker === "image" ? $("#imagePicker") : $("#filePicker")).click();
+      }));
+      $("#imagePicker").addEventListener("change", (event) => { pickFiles(event.target.files); event.target.value = ""; });
+      $("#filePicker").addEventListener("change", (event) => { pickFiles(event.target.files); event.target.value = ""; });
+      document.addEventListener("click", (event) => {
+        if (!event.target.closest(".attach-wrap")) {
+          $("#attachMenu").classList.remove("open");
+          $("#attachButton").setAttribute("aria-expanded", "false");
+        }
       });
       promptBox.addEventListener("input", resizePrompt);
       promptBox.addEventListener("keydown", (event) => {
