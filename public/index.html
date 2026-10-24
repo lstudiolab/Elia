@@ -519,6 +519,82 @@
       .attach-button { width: 46px !important; height: 46px !important; min-width: 46px; min-height: 46px; }
     }
 
+
+    /* Conversation library visual refresh: two-column editorial cards, glass controls. */
+    :root { --glass-fill:rgba(255,255,255,.62); --glass-stroke:rgba(255,255,255,.76); }
+    @media(prefers-color-scheme:dark) { :root { --glass-fill:rgba(38,38,40,.58); --glass-stroke:rgba(255,255,255,.12); } }
+    button, .composer, .attach-menu, .toast, .notice, .library-search input {
+      -webkit-backdrop-filter:saturate(180%) blur(24px);
+      backdrop-filter:saturate(180%) blur(24px);
+    }
+    .composer { background:var(--glass-fill)!important;border-color:var(--glass-stroke)!important;box-shadow:0 8px 30px rgba(0,0,0,.075),inset 0 1px 0 rgba(255,255,255,.5)!important; }
+    .attach-button,.send-button,.icon-button,.conversation-back-button,.library-action,.new-chat,.history-item,.suggestion,.conversation-card {
+      -webkit-backdrop-filter:saturate(180%) blur(22px);backdrop-filter:saturate(180%) blur(22px);
+    }
+    .attach-button,.library-action,.conversation-back-button {
+      background:rgba(255,255,255,.66)!important;border:1px solid rgba(255,255,255,.8)!important;
+      box-shadow:0 8px 26px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.8);
+    }
+    @media(prefers-color-scheme:dark) {
+      .attach-button,.library-action,.conversation-back-button { background:rgba(50,50,52,.7)!important;border-color:rgba(255,255,255,.12)!important; }
+    }
+    .conversation-back-button { width:84px!important;height:84px!important;flex-basis:84px!important;border-radius:50%!important;background:rgba(226,226,230,.8)!important; }
+    .conversation-back-button svg { width:32px;height:32px; }
+    .conversation-back-button:hover svg { transform:none; }
+    .conversation-cards {
+      display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;
+      gap:14px 12px!important;overflow-y:auto;max-height:calc(100dvh - 310px)!important;
+      padding:2px 3px 125px!important;scrollbar-width:none;
+    }
+    .conversation-card {
+      display:flex;flex-direction:column;justify-content:flex-start;gap:0;
+      width:100%!important;min-width:0;min-height:245px;padding:15px 14px 17px!important;
+      border:1px solid rgba(110,110,115,.13)!important;border-radius:25px!important;
+      background:rgba(255,255,255,.72)!important;color:var(--ink)!important;
+      box-shadow:0 5px 20px rgba(0,0,0,.035),inset 0 1px 0 rgba(255,255,255,.75)!important;
+      text-align:left;transform:none!important;
+    }
+    .conversation-card:nth-child(4n+1),.conversation-card:nth-child(4n+4) { min-height:275px; }
+    .conversation-card:nth-child(4n+2),.conversation-card:nth-child(4n+3) { min-height:205px; }
+    .conversation-card:hover { transform:translateY(-1px)!important; }
+    .conversation-card-date { display:block;margin:0 0 5px;color:#77777d;font-size:11px;line-height:1.35;font-weight:500;letter-spacing:.1px; }
+    .conversation-card-top { display:flex;align-items:flex-start;gap:8px;font-size:clamp(16px,4.4vw,21px);line-height:1.08;font-weight:680;letter-spacing:-.65px; }
+    .conversation-card-ai { display:none!important; }
+    .conversation-card-title { display:-webkit-box;white-space:normal;overflow:hidden;text-overflow:ellipsis;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow-wrap:anywhere; }
+    .conversation-card-bottom {
+      display:-webkit-box!important;margin-top:auto;padding-top:24px;max-height:5.2em;
+      color:#77777d!important;font-size:12px;line-height:1.4;-webkit-line-clamp:4!important;
+      -webkit-box-orient:vertical;overflow:hidden;
+    }
+    .conversation-card-bottom::after { width:45%;height:1.4em;background:linear-gradient(90deg,transparent,rgba(255,255,255,.78))!important; }
+    .conversation-card.has-image { background:#d8d8dc!important;color:white!important;min-height:245px!important; }
+    .conversation-card.has-image::before { background:linear-gradient(180deg,rgba(0,0,0,.44),rgba(0,0,0,.03) 42%,rgba(0,0,0,.58))!important; }
+    .conversation-card.has-image .conversation-card-date,.conversation-card.has-image .conversation-card-bottom { color:rgba(255,255,255,.9)!important; }
+    .conversation-card.has-image .conversation-card-top { font-size:clamp(16px,4.4vw,21px); }
+    .conversation-card.has-image .conversation-card-bottom::after { background:linear-gradient(90deg,transparent,rgba(0,0,0,.4))!important; }
+    .conversation-library-actions { padding:16px max(44px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(44px,env(safe-area-inset-left))!important; }
+    .library-action { width:104px!important;height:104px!important; }
+    .library-action svg { width:36px;height:36px; }
+    .conversations-page { width:100%;max-width:none;padding:48px 34px 24px!important; }
+    .conversations-heading { margin-bottom:56px!important; }
+    .conversations-heading .eyebrow { font-size:12px;letter-spacing:2px;font-weight:650; }
+    .conversations-heading h2 { font-size:clamp(30px,5vw,40px)!important;letter-spacing:-1.5px!important;margin-top:12px!important; }
+    .conversations-heading p { font-size:15px!important; }
+    @media(max-width:760px) {
+      .topbar { height:90px!important;padding:12px 28px!important; }
+      .conversation-back-button { width:84px!important;height:84px!important; }
+      .conversations-page { padding:52px 34px 20px!important; }
+      .conversations-heading { margin-bottom:58px!important; }
+      .conversation-cards { grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:14px 12px!important;max-height:calc(100dvh - 350px)!important;padding-bottom:130px!important; }
+      .conversation-card { min-height:225px;padding:15px 12px 16px!important;border-radius:25px!important; }
+      .conversation-card:nth-child(4n+1),.conversation-card:nth-child(4n+4) { min-height:260px; }
+      .conversation-card:nth-child(4n+2),.conversation-card:nth-child(4n+3) { min-height:205px; }
+      .conversation-card-top { font-size:clamp(16px,4.5vw,20px); }
+      .conversation-card-bottom { font-size:12px;padding-top:24px; }
+      .conversation-library-actions { padding-left:44px!important;padding-right:44px!important;bottom:calc(28px + env(safe-area-inset-bottom))!important; }
+      .library-action { width:104px!important;height:104px!important; }
+    }
+
   </style>
 </head>
 <body>
@@ -701,9 +777,16 @@
           const image = imageFromMessage(lastAssistant);
           const title = conversation.title || "New conversation";
           const preview = previewFromMessage(lastAssistant);
+          const startedAt = Number(conversation.createdAt || conversation.updatedAt || Date.now());
+          const age = Math.max(0, Date.now() - startedAt);
+          const dayMs = 86400000;
+          const dateLabel = age < 7 * dayMs
+            ? new Intl.DateTimeFormat(undefined, { weekday: "long" }).format(new Date(startedAt))
+            : new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: new Date(startedAt).getFullYear() !== new Date().getFullYear() ? "numeric" : undefined }).format(new Date(startedAt));
           return '<button type="button" class="conversation-card ' + (image ? "has-image" : "") + '" data-conversation-id="' + escapeHtml(conversation.id) + '" title="' + escapeHtml(title) + '">'
             + (image ? '<img class="conversation-card-image" src="' + escapeHtml(image) + '" alt="" loading="lazy">' : '')
-            + '<span class="conversation-card-top"><span class="conversation-card-ai" aria-hidden="true">e</span><span class="conversation-card-title">' + escapeHtml(title) + '</span></span>'
+            + '<span class="conversation-card-date">' + escapeHtml(dateLabel) + '</span>'
+            + '<span class="conversation-card-top"><span class="conversation-card-title">' + escapeHtml(title) + '</span></span>'
             + '<span class="conversation-card-bottom">' + escapeHtml(preview) + '</span></button>';
         }).join("");
         applyConversationSearch();
@@ -727,7 +810,7 @@
         $("#openConversations").setAttribute("aria-label", show ? "Back to chat" : "All conversations");
         $("#openConversations").setAttribute("title", show ? "Back to chat" : "All conversations");
         $("#openConversations").innerHTML = show
-          ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>'
+          ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>'
           : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m7-7-7 7 7 7"/></svg>';
         if (show) {
           renderConversationCards();
