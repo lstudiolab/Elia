@@ -884,6 +884,21 @@
           });
           conversation.updatedAt = Date.now();
           appendMessage(conversation.messages[conversation.messages.length - 1], { animateWords: true });
+          // Generate a concise, semantic title with the dedicated server-side title model.
+          if (conversation.title === "New conversation" || conversation.messages.filter((item) => item.role === "assistant").length === 1) {
+            const titleContext = conversation.messages.slice(0, 4).map((item) => (item.role === "user" ? "User: " : "Elia: ") + String(item.displayContent ?? item.content ?? "")).join("\\n").slice(0, 3000);
+            fetch("/api/title", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ text: titleContext })
+            }).then((titleResponse) => titleResponse.ok ? titleResponse.json() : null).then((titleData) => {
+              if (!titleData?.title) return;
+              conversation.title = titleData.title.slice(0, 60);
+              conversation.updatedAt = Date.now();
+              save();
+              renderHistory();
+            }).catch(() => {});
+          }
           save();
           renderHistory();
         } catch (error) {
