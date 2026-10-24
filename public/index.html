@@ -674,6 +674,32 @@
       .conversation-library-empty { min-height:55vh; }
     }
 
+
+    /* Conversation cards use the same clear, diffused glass treatment as the controls. */
+    .conversation-card {
+      position:relative!important;
+      isolation:isolate;
+      overflow:hidden!important;
+      background:rgba(255,255,255,.48)!important;
+      border:1px solid rgba(255,255,255,.86)!important;
+      -webkit-backdrop-filter:blur(30px) saturate(190%)!important;
+      backdrop-filter:blur(30px) saturate(190%)!important;
+      box-shadow:0 12px 34px rgba(35,45,60,.075),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.28)!important;
+    }
+    .conversation-card:not(.has-image)::before {
+      content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+      background:linear-gradient(135deg,rgba(255,255,255,.54),rgba(245,248,252,.2) 55%,rgba(255,255,255,.38));
+      border-radius:inherit;
+    }
+    .conversation-card:not(.has-image):hover {
+      background:rgba(255,255,255,.58)!important;
+      box-shadow:0 15px 38px rgba(35,45,60,.1),inset 0 1px 0 rgba(255,255,255,.98)!important;
+    }
+    .conversation-card.has-image {
+      border-color:rgba(255,255,255,.48)!important;
+      box-shadow:0 12px 34px rgba(25,30,40,.13),inset 0 1px 0 rgba(255,255,255,.55)!important;
+    }
+
   </style>
 </head>
 <body>
