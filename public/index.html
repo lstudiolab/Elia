@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f7f5">
+  <meta name="description" content="Elia — a calm, personal AI chat experience.">
+  <title>Elia — AI, in your flow</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f7f5;
+      --panel: #ffffff;
+      --panel-soft: #f0f0ec;
+      --ink: #242520;
+      --muted: #85867f;
+      --line: #e8e8e2;
+      --accent: #282923;
+      --accent-ink: #ffffff;
+      --green: #557b5b;
+      --shadow: 0 18px 55px rgba(29, 30, 24, .055);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body { background: var(--bg); color: var(--ink); }
+    button, textarea { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, textarea:focus-visible { outline: 2px solid #8e9d80; outline-offset: 3px; }
+    .app { display: grid; grid-template-columns: 252px minmax(0, 1fr); min-height: 100%; }
+    .sidebar { display: flex; flex-direction: column; min-height: 100vh; padding: 24px 15px 16px; border-right: 1px solid var(--line); background: #f4f4f1; }
+    .brand { display: flex; align-items: center; gap: 10px; padding: 0 10px 28px; }
+    .brand-mark { width: 31px; height: 31px; display: grid; place-items: center; border-radius: 11px; color: white; background: var(--accent); font-size: 18px; font-weight: 650; letter-spacing: -1.5px; }
+    .brand-name { font-size: 19px; letter-spacing: -.7px; font-weight: 650; }
+    .brand-caption { margin-top: 2px; color: var(--muted); font-size: 11px; letter-spacing: .15px; }
+    .new-chat { display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; padding: 12px 14px; border: 1px solid #deded7; border-radius: 12px; background: #fff; cursor: pointer; font-size: 13px; font-weight: 570; transition: background .15s, transform .15s; }
+    .new-chat:hover { background: #fafaf8; transform: translateY(-1px); }
+    .section-label { padding: 25px 10px 10px; color: #9a9b94; font-size: 10px; font-weight: 700; letter-spacing: 1.25px; text-transform: uppercase; }
+    .history { display: flex; flex-direction: column; gap: 3px; overflow-y: auto; }
+    .history-item { display: flex; align-items: center; gap: 9px; width: 100%; padding: 10px; border: 0; border-radius: 9px; background: transparent; text-align: left; cursor: pointer; color: #686961; font-size: 12px; }
+    .history-item:hover, .history-item.active { background: #e9e9e4; color: var(--ink); }
+    .history-item span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; flex: 1; }
+    .history-empty { padding: 7px 10px; color: #a1a199; font-size: 12px; line-height: 1.6; }
+    .sidebar-bottom { margin-top: auto; padding-top: 20px; }
+    .status-card { display: flex; align-items: center; gap: 9px; padding: 12px 10px; border: 1px solid #e6e6df; border-radius: 12px; background: rgba(255,255,255,.6); }
+    .status-dot { width: 7px; height: 7px; flex: 0 0 auto; border-radius: 50%; background: #b2b2a9; }
+    .status-dot.online { background: #6d9b70; box-shadow: 0 0 0 3px rgba(109,155,112,.12); }
+    .status-copy { min-width: 0; }
+    .status-title { font-size: 11px; font-weight: 600; }
+    .status-sub { margin-top: 3px; color: var(--muted); font-size: 10px; overflow-wrap: anywhere; }
+    .main { min-width: 0; min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { height: 70px; flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; border-bottom: 1px solid rgba(232,232,226,.8); }
+    .top-left { display: flex; align-items: center; gap: 12px; }
+    .mobile-brand { display: none; align-items: center; gap: 8px; font-size: 16px; font-weight: 650; }
+    .model-pill { display: flex; align-items: center; gap: 7px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 99px; color: #66675f; background: rgba(255,255,255,.65); font-size: 11px; }
+    .model-spark { color: #777b67; font-size: 13px; }
+    .top-actions { display: flex; align-items: center; gap: 8px; }
+    .icon-button { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid transparent; border-radius: 10px; background: transparent; color: #777870; cursor: pointer; }
+    .icon-button:hover { border-color: var(--line); background: white; color: var(--ink); }
+    .workspace { width: min(100%, 900px); margin: 0 auto; padding: 34px 28px 22px; flex: 1; display: flex; flex-direction: column; }
+    .welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0 55px; animation: appear .45s ease both; }
+    .welcome-mark { width: 54px; height: 54px; display: grid; place-items: center; margin-bottom: 25px; border-radius: 19px; background: #eaeae4; color: #34362d; font-size: 28px; font-weight: 500; letter-spacing: -2px; }
+    .eyebrow { color: #85867d; font-size: 11px; letter-spacing: 1.7px; text-transform: uppercase; font-weight: 650; }
+    h1 { margin: 13px 0 10px; text-align: center; font-size: clamp(29px, 4vw, 42px); letter-spacing: -1.8px; line-height: 1.13; font-weight: 570; }
+    .welcome-copy { max-width: 410px; margin: 0; color: #83847d; text-align: center; font-size: 14px; line-height: 1.7; }
+    .suggestions { width: min(100%, 590px); display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-top: 34px; }
+    .suggestion { display: flex; flex-direction: column; gap: 7px; min-height: 91px; padding: 15px 16px; border: 1px solid #e7e7e1; border-radius: 14px; background: rgba(255,255,255,.7); text-align: left; cursor: pointer; transition: border-color .15s, transform .15s, box-shadow .15s; }
+    .suggestion:hover { border-color: #d3d3ca; transform: translateY(-2px); box-shadow: var(--shadow); }
+    .suggestion-title { font-size: 12px; font-weight: 630; }
+    .suggestion-desc { color: #85867f; font-size: 11px; line-height: 1.5; }
+    .thread { display: none; flex-direction: column; gap: 26px; padding: 14px 0 34px; }
+    .thread.visible { display: flex; }
+    .message { display: grid; grid-template-columns: 30px minmax(0,1fr); gap: 13px; animation: appear .25s ease both; }
+    .message-avatar { width: 29px; height: 29px; display: grid; place-items: center; border-radius: 10px; background: #e9e9e3; color: #414238; font-size: 13px; font-weight: 650; }
+    .message.user .message-avatar { background: #dfe5da; color: #405341; }
+    .message-content { min-width: 0; padding-top: 3px; }
+    .message-author { margin-bottom: 8px; font-size: 11px; font-weight: 650; color: #77786f; }
+    .message-text { color: #33342e; font-size: 14px; line-height: 1.8; overflow-wrap: anywhere; white-space: pre-wrap; }
+    .message-text code { padding: 2px 5px; border-radius: 5px; background: #efefea; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9em; }
+    .message-text pre { max-width: 100%; overflow-x: auto; padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: #f3f3ef; white-space: pre; }
+    .message-text pre code { padding: 0; background: transparent; }
+    .message-text strong { font-weight: 650; }
+    .typing { display: inline-flex; gap: 4px; align-items: center; padding: 7px 0; }
+    .typing span { width: 5px; height: 5px; border-radius: 50%; background: #9a9b91; animation: pulse 1.1s infinite ease-in-out; }
+    .typing span:nth-child(2) { animation-delay: .15s; } .typing span:nth-child(3) { animation-delay: .3s; }
+    .composer-wrap { position: sticky; bottom: 0; padding-top: 12px; background: linear-gradient(180deg, rgba(247,247,245,0), var(--bg) 22%); }
+    .composer { position: relative; display: flex; align-items: flex-end; gap: 12px; padding: 14px 14px 12px 18px; border: 1px solid #e3e3dc; border-radius: 18px; background: white; box-shadow: 0 9px 28px rgba(40,40,30,.045); transition: border-color .15s, box-shadow .15s; }
+    .composer:focus-within { border-color: #cecec4; box-shadow: 0 10px 32px rgba(40,40,30,.07); }
+    #prompt { width: 100%; min-height: 28px; max-height: 180px; resize: none; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 14px; line-height: 1.6; padding: 2px 0; }
+    #prompt::placeholder { color: #a0a198; }
+    .send-button { display: grid; place-items: center; width: 35px; height: 35px; flex: 0 0 auto; border: 0; border-radius: 11px; background: var(--accent); color: white; cursor: pointer; transition: opacity .15s, transform .15s; }
+    .send-button:hover { transform: translateY(-1px); }
+    .send-button:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+    .composer-meta { display: flex; align-items: center; justify-content: space-between; padding: 11px 4px 0; color: #a0a198; font-size: 10px; }
+    .composer-meta strong { font-weight: 550; color: #85867d; }
+    .notice { display: none; margin: 0 0 12px; padding: 11px 13px; border: 1px solid #ead8ce; border-radius: 10px; color: #805442; background: #fff8f4; font-size: 12px; line-height: 1.5; }
+    .notice.visible { display: block; }
+    .footer-note { padding: 14px 0 0; color: #a2a39b; text-align: center; font-size: 10px; }
+    .toast { position: fixed; left: 50%; bottom: 26px; z-index: 5; transform: translate(-50%, 12px); opacity: 0; pointer-events: none; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: white; box-shadow: var(--shadow); font-size: 12px; transition: opacity .2s, transform .2s; }
+    .toast.visible { opacity: 1; transform: translate(-50%, 0); }
+    @keyframes appear { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%, 60%, 100% { opacity: .35; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+    @media (min-width: 1200px) { .workspace { padding-top: 42px; } }
+    @media (max-width: 760px) {
+      .app { display: block; }
+      .sidebar { display: none; }
+      .main { min-height: 100dvh; }
+      .topbar { height: 60px; padding: 0 17px; }
+      .mobile-brand { display: flex; }
+      .mobile-brand .brand-mark { width: 27px; height: 27px; border-radius: 9px; font-size: 16px; }
+      .model-pill { padding: 6px 8px; font-size: 10px; }
+      .top-actions .desktop-only { display: none; }
+      .workspace { padding: 18px 17px max(14px, env(safe-area-inset-bottom)); }
+      .welcome { padding: 44px 0 48px; }
+      .welcome-mark { margin-bottom: 20px; }
+      h1 { letter-spacing: -1.3px; }
+      .welcome-copy { font-size: 13px; }
+      .suggestions { gap: 8px; margin-top: 27px; }
+      .suggestion { min-height: 93px; padding: 13px; }
+      .thread { gap: 23px; padding-top: 10px; }
+      .message { grid-template-columns: 27px minmax(0,1fr); gap: 10px; }
+      .message-avatar { width: 27px; height: 27px; }
+      .message-text { font-size: 13px; }
+      .composer { padding: 12px 11px 10px 14px; border-radius: 16px; gap: 8px; }
+      #prompt { font-size: 16px; }
+      .composer-meta { font-size: 9px; }
+    }
+    @media (max-width: 390px) {
+      .suggestions { grid-template-columns: 1fr; }
+      .suggestion { min-height: 72px; }
+      .model-pill .model-name { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="Conversation sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">e</div>
+        <div><div class="brand-name">elia</div><div class="brand-caption">A little space to think</div></div>
+      </div>
+      <button class="new-chat" id="newChat"><span aria-hidden="true">＋</span> New conversation</button>
+      <div class="section-label">Recent conversations</div>
+      <div class="history" id="history"><div class="history-empty">Your conversations will appear here.</div></div>
+      <div class="sidebar-bottom">
+        <div class="status-card">
+          <span class="status-dot" id="statusDot"></span>
+          <div class="status-copy"><div class="status-title" id="statusTitle">Checking connection…</div><div class="status-sub" id="statusSub">Connecting to Elia</div></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="top-left">
+          <div class="mobile-brand"><div class="brand-mark">e</div><span>elia</span></div>
+          <div class="model-pill"><span class="model-spark">✳</span><span class="model-name" id="modelName">Groq AI</span><span aria-hidden="true">⌄</span></div>
+        </div>
+        <div class="top-actions">
+          <button class="icon-button desktop-only" id="exportChat" title="Export conversation" aria-label="Export conversation">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3v12m-4-4 4 4 4-4M5 17v3h14v-3"/></svg>
+          </button>
+          <button class="icon-button" id="clearChat" title="Clear current conversation" aria-label="Clear current conversation">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <section class="workspace">
+        <section class="welcome" id="welcome">
+          <div class="welcome-mark" aria-hidden="true">e</div>
+          <div class="eyebrow">Your thinking companion</div>
+          <h1>What can I help you<br>with today?</h1>
+          <p class="welcome-copy">A question, a half-formed idea, a problem to solve. Start wherever you are.</p>
+          <div class="suggestions">
+            <button class="suggestion" data-prompt="Help me turn an idea into a clear plan."><span class="suggestion-title">Make a plan</span><span class="suggestion-desc">Turn a big idea into small, doable steps.</span></button>
+            <button class="suggestion" data-prompt="Teach me something interesting in a way that is easy to understand."><span class="suggestion-title">Learn something</span><span class="suggestion-desc">Explore a topic, one clear idea at a time.</span></button>
+            <button class="suggestion" data-prompt="Help me write something. Ask me what it is for if you need to."><span class="suggestion-title">Write together</span><span class="suggestion-desc">Find the right words for what you mean.</span></button>
+            <button class="suggestion" data-prompt="Give me three unusual ideas for a small project I could build."><span class="suggestion-title">Find inspiration</span><span class="suggestion-desc">Get a fresh perspective or a new direction.</span></button>
+          </div>
+        </section>
+
+        <section class="thread" id="thread" aria-live="polite" aria-label="Chat messages"></section>
+        <div class="composer-wrap">
+          <div class="notice" id="notice" role="alert"></div>
+          <form id="chatForm">
+            <div class="composer">
+              <textarea id="prompt" rows="1" maxlength="12000" placeholder="Message Elia…" aria-label="Message Elia"></textarea>
+              <button class="send-button" id="sendButton" type="submit" aria-label="Send message" disabled>
+                <svg id="sendIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 19V5m-6 6 6-6 6 6"/></svg>
+              </button>
+            </div>
+            <div class="composer-meta"><span>Press <strong>Enter</strong> to send · <strong>Shift + Enter</strong> for a new line</span><span id="charCount">0 / 12000</span></div>
+          </form>
+          <div class="footer-note">Elia can make mistakes. Check important information.</div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    (() => {
+      const $ = (selector) => document.querySelector(selector);
+      const welcome = $("#welcome");
+      const thread = $("#thread");
+      const promptBox = $("#prompt");
+      const sendButton = $("#sendButton");
+      const sendIcon = $("#sendIcon");
+      const notice = $("#notice");
+      const historyBox = $("#history");
+      const STORAGE_KEY = "elia-chat-v1";
+      let conversations = [];
+      let currentId = null;
+      let busy = false;
+      let health = { configured: false, model: "Groq AI" };
+      let toastTimer;
+
+      const uid = () => (globalThis.crypto?.randomUUID?.() || String(Date.now()) + Math.random().toString(36).slice(2));
+      const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+      const getCurrent = () => conversations.find((item) => item.id === currentId);
+      const save = () => {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations.slice(0, 30))); }
+        catch { showToast("Could not save chat history on this device."); }
+      };
+      const showToast = (text) => {
+        const toast = $("#toast");
+        toast.textContent = text;
+        toast.classList.add("visible");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("visible"), 2200);
+      };
+      const setNotice = (text) => {
+        notice.textContent = text || "";
+        notice.classList.toggle("visible", Boolean(text));
+      };
+      const setBusy = (value) => {
+        busy = value;
+        sendButton.disabled = value || !promptBox.value.trim();
+        sendIcon.innerHTML = value
+          ? '<path d="M6 6h12v12H6z"/>'
+          : '<path d="M12 19V5m-6 6 6-6 6 6"/>';
+        sendButton.setAttribute("aria-label", value ? "Waiting for response" : "Send message");
+      };
+      const titleFor = (messages) => {
+        const first = messages.find((message) => message.role === "user");
+        if (!first) return "New conversation";
+        const title = first.content.replace(/\s+/g, " ").trim();
+        return title.length > 32 ? title.slice(0, 32).trim() + "…" : title;
+      };
+      const newConversation = (focus = true) => {
+        currentId = uid();
+        conversations.unshift({ id: currentId, title: "New conversation", messages: [], updatedAt: Date.now() });
+        renderHistory();
+        renderChat();
+        save();
+        if (focus) promptBox.focus();
+      };
+      const renderHistory = () => {
+        if (!conversations.length) {
+          historyBox.innerHTML = '<div class="history-empty">Your conversations will appear here.</div>';
+          return;
+        }
+        historyBox.innerHTML = conversations.slice(0, 20).map((conversation) => `
+          <button class="history-item ${conversation.id === currentId ? "active" : ""}" data-id="${escapeHtml(conversation.id)}" title="${escapeHtml(conversation.title)}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5 8 8 0 0 1-3.6-.85L4 20l1.85-4.9A7.5 7.5 0 1 1 20 11.5Z"/></svg>
+            <span>${escapeHtml(conversation.title)}</span>
+          </button>`).join("");
+        historyBox.querySelectorAll("[data-id]").forEach((button) => button.addEventListener("click", () => {
+          if (busy) return showToast("Wait for the current response to finish.");
+          currentId = button.dataset.id;
+          renderHistory();
+          renderChat();
+        }));
+      };
+      const formatText = (text) => {
+        const escaped = escapeHtml(text);
+        return escaped
+          .replace(/```([\s\S]*?)```/g, (_, code) => '<pre><code>' + code.trim() + '</code></pre>')
+          .replace(/`([^`\n]+)`/g, "<code>$1</code>")
+          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+          .replace(/\n/g, "<br>");
+      };
+      const appendMessage = (message) => {
+        const row = document.createElement("article");
+        row.className = "message " + message.role;
+        const isUser = message.role === "user";
+        row.innerHTML = `
+          <div class="message-avatar" aria-hidden="true">${isUser ? "Y" : "e"}</div>
+          <div class="message-content">
+            <div class="message-author">${isUser ? "You" : "Elia"}</div>
+            <div class="message-text">${formatText(message.content)}</div>
+          </div>`;
+        thread.appendChild(row);
+      };
+      const renderChat = () => {
+        const conversation = getCurrent();
+        const messages = conversation?.messages || [];
+        welcome.style.display = messages.length ? "none" : "flex";
+        thread.classList.toggle("visible", Boolean(messages.length));
+        thread.innerHTML = "";
+        messages.forEach(appendMessage);
+        if (messages.length) requestAnimationFrame(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }));
+      };
+      const addTyping = () => {
+        const row = document.createElement("article");
+        row.className = "message assistant";
+        row.id = "typingIndicator";
+        row.innerHTML = '<div class="message-avatar" aria-hidden="true">e</div><div class="message-content"><div class="message-author">Elia</div><div class="typing" aria-label="Elia is thinking"><span></span><span></span><span></span></div></div>';
+        thread.appendChild(row);
+        requestAnimationFrame(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }));
+      };
+      const resizePrompt = () => {
+        promptBox.style.height = "auto";
+        promptBox.style.height = Math.min(promptBox.scrollHeight, 180) + "px";
+        $("#charCount").textContent = promptBox.value.length.toLocaleString() + " / 12000";
+        sendButton.disabled = busy || !promptBox.value.trim();
+      };
+      const send = async (rawText) => {
+        const text = String(rawText || "").trim();
+        if (!text || busy) return;
+        setNotice("");
+        if (!currentId || !getCurrent()) newConversation(false);
+        const conversation = getCurrent();
+        conversation.messages.push({ role: "user", content: text });
+        conversation.title = titleFor(conversation.messages);
+        conversation.updatedAt = Date.now();
+        promptBox.value = "";
+        resizePrompt();
+        welcome.style.display = "none";
+        thread.classList.add("visible");
+        appendMessage(conversation.messages[conversation.messages.length - 1]);
+        addTyping();
+        renderHistory();
+        save();
+        setBusy(true);
+
+        try {
+          const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messages: conversation.messages.map(({ role, content }) => ({ role, content })) })
+          });
+          const data = await response.json().catch(() => ({}));
+          $("#typingIndicator")?.remove();
+          if (!response.ok) throw new Error(data.error || "Something went wrong. Please try again.");
+          conversation.messages.push({ role: "assistant", content: data.reply });
+          conversation.updatedAt = Date.now();
+          health.model = data.model || health.model;
+          $("#modelName").textContent = health.model.replace(/-versatile$/, "").replace(/-/g, " ");
+          appendMessage(conversation.messages[conversation.messages.length - 1]);
+          save();
+          renderHistory();
+        } catch (error) {
+          $("#typingIndicator")?.remove();
+          setNotice(error.message || "Could not reach Elia. Check your connection and try again.");
+          if (conversation.messages.at(-1)?.role === "user") {
+            // Keep the user message in history so it can be retried or copied.
+          }
+        } finally {
+          setBusy(false);
+          promptBox.focus();
+          requestAnimationFrame(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }));
+        }
+      };
+
+      $("#chatForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+        send(promptBox.value);
+      });
+      promptBox.addEventListener("input", resizePrompt);
+      promptBox.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+          event.preventDefault();
+          if (!busy) send(promptBox.value);
+        }
+      });
+      $("#newChat").addEventListener("click", () => {
+        if (busy) return showToast("Wait for the current response to finish.");
+        newConversation();
+      });
+      document.querySelectorAll("[data-prompt]").forEach((button) => button.addEventListener("click", () => {
+        promptBox.value = button.dataset.prompt;
+        resizePrompt();
+        promptBox.focus();
+      }));
+      $("#clearChat").addEventListener("click", () => {
+        if (busy) return showToast("Wait for the current response to finish.");
+        const conversation = getCurrent();
+        if (!conversation || !conversation.messages.length) return showToast("This conversation is already empty.");
+        conversation.messages = [];
+        conversation.title = "New conversation";
+        conversation.updatedAt = Date.now();
+        renderChat(); renderHistory(); save(); setNotice("");
+        showToast("Conversation cleared.");
+      });
+      $("#exportChat").addEventListener("click", () => {
+        const conversation = getCurrent();
+        if (!conversation?.messages.length) return showToast("There is no conversation to export yet.");
+        const content = conversation.messages.map((message) => (message.role === "user" ? "You" : "Elia") + "\n" + message.content).join("\n\n---\n\n");
+        const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url; anchor.download = (conversation.title || "elia-conversation").replace(/[^a-z0-9-]/gi, "-").toLowerCase() + ".txt";
+        anchor.click(); URL.revokeObjectURL(url);
+      });
+
+      try {
+        const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        if (Array.isArray(stored)) conversations = stored.filter((item) => item && typeof item.id === "string" && Array.isArray(item.messages)).slice(0, 30);
+      } catch { conversations = []; }
+      if (conversations.length) {
+        currentId = conversations[0].id;
+        renderHistory(); renderChat();
+      } else {
+        newConversation(false);
+      }
+      resizePrompt();
+      fetch("/api/health").then((response) => response.json()).then((data) => {
+        health = data;
+        $("#statusDot").classList.toggle("online", Boolean(data.ok && data.configured));
+        $("#statusTitle").textContent = data.configured ? "Ready to chat" : "API key not configured";
+        $("#statusSub").textContent = data.configured ? "Connected through a secure server" : "Add GROQ_API_KEY in Render";
+        $("#modelName").textContent = (data.model || "Groq AI").replace(/-versatile$/, "").replace(/-/g, " ");
+      }).catch(() => {
+        $("#statusTitle").textContent = "Connection unavailable";
+        $("#statusSub").textContent = "Check the server and try again";
+      });
+    })();
+  </script>
+</body>
+</html>
