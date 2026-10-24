@@ -955,6 +955,69 @@
       .library-action svg { width:22px!important;height:22px!important; }
     }
 
+  
+    /* Override earlier experimental library styles with one consistent mobile layout. */
+    #conversationLibraryActions { display:none!important; }
+    body.conversation-library-open #conversationLibraryActions {
+      position:fixed!important; inset:auto 0 0 0!important; z-index:50!important;
+      display:flex!important; align-items:center!important; justify-content:space-between!important;
+      width:100%!important; box-sizing:border-box!important;
+      padding:12px 22px max(12px,env(safe-area-inset-bottom))!important;
+      pointer-events:none!important;
+      background:linear-gradient(180deg,transparent,rgba(248,249,251,.92) 32%,#f8f9fb 100%)!important;
+    }
+    body.conversation-library-open .composer-dock { display:none!important; }
+    #openConversations {
+      width:42px!important; height:42px!important; min-width:42px!important;
+      min-height:42px!important; flex:0 0 42px!important; padding:0!important;
+      border-radius:50%!important;
+    }
+    #openConversations svg { width:22px!important;height:22px!important; }
+    #searchConversationsButton,#libraryNewConversationButton {
+      display:grid!important; place-items:center!important; pointer-events:auto!important;
+      width:52px!important;height:52px!important;min-width:52px!important;
+      min-height:52px!important;flex:0 0 52px!important;padding:0!important;
+      border-radius:50%!important;
+    }
+    #searchConversationsButton svg,#libraryNewConversationButton svg { width:23px!important;height:23px!important; }
+    #conversationsPage {
+      box-sizing:border-box!important;width:100%!important;max-width:900px!important;
+      min-height:calc(100dvh - 64px)!important;margin:0 auto!important;
+      padding:12px 16px 92px!important;
+    }
+    #conversationCards {
+      display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+      align-items:stretch!important;gap:10px!important;
+      max-height:calc(100dvh - 170px)!important;overflow-y:auto!important;
+      padding:2px 2px 88px!important;scrollbar-width:none!important;
+    }
+    #conversationCards .conversation-card,
+    #conversationCards .conversation-card:nth-child(n) {
+      box-sizing:border-box!important;width:100%!important;min-width:0!important;
+      min-height:150px!important;height:auto!important;padding:13px 12px!important;
+      border-radius:19px!important;transform:none!important;
+    }
+    #conversationCards .conversation-card-top { font-size:15px!important;line-height:1.2!important; }
+    #conversationCards .conversation-card-bottom { padding-top:14px!important;font-size:11px!important;line-height:1.45!important; }
+    #conversationCards:has(.conversation-library-empty) {
+      display:flex!important;align-items:center!important;justify-content:center!important;
+      min-height:calc(100dvh - 150px)!important;max-height:none!important;padding:0 0 50px!important;
+    }
+    #conversationCards .conversation-library-empty { min-height:0!important;width:100%!important;height:auto!important; }
+    #conversationCards .conversation-library-empty-logo {
+      font-size:clamp(84px,24vw,120px)!important;line-height:1!important;
+    }
+    @media(max-width:760px) {
+      .topbar { height:62px!important;min-height:62px!important;padding:8px 16px!important; }
+      #conversationsPage { padding:8px 16px 92px!important; }
+      #conversationCards { max-height:calc(100dvh - 150px)!important; }
+    }
+    @media(max-width:390px) {
+      body.conversation-library-open #conversationLibraryActions { padding-left:18px!important;padding-right:18px!important; }
+      #openConversations { width:40px!important;height:40px!important;min-width:40px!important;flex-basis:40px!important; }
+      #searchConversationsButton,#libraryNewConversationButton { width:48px!important;height:48px!important;min-width:48px!important;flex-basis:48px!important; }
+    }
+
   </style>
 </head>
 <body>
