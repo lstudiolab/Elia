@@ -385,7 +385,8 @@
       const resizePrompt = () => {
         promptBox.style.height = "auto";
         promptBox.style.height = Math.min(promptBox.scrollHeight, 180) + "px";
-        $("#charCount").textContent = promptBox.value.length.toLocaleString() + " / 12000";
+        const charCount = $("#charCount");
+        if (charCount) charCount.textContent = promptBox.value.length.toLocaleString() + " / 12000";
         sendButton.disabled = busy || (!promptBox.value.trim() && !pendingFiles.length);
       };
       const send = async (rawText) => {
