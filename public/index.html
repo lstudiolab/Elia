@@ -407,9 +407,9 @@
         for (const item of filesToSend) {
           if (fileTextExtensions.test(item.file.name) && !item.file.type.startsWith("image/")) {
             const extracted = await readTextFile(item.file);
-            promptText += (promptText ? "\n\n" : "") + "[Attached file: " + item.file.name + "]\\n" + extracted;
+            promptText += (promptText ? "\n\n" : "") + "[Attached file: " + item.file.name + "]\n" + extracted;
           } else if (item.file.type.startsWith("image/")) {
-            promptText += (promptText ? "\\n\\n" : "") + "[Attached image: " + item.file.name + ". The current model cannot inspect image pixels.]";
+            promptText += (promptText ? "\n\n" : "") + "[Attached image: " + item.file.name + ". The current model cannot inspect image pixels.]";
           } else {
             promptText += (promptText ? "\\n\\n" : "") + "[Attached file: " + item.file.name + " (" + item.file.type + ", " + item.file.size + " bytes). This file type is attached for reference but its contents were not extracted.]";
           }
