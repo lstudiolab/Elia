@@ -20,6 +20,46 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
+// Feedback is tracked per response for this running service instance.
+// The minute heartbeat is deliberately emitted even when no feedback has been received.
+const feedbackByMessage = new Map();
+const feedbackTotals = { up: 0, down: 0 };
+
+setInterval(() => {
+  console.log("[feedback heartbeat] " + JSON.stringify({
+    timestamp: new Date().toISOString(),
+    total: feedbackByMessage.size,
+    thumbsUp: feedbackTotals.up,
+    thumbsDown: feedbackTotals.down
+  }));
+}, 60_000).unref();
+
+app.post("/api/feedback", (req, res) => {
+  res.set("Cache-Control", "no-store");
+  const messageId = typeof req.body?.messageId === "string" ? req.body.messageId.slice(0, 160) : "";
+  const vote = req.body?.vote;
+  if (!messageId || !["up", "down"].includes(vote)) {
+    return res.status(400).json({ error: "A message ID and valid feedback vote are required." });
+  }
+
+  const previous = feedbackByMessage.get(messageId);
+  if (previous === vote) return res.json({ ok: true, ...getFeedbackSummary() });
+  if (previous) feedbackTotals[previous] -= 1;
+  feedbackByMessage.set(messageId, vote);
+  feedbackTotals[vote] += 1;
+  console.log("[feedback received] " + JSON.stringify({ messageId, vote, ...getFeedbackSummary() }));
+  return res.json({ ok: true, ...getFeedbackSummary() });
+});
+
+app.get("/api/feedback/summary", (_req, res) => {
+  res.set("Cache-Control", "no-store");
+  res.json({ ok: true, ...getFeedbackSummary() });
+});
+
+function getFeedbackSummary() {
+  return { total: feedbackByMessage.size, thumbsUp: feedbackTotals.up, thumbsDown: feedbackTotals.down };
+}
+
 app.post("/api/chat", async (req, res) => {
   res.set("Cache-Control", "no-store");
   const apiKey = process.env.GROQ_API_KEY;
