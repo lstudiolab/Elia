@@ -1,4 +1,5 @@
 import express from "express";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -73,7 +74,7 @@ app.post("/api/chat", async (req, res) => {
   }
 
   const messages = incoming.map((message) => {
-    const role = ["user", "assistant", "system"].includes(message?.role) ? message.role : "user";
+    const role = ["user", "assistant"].includes(message?.role) ? message.role : "user";
     return { role, content: String(message?.content ?? "").slice(0, 12000) };
   }).filter((message) => message.content.trim());
 
@@ -83,6 +84,12 @@ app.post("/api/chat", async (req, res) => {
 
   const requestStartedAt = Date.now();
   try {
+    const systemPrompt = (await readFile(path.join(root, "systempromt.md"), "utf8")).trim();
+    if (!systemPrompt) {
+      return res.status(500).json({ error: "Elia's system instructions are empty. Check systempromt.md." });
+    }
+    const groqMessages = [{ role: "system", content: systemPrompt }, ...messages.filter((message) => message.role !== "system")];
+
     const upstream = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -91,7 +98,7 @@ app.post("/api/chat", async (req, res) => {
       },
       body: JSON.stringify({
         model: process.env.GROQ_MODEL || defaultModel,
-        messages,
+        messages: groqMessages,
         temperature: 0.7,
         stream: false
       }),
