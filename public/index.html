@@ -455,6 +455,38 @@
 .conversation-card.has-image .conversation-card-bottom::after { background:linear-gradient(90deg,transparent,rgba(0,0,0,.58)); }
 .conversation-card-empty { padding:30px 10px;color:var(--muted);text-align:center;font-size:14px; }
 @media(max-width:760px){.conversations-page{min-height:calc(100dvh - 60px);padding:26px 17px 45px}.conversations-heading{align-items:flex-start;flex-direction:column}.conversations-new-chat{width:100%}.conversation-cards{max-height:calc(100dvh - 260px);gap:12px}.conversation-card{min-height:142px;padding:18px;border-radius:25px}.conversation-card:nth-child(even){transform:translateX(5px);width:calc(100% - 5px)}.conversation-card:nth-child(even):hover{transform:translate(5px,-2px)}}
+  
+    /* Final interaction and layout corrections */
+    .topbar { position: sticky; top: 0; z-index: 10; justify-content: flex-start; padding-left: 20px; padding-right: 20px; }
+    .topbar .top-actions { display: none; }
+    .topbar .mobile-brand { display: none !important; }
+    .topbar .top-left { width: 100%; justify-content: flex-start; }
+    .conversation-back-button { flex: 0 0 42px; width: 42px !important; height: 42px !important; border-radius: 50% !important; background: var(--panel); border: 1px solid var(--line); color: var(--ink); }
+    .welcome { flex: 1; min-height: min(58vh, 620px); align-items: center; justify-content: center; padding: 0; }
+    .welcome-mark { width: auto !important; height: auto !important; margin: 0 !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; color: color-mix(in srgb, var(--ink) 16%, transparent) !important; font-size: clamp(100px, 22vw, 190px) !important; line-height: .9; letter-spacing: -0.1em !important; font-weight: 650 !important; user-select: none; }
+    .composer-inner { align-items: center !important; gap: 10px !important; padding-left: 0 !important; }
+    .attach-wrap { align-self: center !important; display: flex; align-items: center; }
+    .attach-button { width: 46px !important; height: 46px !important; min-width: 46px; min-height: 46px; padding: 0; display: grid; place-items: center; }
+    .composer { min-height: 46px !important; height: 46px !important; align-items: center !important; padding: 0 7px 0 17px !important; gap: 9px !important; }
+    #chatForm { display: flex; flex: 1; align-items: center; min-width: 0; }
+    #prompt { height: 24px; min-height: 24px; max-height: 24px; align-self: center; margin: 0; padding: 2px 0; overflow-y: auto; }
+    .send-button { align-self: center; flex: 0 0 34px; }
+    .composer-dock { z-index: 12; }
+    @media (max-width: 760px) {
+      .topbar { height: 60px; padding-left: 14px; padding-right: 14px; }
+      .conversation-back-button { width: 42px !important; height: 42px !important; }
+      .composer-inner { gap: 10px !important; }
+      .attach-button { width: 46px !important; height: 46px !important; min-width: 46px; min-height: 46px; }
+      .composer { height: 46px !important; min-height: 46px !important; }
+      #prompt { font-size: 16px; }
+      .welcome { min-height: calc(100dvh - 230px); }
+    }
+    @media (max-width: 390px) {
+      .composer-dock { padding-left: 14px; padding-right: 14px; }
+      .composer-inner { gap: 8px !important; }
+      .attach-button { width: 46px !important; height: 46px !important; min-width: 46px; min-height: 46px; }
+    }
+
   </style>
 </head>
 <body>
@@ -484,21 +516,10 @@
     </aside>
 
     <main class="main">
-      <header class="topbar"><div class="top-left"><div class="mobile-brand"><span class="brand-mark" aria-hidden="true">e</span><span>elia</span></div></div><div class="top-actions"><button class="icon-button conversation-back-button" id="openConversations" type="button" aria-label="All conversations" title="All conversations"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m7-7-7 7 7 7"/></svg></button></div></header>
+      <header class="topbar"><div class="top-left"><button class="icon-button conversation-back-button" id="openConversations" type="button" aria-label="All conversations" title="All conversations"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m7-7-7 7 7 7"/></svg></button></div></header>
       <section class="conversations-page" id="conversationsPage" hidden><div class="conversations-heading"><div><div class="eyebrow">Your space</div><h2>Conversations</h2><p>Pick up where you left off.</p></div><button class="new-chat conversations-new-chat" id="conversationsNewChat" type="button"><span aria-hidden="true">＋</span> New conversation</button></div><div class="conversation-cards" id="conversationCards" aria-label="All conversations"></div></section>
       <section class="workspace" id="chatWorkspace">
-        <section class="welcome" id="welcome">
-          <div class="welcome-mark" aria-hidden="true">e</div>
-          <div class="eyebrow">Your thinking companion</div>
-          <h1>What can I help you<br>with today?</h1>
-          <p class="welcome-copy">A question, a half-formed idea, a problem to solve. Start wherever you are.</p>
-          <div class="suggestions">
-            <button class="suggestion" data-prompt="Help me turn an idea into a clear plan."><span class="suggestion-title">Make a plan</span><span class="suggestion-desc">Turn a big idea into small, doable steps.</span></button>
-            <button class="suggestion" data-prompt="Teach me something interesting in a way that is easy to understand."><span class="suggestion-title">Learn something</span><span class="suggestion-desc">Explore a topic, one clear idea at a time.</span></button>
-            <button class="suggestion" data-prompt="Help me write something. Ask me what it is for if you need to."><span class="suggestion-title">Write together</span><span class="suggestion-desc">Find the right words for what you mean.</span></button>
-            <button class="suggestion" data-prompt="Give me three unusual ideas for a small project I could build."><span class="suggestion-title">Find inspiration</span><span class="suggestion-desc">Get a fresh perspective or a new direction.</span></button>
-          </div>
-        </section>
+        <section class="welcome" id="welcome"><div class="welcome-mark" aria-hidden="true">E</div></section>
 
         <section class="thread" id="thread" aria-live="polite" aria-label="Chat messages"></section>
       </section>
@@ -629,13 +650,13 @@
         if (!message) return "";
         const attachment = (message.attachments || []).find((item) => item.image);
         if (attachment && attachment.image) return attachment.image;
-        const match = String(message.content || "").match(/!\\[[^\\]]*\\]\\((https?:\\/\\/[^\\s)]+)\\)/i);
+        const match = String(message.content || "").match(/!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)/i);
         return match ? match[1] : "";
       };
       const previewFromMessage = (message) => {
         if (!message) return "No assistant response yet";
         if (imageFromMessage(message)) return "Image from Elia";
-        return String(message.displayContent ?? message.content ?? "").replace(/!\\[[^\\]]*\\]\\([^)]*\\)/g, "[Image]").replace(/[ #>*_]/g, "").replace(/\\s+/g, " ").trim() || "No text preview";
+        return String(message.displayContent ?? message.content ?? "").replace(/!\[[^\]]*\]\([^)]*\)/g, "[Image]").replace(/[ #>*_]/g, "").replace(/\\s+/g, " ").trim() || "No text preview";
       };
       const renderConversationCards = () => {
         const cards = $("#conversationCards");
