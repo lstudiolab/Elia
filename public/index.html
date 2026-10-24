@@ -366,7 +366,7 @@
         const attachmentMarkup = (message.attachments || []).map((attachment) => attachment.image
           ? '<div class="attachment-chip"><img src="' + escapeHtml(attachment.image) + '" alt=""><span>' + escapeHtml(attachment.name) + '</span></div>'
           : '<div class="attachment-chip"><span aria-hidden="true">▤</span><span>' + escapeHtml(attachment.name) + '</span></div>').join("");
-        row.innerHTML = '<div class="message-content"><div class="message-text">' + formatText(message.content || "") + '</div>' + (attachmentMarkup ? '<div class="message-attachments">' + attachmentMarkup + '</div>' : '') + '</div>';
+        row.innerHTML = '<div class="message-content"><div class="message-text">' + formatText(message.displayContent ?? message.content ?? "") + '</div>' + (attachmentMarkup ? '<div class="message-attachments">' + attachmentMarkup + '</div>' : '') + '</div>';
         thread.appendChild(row);
         scrollToLatest();
       };
@@ -407,7 +407,7 @@
         for (const item of filesToSend) {
           if (fileTextExtensions.test(item.file.name) && !item.file.type.startsWith("image/")) {
             const extracted = await readTextFile(item.file);
-            promptText += (promptText ? "\\n\\n" : "") + "[Attached file: " + item.file.name + "]\\n" + extracted;
+            promptText += (promptText ? "\n\n" : "") + "[Attached file: " + item.file.name + "]\\n" + extracted;
           } else if (item.file.type.startsWith("image/")) {
             promptText += (promptText ? "\\n\\n" : "") + "[Attached image: " + item.file.name + ". The current model cannot inspect image pixels.]";
           } else {
