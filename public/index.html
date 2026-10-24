@@ -750,7 +750,7 @@
       };
       const newConversation = (focus = true) => {
         currentId = uid();
-        conversations.unshift({ id: currentId, title: "New conversation", messages: [], updatedAt: Date.now() });
+        conversations.unshift({ id: currentId, title: "New conversation", messages: [], createdAt: Date.now(), updatedAt: Date.now() });
         renderHistory();
         renderChat();
         save();
