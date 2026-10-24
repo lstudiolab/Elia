@@ -333,6 +333,20 @@
       *, *::before, *::after { scroll-behavior: auto !important; }
     }
   
+    /* Keep the attachment control and composer on one shared centerline. */
+    .composer-inner { align-items: center; }
+    .attach-wrap { display: flex; align-items: center; align-self: center; height: 46px; }
+    .attach-button { display: grid; place-items: center; width: 46px; height: 46px; min-width: 46px; padding: 0; line-height: 1; box-sizing: border-box; }
+    @media (max-width: 760px) {
+      .attach-wrap { height: 46px; }
+      .attach-button { width: 46px; height: 46px; min-width: 46px; }
+      .composer { height: 46px; min-height: 46px; }
+    }
+    @media (max-width: 390px) {
+      .attach-wrap { height: 46px; }
+      .attach-button { width: 46px; height: 46px; min-width: 46px; }
+    }
+
     /* Final composer and neutral accent refinements. */
     :root { --accent: #8e8e93; --accent-ink: #ffffff; }
     .composer-inner { align-items: center; }
@@ -385,6 +399,7 @@
     .thinking-status .typing { flex: 0 0 auto; margin-left: auto; }
     .thinking-details { display: flex; flex-direction: column; gap: 5px; margin-bottom: 7px; }
     .thinking-metrics { color: var(--muted); font-size: 11px; line-height: 1.4; font-variant-numeric: tabular-nums; }
+    .thinking-metrics[hidden] { display: none !important; }
     .working-label {
       color: #8e8e93;
       font-size: 13px;
@@ -649,8 +664,12 @@
         const row = document.createElement("article");
         row.className = "message assistant";
         row.id = "typingIndicator";
-        row.innerHTML = '<div class="message-content"><div class="thinking-details"><div class="thinking-metrics" id="workingTokenCount">Token Consumed —</div><div class="thinking-status"><span class="working-label">Working</span><div class="typing" aria-label="Elia is thinking"><span></span><span></span><span></span></div></div></div></div>';
+        row.innerHTML = '<div class="message-content"><div class="thinking-details"><div class="thinking-metrics" id="workingTokenCount" hidden>Token Consumed —</div><div class="thinking-status"><span class="working-label">Working</span><div class="typing" aria-label="Elia is thinking"><span></span><span></span><span></span></div></div></div></div>';
         thread.appendChild(row);
+        row._tokenRevealTimer = window.setTimeout(() => {
+          const tokenLabel = row.querySelector("#workingTokenCount");
+          if (tokenLabel && row.isConnected) tokenLabel.hidden = false;
+        }, 60000);
         scrollToLatest();
       };
       const resizePrompt = () => {
@@ -702,7 +721,9 @@
             body: JSON.stringify({ messages: conversation.messages.map(({ role, content }) => ({ role, content })) })
           });
           const data = await response.json().catch(() => ({}));
-          $("#typingIndicator")?.remove();
+          const typingRow = $("#typingIndicator");
+          if (typingRow?._tokenRevealTimer) window.clearTimeout(typingRow._tokenRevealTimer);
+          typingRow?.remove();
           if (!response.ok) throw new Error(data.error || "Something went wrong. Please try again.");
           conversation.messages.push({
             id: uid(),
@@ -716,7 +737,9 @@
           save();
           renderHistory();
         } catch (error) {
-          $("#typingIndicator")?.remove();
+          const typingRow = $("#typingIndicator");
+          if (typingRow?._tokenRevealTimer) window.clearTimeout(typingRow._tokenRevealTimer);
+          typingRow?.remove();
           setNotice(error.message || "Could not reach Elia. Check your connection and try again.");
           if (conversation.messages.at(-1)?.role === "user") {
             // Keep the user message in history so it can be retried or copied.
