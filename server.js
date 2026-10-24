@@ -74,18 +74,21 @@ function lastUserMessage(messages) {
 // difficult implementation, research, and multi-step work to GPT-OSS 120B.
 function shouldUseComplexModel(messages) {
   const current = lastUserMessage(messages);
-  const followUp = /^(continue|go on|do it|proceed|finish it|implement it|make it|fix it|now do that)[.!\s]*$/i.test(current.trim());
+  const followUp = /^(continue|go on|do it|proceed|finish it|implement it|make it|make all of that|make everything|fix it|now do that|apply those changes|do all of that|handle the rest)[.!\s]*$/i.test(current.trim());
   const recentContext = messages.slice(-8).map((message) => message.content).join("\n");
-  const target = followUp ? recentContext : current;
+  const target = followUp || (current.length < 90 && /\b(it|that|those|these|everything|all of it|the changes)\b/i.test(current)) ? recentContext : current;
   let score = 0;
 
   if (/\b(deep research|comprehensive|in-depth|step[- ]by[- ]step|multi[- ]step|end[- ]to[- ]end|from scratch|production[- ]ready|full implementation|complete implementation|root cause|system architecture|refactor|debug|optimi[sz]e|migration|prove|derive|investigate|research|architect)\b/i.test(target)) score += 2;
-  if (/\b(build|implement|design|analy[sz]e|compare|integrate|deploy|create|write|plan)\b/i.test(current)) score += 1;
+  if (/\b(build|implement|design|analy[sz]e|compare|integrate|deploy|create|write|plan|configure|rewrite|migrate)\b/i.test(current)) score += 1;
   if (/\b(codebase|repository|compiler|backend|frontend|database schema|distributed|algorithm|multiple files|entire application|full project)\b/i.test(target)) score += 1;
   if (/\b(and then|after that|in addition|also make sure|multiple requirements|all of the following)\b/i.test(current)) score += 1;
-  if (current.length >= 1200) score += 1;
-  const actionCount = (current.match(/\b(build|create|implement|design|test|deploy|document|debug|refactor|integrate|optimi[sz]e)\b/gi) || []).length;
-  if (actionCount >= 3) score += 1;
+  if (current.length >= 800) score += 1;
+  const actionCount = (current.match(/\b(build|create|implement|design|test|deploy|document|debug|refactor|integrate|optimi[sz]e|make|write|add|remove|delete|configure|update|change|specify|clarify|compare|research|explain|analy[sz]e|plan|connect|migrate)\b/gi) || []).length;
+  if (actionCount >= 3) score += 2;
+  else if (actionCount >= 2) score += 1;
+  const requirementCount = (current.match(/\b(and|also|plus|then|while|including|as well as)\b/gi) || []).length;
+  if (requirementCount >= 3) score += 1;
 
   return score >= 2;
 }
