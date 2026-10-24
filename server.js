@@ -41,6 +41,7 @@ app.post("/api/chat", async (req, res) => {
     return res.status(400).json({ error: "Include a non-empty user message." });
   }
 
+  const requestStartedAt = Date.now();
   try {
     const upstream = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -74,7 +75,14 @@ app.post("/api/chat", async (req, res) => {
       return res.status(502).json({ error: "The AI provider returned an empty response." });
     }
 
-    return res.json({ reply, model: data.model || process.env.GROQ_MODEL || defaultModel });
+    const durationMs = Date.now() - requestStartedAt;
+    const totalTokens = Number.isFinite(data?.usage?.total_tokens) ? data.usage.total_tokens : null;
+    return res.json({
+      reply,
+      model: data.model || process.env.GROQ_MODEL || defaultModel,
+      durationMs,
+      totalTokens
+    });
   } catch (error) {
     console.error("Chat request failed:", error?.name || "Error");
     return res.status(504).json({ error: "The AI request timed out or could not reach the provider. Try again." });
