@@ -428,6 +428,33 @@
       .attach-wrap { height: 46px !important; }
       .attach-button { width: 46px !important; height: 46px !important; min-width: 46px !important; }
     }
+.conversation-back-button { width:42px;height:42px;border:1px solid var(--line);border-radius:50%;background:var(--panel);color:var(--ink); }
+.conversation-back-button svg { transition:transform .18s ease; }
+.conversation-back-button:hover svg { transform:translateX(-2px); }
+.conversations-page { width:min(100%,900px);min-height:calc(100vh - 70px);margin:0 auto;padding:34px 28px 60px; }
+.conversations-page[hidden] { display:none !important; }
+.conversations-heading { display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:26px; }
+.conversations-heading h2 { margin:8px 0 5px;font-size:clamp(28px,4vw,38px);font-weight:620;letter-spacing:-1.3px; }
+.conversations-heading p { margin:0;color:var(--muted);font-size:14px; }
+.conversations-new-chat { width:auto;min-width:max-content;padding:11px 14px; }
+.conversation-cards { display:flex;flex-direction:column;gap:14px;overflow-y:auto;max-height:calc(100dvh - 210px);padding:3px 4px 30px 0;scrollbar-width:thin; }
+.conversation-card { position:relative;display:flex;flex-direction:column;justify-content:space-between;isolation:isolate;overflow:hidden;width:100%;min-height:150px;padding:20px 21px;border:1px solid var(--line);border-radius:27px;background:var(--panel);text-align:left;cursor:pointer;box-shadow:0 4px 18px rgba(0,0,0,.035);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease; }
+.conversation-card:nth-child(even) { transform:translateX(9px);width:calc(100% - 9px); }
+.conversation-card:hover { transform:translateY(-2px);border-color:color-mix(in srgb,var(--ink) 20%,var(--line));box-shadow:0 10px 28px rgba(0,0,0,.07); }
+.conversation-card:nth-child(even):hover { transform:translate(9px,-2px); }
+.conversation-card.has-image { min-height:190px;background:#dedee2;color:white; }
+.conversation-card-image { position:absolute;inset:0;z-index:-2;width:100%;height:100%;object-fit:cover; }
+.conversation-card.has-image::before { content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(0,0,0,.62),rgba(0,0,0,.06) 55%,rgba(0,0,0,.66)); }
+.conversation-card-top { display:flex;align-items:center;gap:9px;min-width:0;font-size:15px;font-weight:620;letter-spacing:-.2px; }
+.conversation-card-ai { display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:26px;height:26px;border-radius:9px;background:#e5e5ea;color:#1d1d1f;font-size:14px;font-weight:650; }
+.conversation-card.has-image .conversation-card-ai { background:rgba(255,255,255,.88); }
+.conversation-card-title { min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis; }
+.conversation-card-bottom { position:relative;display:-webkit-box;overflow:hidden;max-width:100%;color:var(--muted);font-size:13px;line-height:1.6;-webkit-line-clamp:2;-webkit-box-orient:vertical; }
+.conversation-card.has-image .conversation-card-bottom { color:rgba(255,255,255,.88); }
+.conversation-card-bottom::after { content:"";position:absolute;right:0;bottom:0;width:34%;height:1.6em;background:linear-gradient(90deg,transparent,var(--panel)); }
+.conversation-card.has-image .conversation-card-bottom::after { background:linear-gradient(90deg,transparent,rgba(0,0,0,.58)); }
+.conversation-card-empty { padding:30px 10px;color:var(--muted);text-align:center;font-size:14px; }
+@media(max-width:760px){.conversations-page{min-height:calc(100dvh - 60px);padding:26px 17px 45px}.conversations-heading{align-items:flex-start;flex-direction:column}.conversations-new-chat{width:100%}.conversation-cards{max-height:calc(100dvh - 260px);gap:12px}.conversation-card{min-height:142px;padding:18px;border-radius:25px}.conversation-card:nth-child(even){transform:translateX(5px);width:calc(100% - 5px)}.conversation-card:nth-child(even):hover{transform:translate(5px,-2px)}}
   </style>
 </head>
 <body>
@@ -457,9 +484,9 @@
     </aside>
 
     <main class="main">
-
-
-      <section class="workspace">
+      <header class="topbar"><div class="top-left"><div class="mobile-brand"><span class="brand-mark" aria-hidden="true">e</span><span>elia</span></div></div><div class="top-actions"><button class="icon-button conversation-back-button" id="openConversations" type="button" aria-label="All conversations" title="All conversations"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m7-7-7 7 7 7"/></svg></button></div></header>
+      <section class="conversations-page" id="conversationsPage" hidden><div class="conversations-heading"><div><div class="eyebrow">Your space</div><h2>Conversations</h2><p>Pick up where you left off.</p></div><button class="new-chat conversations-new-chat" id="conversationsNewChat" type="button"><span aria-hidden="true">＋</span> New conversation</button></div><div class="conversation-cards" id="conversationCards" aria-label="All conversations"></div></section>
+      <section class="workspace" id="chatWorkspace">
         <section class="welcome" id="welcome">
           <div class="welcome-mark" aria-hidden="true">e</div>
           <div class="eyebrow">Your thinking companion</div>
@@ -561,7 +588,7 @@
       const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
       const getCurrent = () => conversations.find((item) => item.id === currentId);
       const save = () => {
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations.slice(0, 30))); }
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations.slice(0, 30))); if (currentId) localStorage.setItem("elia-current-conversation-v1", currentId); }
         catch { showToast("Could not save chat history on this device."); }
       };
       const showToast = (text) => {
@@ -597,22 +624,63 @@
         save();
         if (focus) promptBox.focus();
       };
+      const latestAssistantMessage = (conversation) => [...(conversation.messages || [])].reverse().find((message) => message.role === "assistant");
+      const imageFromMessage = (message) => {
+        if (!message) return "";
+        const attachment = (message.attachments || []).find((item) => item.image);
+        if (attachment && attachment.image) return attachment.image;
+        const match = String(message.content || "").match(/!\\[[^\\]]*\\]\\((https?:\\/\\/[^\\s)]+)\\)/i);
+        return match ? match[1] : "";
+      };
+      const previewFromMessage = (message) => {
+        if (!message) return "No assistant response yet";
+        if (imageFromMessage(message)) return "Image from Elia";
+        return String(message.displayContent ?? message.content ?? "").replace(/!\\[[^\\]]*\\]\\([^)]*\\)/g, "[Image]").replace(/[ #>*_]/g, "").replace(/\\s+/g, " ").trim() || "No text preview";
+      };
+      const renderConversationCards = () => {
+        const cards = $("#conversationCards");
+        if (!conversations.length) { cards.innerHTML = '<div class="conversation-card-empty">Your conversations will appear here.</div>'; return; }
+        cards.innerHTML = conversations.map((conversation) => {
+          const lastAssistant = latestAssistantMessage(conversation);
+          const image = imageFromMessage(lastAssistant);
+          const title = conversation.title || "New conversation";
+          const preview = previewFromMessage(lastAssistant);
+          return '<button type="button" class="conversation-card ' + (image ? "has-image" : "") + '" data-conversation-id="' + escapeHtml(conversation.id) + '" title="' + escapeHtml(title) + '">'
+            + (image ? '<img class="conversation-card-image" src="' + escapeHtml(image) + '" alt="" loading="lazy">' : '')
+            + '<span class="conversation-card-top"><span class="conversation-card-ai" aria-hidden="true">e</span><span class="conversation-card-title">' + escapeHtml(title) + '</span></span>'
+            + '<span class="conversation-card-bottom">' + escapeHtml(preview) + '</span></button>';
+        }).join("");
+        cards.querySelectorAll("[data-conversation-id]").forEach((card) => card.addEventListener("click", () => {
+          if (busy) return showToast("Wait for the current response to finish.");
+          currentId = card.dataset.conversationId;
+          try { localStorage.setItem("elia-current-conversation-v1", currentId); } catch {}
+          setConversationPage(false); renderHistory(); renderChat();
+        }));
+      };
+      const setConversationPage = (show) => {
+        $("#conversationsPage").hidden = !show;
+        $("#chatWorkspace").hidden = show;
+        $("#openConversations").setAttribute("aria-label", show ? "Back to chat" : "All conversations");
+        $("#openConversations").setAttribute("title", show ? "Back to chat" : "All conversations");
+        $("#openConversations").innerHTML = show
+          ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>'
+          : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m7-7-7 7 7 7"/></svg>';
+        if (show) renderConversationCards();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      };
       const renderHistory = () => {
-        if (!conversations.length) {
-          historyBox.innerHTML = '<div class="history-empty">Your conversations will appear here.</div>';
-          return;
-        }
-        historyBox.innerHTML = conversations.slice(0, 20).map((conversation) => `
-          <button class="history-item ${conversation.id === currentId ? "active" : ""}" data-id="${escapeHtml(conversation.id)}" title="${escapeHtml(conversation.title)}">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5 8 8 0 0 1-3.6-.85L4 20l1.85-4.9A7.5 7.5 0 1 1 20 11.5Z"/></svg>
-            <span>${escapeHtml(conversation.title)}</span>
-          </button>`).join("");
+        if (!conversations.length) { historyBox.innerHTML = '<div class="history-empty">Your conversations will appear here.</div>'; renderConversationCards(); return; }
+        historyBox.innerHTML = conversations.slice(0, 20).map((conversation) =>
+          '<button class="history-item ' + (conversation.id === currentId ? "active" : "") + '" data-id="' + escapeHtml(conversation.id) + '" title="' + escapeHtml(conversation.title) + '">'
+          + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5 8 8 0 0 1-3.6-.85L4 20l1.85-4.9A7.5 7.5 0 1 1 20 11.5Z"/></svg>'
+          + '<span>' + escapeHtml(conversation.title) + '</span></button>').join("");
         historyBox.querySelectorAll("[data-id]").forEach((button) => button.addEventListener("click", () => {
           if (busy) return showToast("Wait for the current response to finish.");
           currentId = button.dataset.id;
-          renderHistory();
-          renderChat();
+          try { localStorage.setItem("elia-current-conversation-v1", currentId); } catch {}
+          renderHistory(); renderChat();
         }));
+        renderConversationCards();
       };
       const formatText = (text) => {
         const escaped = escapeHtml(text);
@@ -837,7 +905,12 @@
       });
       $("#newChat").addEventListener("click", () => {
         if (busy) return showToast("Wait for the current response to finish.");
-        newConversation();
+        newConversation(); setConversationPage(false);
+      });
+      $("#openConversations").addEventListener("click", () => setConversationPage($("#conversationsPage").hidden));
+      $("#conversationsNewChat").addEventListener("click", () => {
+        if (busy) return showToast("Wait for the current response to finish.");
+        newConversation(); setConversationPage(false);
       });
       document.querySelectorAll("[data-prompt]").forEach((button) => button.addEventListener("click", () => {
         promptBox.value = button.dataset.prompt;
@@ -869,12 +942,13 @@
         const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
         if (Array.isArray(stored)) conversations = stored.filter((item) => item && typeof item.id === "string" && Array.isArray(item.messages)).slice(0, 30);
       } catch { conversations = []; }
-      if (conversations.length) {
-        currentId = conversations[0].id;
-        renderHistory(); renderChat();
-      } else {
-        newConversation(false);
-      }
+      const navigationEntry = performance.getEntriesByType("navigation")[0];
+      const isRefresh = navigationEntry && navigationEntry.type === "reload";
+      let savedCurrentId = null;
+      try { savedCurrentId = localStorage.getItem("elia-current-conversation-v1"); } catch {}
+      if (isRefresh && savedCurrentId && conversations.some((item) => item.id === savedCurrentId)) {
+        currentId = savedCurrentId; renderHistory(); renderChat();
+      } else { newConversation(false); }
       resizePrompt();
       fetch("/api/health").then((response) => response.json()).then((data) => {
         health = data;
