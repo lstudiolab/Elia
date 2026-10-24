@@ -596,6 +596,25 @@
     }
 
 
+    /* Neutral, crisp whites: remove the warm ivory cast from the app surfaces. */
+    :root {
+      --bg:#f8f9fb;
+      --panel:#ffffff;
+      --panel-soft:#f1f3f6;
+      --ink:#202124;
+      --muted:#777b83;
+      --line:#e5e7eb;
+      --accent:#25272b;
+      --accent-ink:#ffffff;
+    }
+    body,.main,.workspace,.conversations-page { background-color:#f8f9fb!important; }
+    .sidebar { background:#f4f6f9!important; }
+    .history-item:hover,.history-item.active { background:#e9edf2!important; }
+    .conversation-card { background:rgba(255,255,255,.84)!important;border-color:rgba(210,214,220,.72)!important; }
+    .composer,.library-action,.attach-button,.conversation-back-button {
+      background:rgba(255,255,255,.72)!important;
+      border-color:rgba(255,255,255,.9)!important;
+    }
     /* Minimal library header and centered empty state; retain saved chats without an arbitrary count cap. */
     .conversations-heading { display:none!important; }
     .conversations-page { padding-top:20px!important; }
