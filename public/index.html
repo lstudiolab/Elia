@@ -456,6 +456,38 @@
 .conversation-card-empty { padding:30px 10px;color:var(--muted);text-align:center;font-size:14px; }
 @media(max-width:760px){.conversations-page{min-height:calc(100dvh - 60px);padding:26px 17px 45px}.conversations-heading{align-items:flex-start;flex-direction:column}.conversations-new-chat{width:100%}.conversation-cards{max-height:calc(100dvh - 260px);gap:12px}.conversation-card{min-height:142px;padding:18px;border-radius:25px}.conversation-card:nth-child(even){transform:translateX(5px);width:calc(100% - 5px)}.conversation-card:nth-child(even):hover{transform:translate(5px,-2px)}}
   
+
+    /* Conversation library: keep the composer out of this screen and pin its actions to the bottom. */
+    .conversation-library-actions { display:none; }
+    body.conversation-library-open .composer-dock { display:none !important; }
+    body.conversation-library-open .conversation-library-actions {
+      position:fixed;left:0;right:0;bottom:0;z-index:30;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:16px max(22px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(22px, env(safe-area-inset-left));
+      pointer-events:none;
+      background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--bg) 94%,transparent) 35%,var(--bg));
+    }
+    .library-action {
+      pointer-events:auto;display:grid;place-items:center;width:52px;height:52px;
+      border:1px solid var(--line);border-radius:50%;background:var(--panel);
+      color:var(--ink);box-shadow:0 5px 20px rgba(0,0,0,.1);cursor:pointer;
+      -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+    }
+    .library-action:hover { background:var(--panel-soft); }
+    .library-search { display:none;margin:0 0 18px; }
+    .library-search.open { display:block; }
+    .library-search input {
+      width:100%;height:48px;padding:0 16px;border:1px solid var(--line);border-radius:16px;
+      background:var(--panel);color:var(--ink);font:inherit;outline:none;
+    }
+    .library-search input:focus { border-color:color-mix(in srgb,var(--ink) 28%,var(--line)); }
+    .conversation-card[hidden] { display:none !important; }
+    @media(max-width:760px) {
+      .conversation-library-actions { padding-left:20px;padding-right:20px; }
+      .conversations-page { padding-bottom:100px; }
+      .conversation-cards { max-height:calc(100dvh - 250px); }
+    }
+
     /* Final interaction and layout corrections */
     .topbar { position: sticky; top: 0; z-index: 10; justify-content: flex-start; padding-left: 20px; padding-right: 20px; }
     .topbar .top-actions { display: none; }
@@ -517,7 +549,7 @@
 
     <main class="main">
       <header class="topbar"><div class="top-left"><button class="icon-button conversation-back-button" id="openConversations" type="button" aria-label="All conversations" title="All conversations"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m7-7-7 7 7 7"/></svg></button></div></header>
-      <section class="conversations-page" id="conversationsPage" hidden><div class="conversations-heading"><div><div class="eyebrow">Your space</div><h2>Conversations</h2><p>Pick up where you left off.</p></div><button class="new-chat conversations-new-chat" id="conversationsNewChat" type="button"><span aria-hidden="true">＋</span> New conversation</button></div><div class="conversation-cards" id="conversationCards" aria-label="All conversations"></div></section>
+      <section class="conversations-page" id="conversationsPage" hidden><div class="conversations-heading"><div><div class="eyebrow">Your space</div><h2>Conversations</h2><p>Pick up where you left off.</p></div></div><div class="library-search" id="librarySearch"><input id="conversationSearch" type="search" placeholder="Search conversations" aria-label="Search conversations"></div><div class="conversation-cards" id="conversationCards" aria-label="All conversations"></div></section><div class="conversation-library-actions" id="conversationLibraryActions" aria-label="Conversation library actions"><button class="library-action" id="searchConversationsButton" type="button" aria-label="Search conversations" title="Search conversations"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg></button><button class="library-action" id="libraryNewConversationButton" type="button" aria-label="New conversation" title="New conversation"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8"/><path d="M16 3.5a2.1 2.1 0 0 1 3 3L11 14.5 7 16l1.5-4z"/></svg></button></div>
       <section class="workspace" id="chatWorkspace">
         <section class="welcome" id="welcome"><div class="welcome-mark" aria-hidden="true">E</div></section>
 
@@ -634,8 +666,11 @@
       const titleFor = (messages) => {
         const first = messages.find((message) => message.role === "user");
         if (!first) return "New conversation";
-        const title = first.content.replace(/\s+/g, " ").trim();
-        return title.length > 32 ? title.slice(0, 32).trim() + "…" : title;
+        const text = String(first.displayContent ?? first.content ?? "").replace(/\s+/g, " ").trim();
+        const cleaned = text.replace(/^(please|can you|could you|help me|i want you to|i need you to)\s+/i, "");
+        const words = cleaned.split(" ").filter(Boolean);
+        const title = words.slice(0, 6).join(" ");
+        return title.length > 42 ? title.slice(0, 39).trim() + "…" : title || "New conversation";
       };
       const newConversation = (focus = true) => {
         currentId = uid();
@@ -671,6 +706,7 @@
             + '<span class="conversation-card-top"><span class="conversation-card-ai" aria-hidden="true">e</span><span class="conversation-card-title">' + escapeHtml(title) + '</span></span>'
             + '<span class="conversation-card-bottom">' + escapeHtml(preview) + '</span></button>';
         }).join("");
+        applyConversationSearch();
         cards.querySelectorAll("[data-conversation-id]").forEach((card) => card.addEventListener("click", () => {
           if (busy) return showToast("Wait for the current response to finish.");
           currentId = card.dataset.conversationId;
@@ -678,7 +714,14 @@
           setConversationPage(false); renderHistory(); renderChat();
         }));
       };
+      const applyConversationSearch = () => {
+        const query = ($("#conversationSearch")?.value || "").trim().toLowerCase();
+        $("#conversationCards").querySelectorAll("[data-conversation-id]").forEach((card) => {
+          card.hidden = Boolean(query) && !card.textContent.toLowerCase().includes(query);
+        });
+      };
       const setConversationPage = (show) => {
+        document.body.classList.toggle("conversation-library-open", show);
         $("#conversationsPage").hidden = !show;
         $("#chatWorkspace").hidden = show;
         $("#openConversations").setAttribute("aria-label", show ? "Back to chat" : "All conversations");
@@ -686,7 +729,11 @@
         $("#openConversations").innerHTML = show
           ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>'
           : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m7-7-7 7 7 7"/></svg>';
-        if (show) renderConversationCards();
+        if (show) {
+          renderConversationCards();
+          $("#conversationSearch").value = "";
+          $("#librarySearch").classList.remove("open");
+        }
         window.scrollTo({ top: 0, behavior: "smooth" });
       };
       const renderHistory = () => {
@@ -929,6 +976,19 @@
         newConversation(); setConversationPage(false);
       });
       $("#openConversations").addEventListener("click", () => setConversationPage($("#conversationsPage").hidden));
+      $("#searchConversationsButton").addEventListener("click", () => {
+        const search = $("#librarySearch");
+        const opening = !search.classList.contains("open");
+        search.classList.toggle("open", opening);
+        if (opening) $("#conversationSearch").focus();
+        else { $("#conversationSearch").value = ""; applyConversationSearch(); }
+      });
+      $("#conversationSearch").addEventListener("input", applyConversationSearch);
+      $("#libraryNewConversationButton").addEventListener("click", () => {
+        if (busy) return showToast("Wait for the current response to finish.");
+        newConversation();
+        setConversationPage(false);
+      });
       $("#conversationsNewChat").addEventListener("click", () => {
         if (busy) return showToast("Wait for the current response to finish.");
         newConversation(); setConversationPage(false);
