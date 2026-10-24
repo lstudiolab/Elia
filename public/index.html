@@ -1098,6 +1098,28 @@
       .word-reveal { animation:none!important;opacity:1!important;filter:none!important;-webkit-filter:none!important; }
     }
 
+  
+    /* Final composer sizing: fixed circular send control and no browser gesture zoom. */
+    .composer .send-button,
+    #chatForm .send-button {
+      box-sizing:border-box!important;
+      width:40px!important;height:40px!important;
+      min-width:40px!important;min-height:40px!important;
+      max-width:40px!important;max-height:40px!important;
+      flex:0 0 40px!important;
+      aspect-ratio:1/1!important;
+      padding:0!important;
+      border-radius:50%!important;
+      display:grid!important;place-items:center!important;
+      line-height:1!important;
+    }
+    .send-button svg { width:18px!important;height:18px!important; }
+    html,body { overscroll-behavior: none; }
+    @media(max-width:760px) {
+      html { touch-action:pan-x pan-y; }
+      body { touch-action:pan-x pan-y; }
+    }
+
   </style>
 </head>
 <body>
