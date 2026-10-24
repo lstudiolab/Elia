@@ -72,25 +72,49 @@ function lastUserMessage(messages) {
 
 // A deterministic server-side router keeps trivial exchanges on 20B and sends
 // difficult implementation, research, and multi-step work to GPT-OSS 120B.
-function shouldUseComplexModel(messages) {
+function isCodingOrDebuggingTask(messages) {
   const current = lastUserMessage(messages);
-  const followUp = /^(continue|go on|do it|proceed|finish it|implement it|make it|make all of that|make everything|fix it|now do that|apply those changes|do all of that|handle the rest)[.!\s]*$/i.test(current.trim());
-  const recentContext = messages.slice(-8).map((message) => message.content).join("\n");
-  const target = followUp || (current.length < 90 && /\b(it|that|those|these|everything|all of it|the changes)\b/i.test(current)) ? recentContext : current;
+  const recentContext = messages.slice(-6).map((message) => message.content).join("\\n");
+  const target = current.length < 100 && /\\b(it|that|those|this|these|the bug|the error|the code|the fix|the issue)\\b/i.test(current)
+    ? recentContext
+    : current;
+
+  // Treat concrete code changes, errors, and debugging as complex work rather than
+  // waiting for a broad complexity score to accumulate.
+  return /\\b(cod(e|ing)|program(ming)?|debug(ging)?|bug|fix|error|exception|stack trace|compile(r|s|d|ing)?|syntax|runtime|not working|doesn.t work|broken|fails? to|failing|crash(es|ed|ing)?|refactor|implement|codebase|repository|script|function|class|api endpoint|server.js|index.html|typescript|javascript|python|c\\+\\+|rust|swift|lua|html|css|sql|git(hub)?|pull request|patch|regression|test failure)\\b/i.test(target);
+}
+
+function shouldUseComplexModel(messages) {
+  if (isCodingOrDebuggingTask(messages)) return true;
+
+  const current = lastUserMessage(messages);
+  const followUp = /^(continue|go on|do it|proceed|finish it|implement it|make it|make all of that|make everything|fix it|now do that|apply those changes|do all of that|handle the rest)[.!\\s]*$/i.test(current.trim());
+  const recentContext = messages.slice(-8).map((message) => message.content).join("\\n");
+  const target = followUp || (current.length < 90 && /\\b(it|that|those|these|everything|all of it|the changes)\\b/i.test(current)) ? recentContext : current;
   let score = 0;
 
-  if (/\b(deep research|comprehensive|in-depth|step[- ]by[- ]step|multi[- ]step|end[- ]to[- ]end|from scratch|production[- ]ready|full implementation|complete implementation|root cause|system architecture|refactor|debug|optimi[sz]e|migration|prove|derive|investigate|research|architect)\b/i.test(target)) score += 2;
-  if (/\b(build|implement|design|analy[sz]e|compare|integrate|deploy|create|write|plan|configure|rewrite|migrate)\b/i.test(current)) score += 1;
-  if (/\b(codebase|repository|compiler|backend|frontend|database schema|distributed|algorithm|multiple files|entire application|full project)\b/i.test(target)) score += 1;
-  if (/\b(and then|after that|in addition|also make sure|multiple requirements|all of the following)\b/i.test(current)) score += 1;
+  if (/\\b(deep research|comprehensive|in-depth|step[- ]by[- ]step|multi[- ]step|end[- ]to[- ]end|from scratch|production[- ]ready|full implementation|complete implementation|root cause|system architecture|refactor|debug|optimi[sz]e|migration|prove|derive|investigate|research|architect)\\b/i.test(target)) score += 2;
+  if (/\\b(build|implement|design|analy[sz]e|compare|integrate|deploy|create|write|plan|configure|rewrite|migrate)\\b/i.test(current)) score += 1;
+  if (/\\b(codebase|repository|compiler|backend|frontend|database schema|distributed|algorithm|multiple files|entire application|full project)\\b/i.test(target)) score += 1;
+  if (/\\b(and then|after that|in addition|also make sure|multiple requirements|all of the following)\\b/i.test(current)) score += 1;
   if (current.length >= 800) score += 1;
-  const actionCount = (current.match(/\b(build|create|implement|design|test|deploy|document|debug|refactor|integrate|optimi[sz]e|make|write|add|remove|delete|configure|update|change|specify|clarify|compare|research|explain|analy[sz]e|plan|connect|migrate)\b/gi) || []).length;
+  const actionCount = (current.match(/\\b(build|create|implement|design|test|deploy|document|debug|refactor|integrate|optimi[sz]e|make|write|add|remove|delete|configure|update|change|specify|clarify|compare|research|explain|analy[sz]e|plan|connect|migrate)\\b/gi) || []).length;
   if (actionCount >= 3) score += 2;
   else if (actionCount >= 2) score += 1;
-  const requirementCount = (current.match(/\b(and|also|plus|then|while|including|as well as)\b/gi) || []).length;
+  const requirementCount = (current.match(/\\b(and|also|plus|then|while|including|as well as)\\b/gi) || []).length;
   if (requirementCount >= 3) score += 1;
 
   return score >= 2;
+}
+
+function shouldEscalateWeakAnswer(messages, reply) {
+  if (!reply || !reply.trim()) return true;
+  if (!isCodingOrDebuggingTask(messages)) return false;
+
+  const answer = reply.trim();
+  const explicitFailure = /\\b(i can.t|i cannot|i\\u2019m unable|i am unable|unable to (fix|solve|debug|implement|determine)|i don.t know how|cannot help with this|not enough information to (fix|solve)|i couldn.t resolve)\\b/i.test(answer);
+  const tooShortToBeUseful = answer.length < 180 && !/\\b(no code changes needed|the issue is|the fix is|change .* to|replace .* with)\\b/i.test(answer);
+  return explicitFailure || tooShortToBeUseful;
 }
 
 // Browser search is enabled only when it can materially improve freshness or evidence.
@@ -133,59 +157,98 @@ app.post("/api/chat", async (req, res) => {
     }
 
     const selectedComplexModel = shouldUseComplexModel(messages);
-    const selectedModel = selectedComplexModel ? complexModel : defaultModel;
     const useWebSearch = shouldUseWebSearch(messages);
     const groqMessages = [
       { role: "system", content: systemPrompt },
       ...messages.filter((message) => message.role !== "system")
     ];
-    const requestBody = {
-      model: selectedModel,
-      messages: groqMessages,
-      temperature: 1,
-      reasoning_effort: "high",
-      max_completion_tokens: selectedComplexModel ? 16384 : 8192,
-      stream: false
-    };
 
-    if (useWebSearch) {
-      requestBody.tools = [{ type: "browser_search" }];
-      requestBody.tool_choice = "required";
-    }
+    async function requestCompletion(model, isComplex) {
+      const requestBody = {
+        model,
+        messages: groqMessages,
+        temperature: 1,
+        reasoning_effort: "high",
+        max_completion_tokens: isComplex ? 16384 : 8192,
+        stream: false
+      };
 
-    const upstream = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(requestBody),
-      signal: AbortSignal.timeout(useWebSearch ? 120000 : 90000)
-    });
+      if (useWebSearch) {
+        requestBody.tools = [{ type: "browser_search" }];
+        requestBody.tool_choice = "required";
+      }
 
-    const data = await upstream.json().catch(() => ({}));
-    if (!upstream.ok) {
-      const providerMessage = data?.error?.message;
-      console.error("Groq request failed:", upstream.status, providerMessage || "Unknown upstream error");
-      const status = upstream.status === 429 ? 429 : upstream.status === 401 || upstream.status === 403 ? 502 : 502;
-      return res.status(status).json({
-        error: upstream.status === 429
-          ? "The AI service is busy or rate-limited. Wait a moment and try again."
-          : "The AI provider rejected the request. Check the server's Groq configuration."
+      const upstream = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(requestBody),
+        signal: AbortSignal.timeout(useWebSearch ? 120000 : 90000)
       });
+
+      const data = await upstream.json().catch(() => ({}));
+      if (!upstream.ok) {
+        const providerMessage = data?.error?.message;
+        console.error("Groq request failed:", upstream.status, providerMessage || "Unknown upstream error");
+        const error = new Error(upstream.status === 429
+          ? "The AI service is busy or rate-limited. Wait a moment and try again."
+          : "The AI provider rejected the request. Check the server's Groq configuration.");
+        error.status = upstream.status === 429 ? 429 : 502;
+        throw error;
+      }
+
+      return { data, reply: data?.choices?.[0]?.message?.content };
     }
 
-    const reply = data?.choices?.[0]?.message?.content;
+    let actualModel = selectedComplexModel ? complexModel : defaultModel;
+    let actualRoute = selectedComplexModel ? "complex" : "standard";
+    let completion;
+
+    try {
+      completion = await requestCompletion(actualModel, selectedComplexModel);
+    } catch (error) {
+      if (selectedComplexModel) throw error;
+      throw error;
+    }
+
+    // If a standard-model response clearly fails at a coding task, automatically
+    // retry once on 120B. Never retry a request that already used the complex model.
+    if (!selectedComplexModel && shouldEscalateWeakAnswer(messages, completion.reply)) {
+      console.warn("[model escalation] Standard response was insufficient; retrying with complex model.", JSON.stringify({
+        initialModel: actualModel,
+        retryModel: complexModel,
+        reason: "weak_coding_response"
+      }));
+      try {
+        completion = await requestCompletion(complexModel, true);
+        actualModel = complexModel;
+        actualRoute = "complex_fallback";
+      } catch (error) {
+        console.error("[model escalation] Complex-model retry failed.");
+        // Preserve the initial response if the fallback request itself fails.
+      }
+    }
+
+    const { data } = completion;
+    const reply = completion.reply;
     if (typeof reply !== "string" || !reply.trim()) {
       return res.status(502).json({ error: "The AI provider returned an empty response." });
     }
 
     const durationMs = Date.now() - requestStartedAt;
     const totalTokens = Number.isFinite(data?.usage?.total_tokens) ? data.usage.total_tokens : null;
+    console.log("[model route] " + JSON.stringify({
+      requestedRoute: selectedComplexModel ? "complex" : "standard",
+      actualRoute,
+      model: data.model || actualModel,
+      webSearch: useWebSearch
+    }));
     return res.json({
       reply,
-      model: data.model || selectedModel,
-      modelRoute: selectedComplexModel ? "complex" : "standard",
+      model: data.model || actualModel,
+      modelRoute: actualRoute,
       webSearchUsed: useWebSearch,
       durationMs,
       totalTokens
