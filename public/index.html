@@ -120,6 +120,9 @@
     .toast { position: fixed; left: 50%; bottom: 26px; z-index: 5; transform: translate(-50%, 12px); opacity: 0; pointer-events: none; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: white; box-shadow: var(--shadow); font-size: 12px; transition: opacity .2s, transform .2s; }
     .toast.visible { opacity: 1; transform: translate(-50%, 0); }
     @keyframes appear { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .word-reveal { animation: wordFadeIn 260ms ease-out both; }
+    @keyframes wordFadeIn { from { opacity: 0; filter: blur(2px); } to { opacity: 1; filter: blur(0); } }
+    @media (prefers-reduced-motion: reduce) { .word-reveal { animation: none; } }
     @keyframes pulse { 0%, 60%, 100% { opacity: .35; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
     @media (min-width: 1200px) { .workspace { padding-top: 42px; } }
     @media (max-width: 760px) {
@@ -590,7 +593,7 @@
           .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
           .replace(/\n/g, "<br>");
       };
-      const appendMessage = (message) => {
+      const appendMessage = (message, options = {}) => {
         const row = document.createElement("article");
         row.className = "message " + message.role;
         const attachmentMarkup = (message.attachments || []).map((attachment) => attachment.image
@@ -605,6 +608,31 @@
             + '<button class="feedback-button ' + (message.feedback === "down" ? "selected" : "") + '" type="button" data-feedback="down" aria-label="Thumbs down" aria-pressed="' + String(message.feedback === "down") + '" title="Thumbs down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 14V3H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3Zm0 0 5 8c2 0 3-2 2-4l-1-4h6a2 2 0 0 0 2-2l-2-7a2 2 0 0 0-2-2H7"/></svg></button>'
             + '</div>' : "";
         row.innerHTML = '<div class="message-content">' + metricsMarkup + '<div class="message-text">' + formatText(message.displayContent ?? message.content ?? "") + '</div>' + (attachmentMarkup ? '<div class="message-attachments">' + attachmentMarkup + '</div>' : '') + feedbackMarkup + '</div>';
+        if (options.animateWords && message.role === "assistant") {
+          const messageText = row.querySelector(".message-text");
+          const walker = document.createTreeWalker(messageText, NodeFilter.SHOW_TEXT);
+          const textNodes = [];
+          while (walker.nextNode()) textNodes.push(walker.currentNode);
+          let wordIndex = 0;
+          for (const textNode of textNodes) {
+            const parts = textNode.nodeValue.match(/\\s+|[^\\s]+/g) || [];
+            if (!parts.some((part) => !/^\\s+$/.test(part))) continue;
+            const fragment = document.createDocumentFragment();
+            for (const part of parts) {
+              if (/^\\s+$/.test(part)) {
+                fragment.appendChild(document.createTextNode(part));
+              } else {
+                const word = document.createElement("span");
+                word.className = "word-reveal";
+                word.style.animationDelay = Math.min(wordIndex * 18, 900) + "ms";
+                word.textContent = part;
+                fragment.appendChild(word);
+                wordIndex += 1;
+              }
+            }
+            textNode.parentNode.replaceChild(fragment, textNode);
+          }
+        }
         thread.appendChild(row);
         scrollToLatest();
       };
@@ -686,7 +714,7 @@
           conversation.updatedAt = Date.now();
           health.model = data.model || health.model;
           $("#modelName").textContent = health.model.replace(/-versatile$/, "").replace(/-/g, " ");
-          appendMessage(conversation.messages[conversation.messages.length - 1]);
+          appendMessage(conversation.messages[conversation.messages.length - 1], { animateWords: true });
           save();
           renderHistory();
         } catch (error) {
