@@ -227,6 +227,8 @@
       background: #e5e5ea; color: #1d1d1f;
       border-radius: 22px 22px 7px 22px;
     }
+    .response-metrics { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 0 9px; color: var(--muted); font-size: 11px; line-height: 1.4; font-variant-numeric: tabular-nums; }
+    .response-metrics span { display: inline-flex; align-items: center; gap: 4px; }
     .message-text { color: var(--ink); font-size: 15px; line-height: 1.72; }
     .message.user .message-text { color: inherit; }
     .message-text code { background: rgba(118,118,128,.14); }
@@ -494,6 +496,11 @@
         resizePrompt();
       };
 
+      const formatDuration = (durationMs) => {
+        if (!Number.isFinite(durationMs) || durationMs < 0) return "—";
+        const seconds = durationMs / 1000;
+        return seconds < 10 ? seconds.toFixed(1) + "s" : Math.round(seconds) + "s";
+      };
       const uid = () => (globalThis.crypto?.randomUUID?.() || String(Date.now()) + Math.random().toString(36).slice(2));
       const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
       const getCurrent = () => conversations.find((item) => item.id === currentId);
@@ -565,7 +572,10 @@
         const attachmentMarkup = (message.attachments || []).map((attachment) => attachment.image
           ? '<div class="attachment-chip"><img src="' + escapeHtml(attachment.image) + '" alt=""><span>' + escapeHtml(attachment.name) + '</span></div>'
           : '<div class="attachment-chip"><span aria-hidden="true">▤</span><span>' + escapeHtml(attachment.name) + '</span></div>').join("");
-        row.innerHTML = '<div class="message-content"><div class="message-text">' + formatText(message.displayContent ?? message.content ?? "") + '</div>' + (attachmentMarkup ? '<div class="message-attachments">' + attachmentMarkup + '</div>' : '') + '</div>';
+        const metricsMarkup = message.role === "assistant" && (Number.isFinite(message.durationMs) || Number.isFinite(message.totalTokens))
+          ? '<div class="response-metrics"><span>Worked for ' + escapeHtml(formatDuration(message.durationMs)) + '</span><span>Token Consumed ' + (Number.isFinite(message.totalTokens) ? escapeHtml(message.totalTokens.toLocaleString()) : "—") + '</span></div>'
+          : "";
+        row.innerHTML = '<div class="message-content">' + metricsMarkup + '<div class="message-text">' + formatText(message.displayContent ?? message.content ?? "") + '</div>' + (attachmentMarkup ? '<div class="message-attachments">' + attachmentMarkup + '</div>' : '') + '</div>';
         thread.appendChild(row);
         scrollToLatest();
       };
@@ -637,7 +647,12 @@
           const data = await response.json().catch(() => ({}));
           $("#typingIndicator")?.remove();
           if (!response.ok) throw new Error(data.error || "Something went wrong. Please try again.");
-          conversation.messages.push({ role: "assistant", content: data.reply });
+          conversation.messages.push({
+            role: "assistant",
+            content: data.reply,
+            durationMs: Number.isFinite(data.durationMs) ? data.durationMs : null,
+            totalTokens: Number.isFinite(data.totalTokens) ? data.totalTokens : null
+          });
           conversation.updatedAt = Date.now();
           health.model = data.model || health.model;
           $("#modelName").textContent = health.model.replace(/-versatile$/, "").replace(/-/g, " ");
