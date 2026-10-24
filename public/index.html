@@ -161,6 +161,161 @@
       .model-pill .model-name { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+    /* Apple-inspired system styling: semantic surfaces, accessible controls, and platform-aware layout. */
+    :root {
+      color-scheme: light dark;
+      --bg: #f5f5f7;
+      --panel: rgba(255,255,255,.82);
+      --panel-soft: #eaeaed;
+      --ink: #1d1d1f;
+      --muted: #6e6e73;
+      --line: rgba(60,60,67,.14);
+      --accent: #007aff;
+      --accent-ink: #ffffff;
+      --green: #248a3d;
+      --shadow: 0 12px 36px rgba(0,0,0,.07);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    html { -webkit-text-size-adjust: 100%; }
+    body { background: var(--bg); color: var(--ink); }
+    button, textarea { -webkit-tap-highlight-color: transparent; }
+    button { touch-action: manipulation; }
+    button:focus-visible, textarea:focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--accent) 72%, transparent);
+      outline-offset: 3px;
+    }
+    .sidebar { background: color-mix(in srgb, var(--bg) 92%, #e5e5ea); border-color: var(--line); }
+    .brand-mark, .mobile-brand .brand-mark, .welcome-mark {
+      display: grid; place-items: center;
+      background: #e5e5ea; color: #1d1d1f;
+      border-radius: 13px; font-weight: 600;
+    }
+    .brand-name { letter-spacing: -.45px; }
+    .new-chat {
+      min-height: 44px; border-color: var(--line); border-radius: 13px;
+      box-shadow: 0 1px 2px rgba(0,0,0,.025);
+      transition: background-color .18s ease, transform .18s ease;
+    }
+    .section-label { color: var(--muted); letter-spacing: .7px; }
+    .history-item { min-height: 40px; border-radius: 10px; color: var(--muted); }
+    .history-item:hover, .history-item.active { background: rgba(118,118,128,.13); color: var(--ink); }
+    .status-card { border-color: var(--line); border-radius: 13px; background: var(--panel); }
+    .status-dot.online { background: var(--green); box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 14%, transparent); }
+    .topbar {
+      border-bottom-color: var(--line);
+      background: color-mix(in srgb, var(--bg) 82%, transparent);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      backdrop-filter: saturate(180%) blur(20px);
+    }
+    .model-pill { border-color: var(--line); background: var(--panel); color: var(--muted); }
+    .model-spark { color: var(--accent); }
+    .icon-button { width: 44px; height: 44px; border-radius: 12px; color: var(--muted); }
+    .icon-button:hover { border-color: transparent; background: rgba(118,118,128,.12); color: var(--ink); }
+    .eyebrow { color: var(--muted); letter-spacing: 1.1px; }
+    h1 { letter-spacing: -1.35px; font-weight: 620; }
+    .welcome-copy, .suggestion-desc { color: var(--muted); }
+    .suggestion {
+      min-height: 96px; border-color: var(--line); border-radius: 17px;
+      background: var(--panel); box-shadow: 0 1px 2px rgba(0,0,0,.025);
+      transition: background-color .18s ease, border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+    }
+    .suggestion-title { font-size: 13px; font-weight: 600; }
+    .message.user .message-content {
+      background: #e5e5ea; color: #1d1d1f;
+      border-radius: 22px 22px 7px 22px;
+    }
+    .message-text { color: var(--ink); font-size: 15px; line-height: 1.72; }
+    .message.user .message-text { color: inherit; }
+    .message-text code { background: rgba(118,118,128,.14); }
+    .message-text pre { border-color: var(--line); border-radius: 13px; background: color-mix(in srgb, var(--panel-soft) 65%, var(--bg)); }
+    .attachment-chip, .pending-attachment {
+      border-color: var(--line); border-radius: 12px; background: var(--panel); color: var(--ink);
+    }
+    .composer-dock {
+      padding-bottom: max(20px, env(safe-area-inset-bottom));
+      background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 0%, transparent), color-mix(in srgb, var(--bg) 92%, transparent) 24%, var(--bg) 64%);
+      -webkit-backdrop-filter: none; backdrop-filter: none;
+    }
+    .composer {
+      min-height: 52px; border-color: var(--line); border-radius: 28px;
+      background: var(--panel); box-shadow: 0 4px 18px rgba(0,0,0,.055);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      backdrop-filter: saturate(180%) blur(20px);
+    }
+    .composer:focus-within { border-color: color-mix(in srgb, var(--accent) 42%, var(--line)); box-shadow: 0 4px 20px rgba(0,0,0,.075); }
+    .attach-button {
+      width: 46px; height: 46px; border-color: var(--line);
+      background: var(--panel); color: var(--accent); box-shadow: 0 3px 12px rgba(0,0,0,.04);
+      font-size: 27px; font-weight: 300;
+    }
+    .attach-button:hover { background: rgba(118,118,128,.12); }
+    .attach-menu {
+      border-color: var(--line); border-radius: 15px; background: var(--panel);
+      -webkit-backdrop-filter: saturate(180%) blur(24px);
+      backdrop-filter: saturate(180%) blur(24px);
+    }
+    .attach-option { min-height: 44px; border-radius: 10px; font-size: 14px; }
+    .attach-option:hover { background: rgba(118,118,128,.12); }
+    #prompt { font-size: 16px; color: var(--ink); }
+    #prompt::placeholder { color: #8e8e93; }
+    .send-button {
+      width: 36px; height: 36px; background: var(--accent); color: white;
+      transition: opacity .18s ease, transform .18s ease, background-color .18s ease;
+    }
+    .send-button:disabled { background: #8e8e93; opacity: .55; }
+    .notice { border-color: rgba(255,149,0,.35); border-radius: 13px; color: #8a4b08; background: #fff7e6; }
+    .toast { border-color: var(--line); border-radius: 14px; background: var(--panel); color: var(--ink); }
+    @media (hover: hover) and (pointer: fine) {
+      .new-chat:hover, .suggestion:hover { transform: translateY(-1px); }
+      .suggestion:hover { border-color: rgba(0,122,255,.25); box-shadow: 0 5px 18px rgba(0,0,0,.045); }
+      .send-button:not(:disabled):hover { background: #0066d6; }
+    }
+    @media (max-width: 760px) {
+      .topbar { padding-left: max(17px, env(safe-area-inset-left)); padding-right: max(17px, env(safe-area-inset-right)); }
+      .workspace { padding-left: max(17px, env(safe-area-inset-left)); padding-right: max(17px, env(safe-area-inset-right)); }
+      .composer-dock {
+        padding-left: max(17px, env(safe-area-inset-left));
+        padding-right: max(17px, env(safe-area-inset-right));
+        padding-bottom: max(18px, env(safe-area-inset-bottom));
+      }
+      .composer { min-height: 50px; }
+      .attach-button { width: 44px; height: 44px; }
+      .send-button { width: 36px; height: 36px; }
+      .message-text { font-size: 15px; }
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #000000;
+        --panel: rgba(28,28,30,.88);
+        --panel-soft: #2c2c2e;
+        --ink: #f5f5f7;
+        --muted: #98989d;
+        --line: rgba(84,84,88,.6);
+        --accent: #0a84ff;
+        --accent-ink: #ffffff;
+        --green: #30d158;
+        --shadow: 0 12px 36px rgba(0,0,0,.28);
+      }
+      .sidebar { background: #1c1c1e; }
+      .brand-mark, .mobile-brand .brand-mark, .welcome-mark { background: #2c2c2e; color: #f5f5f7; }
+      .new-chat { border-color: var(--line); background: #2c2c2e; }
+      .history-item:hover, .history-item.active { background: rgba(118,118,128,.28); }
+      .topbar { background: rgba(0,0,0,.72); }
+      .message.user .message-content { background: #2c2c2e; color: #f5f5f7; }
+      .message-text { color: #f5f5f7; }
+      .message-text pre { background: #1c1c1e; }
+      .composer { background: rgba(28,28,30,.92); }
+      .attach-button { background: rgba(28,28,30,.92); color: var(--accent); }
+      .notice { border-color: rgba(255,159,10,.35); color: #ffd60a; background: #2c2415; }
+      .send-button:disabled { background: #636366; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html:focus-within { scroll-behavior: auto; }
+      *, *::before, *::after { scroll-behavior: auto !important; }
+    }
   </style>
 </head>
 <body>
