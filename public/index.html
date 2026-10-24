@@ -414,6 +414,20 @@
       .working-label { animation: none; opacity: .7; }
     }
 
+    /* Final override: keep the plus button and composer vertically aligned on every viewport. */
+    .composer-inner { align-items: center !important; }
+    .attach-wrap { display: flex !important; align-items: center !important; align-self: center !important; height: 46px !important; }
+    .attach-button { display: grid !important; place-items: center !important; width: 46px !important; height: 46px !important; min-width: 46px !important; padding: 0 !important; line-height: 1 !important; box-sizing: border-box !important; }
+    .composer { height: 46px !important; min-height: 46px !important; }
+    @media (max-width: 760px) {
+      .attach-wrap { height: 46px !important; }
+      .attach-button { width: 46px !important; height: 46px !important; min-width: 46px !important; }
+      .composer { height: 46px !important; min-height: 46px !important; }
+    }
+    @media (max-width: 390px) {
+      .attach-wrap { height: 46px !important; }
+      .attach-button { width: 46px !important; height: 46px !important; min-width: 46px !important; }
+    }
   </style>
 </head>
 <body>
