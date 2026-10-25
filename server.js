@@ -9,9 +9,17 @@ import { fileURLToPath } from "node:url";
 const app = express();
 const port = Number(process.env.PORT) || 3000;
 const root = path.dirname(fileURLToPath(import.meta.url));
-const defaultModel = "openai/gpt-oss-20b";
+const defaultModel = "meta-models/muse-spark-open";
 const complexModel = "openai/gpt-oss-120b";
 const availableChatModels = new Set(["meta-models/muse-spark-open", "openai/gpt-oss-20b", "qwen/qwen3.8-27b", "openai/gpt-oss-120b"]);
+const { Pool } = await import("pg");
+const historyPool = process.env.DATABASE_URL ? new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false }, max: 4 }) : null;
+let historySchemaReady;
+async function ensureHistorySchema() {
+  if (!historyPool) throw new Error("Conversation storage is not configured.");
+  if (!historySchemaReady) historySchemaReady = historyPool.query("CREATE TABLE IF NOT EXISTS elia_conversation_snapshots (device_id text PRIMARY KEY, conversations jsonb NOT NULL, current_id text, saved_at bigint NOT NULL, updated_at timestamptz NOT NULL DEFAULT now())").catch((error) => { historySchemaReady = null; throw error; });
+  await historySchemaReady;
+}
 const thinkingTokenLimits = { low: 8000, medium: 12000, high: 20000 };
 const modelTokenLimits = { "qwen/qwen3.8-27b": 16384 };
 const visionModel = process.env.GROQ_VISION_MODEL || "qwen/qwen3.8-27b";
@@ -23,6 +31,33 @@ const cppToolPath = path.join(root, "elia-tools");
 app.disable("x-powered-by");
 app.use(express.json({ limit: "35mb" }));
 app.use(express.static(path.join(root, "public"), { extensions: ["html"] }));
+
+app.get("/api/history", async (req, res) => {
+  res.set("Cache-Control", "no-store");
+  const deviceId = String(req.query.deviceId || "");
+  if (!/^[a-zA-Z0-9-]{20,100}$/.test(deviceId)) return res.status(400).json({ error: "Invalid device ID." });
+  if (!historyPool) return res.status(503).json({ error: "Cloud history is not configured." });
+  try {
+    await ensureHistorySchema();
+    const result = await historyPool.query('SELECT conversations, current_id AS "currentId", saved_at AS "savedAt" FROM elia_conversation_snapshots WHERE device_id = $1', [deviceId]);
+    const row = result.rows[0];
+    return res.json({ ok: true, snapshot: row ? { conversations: row.conversations, currentId: row.currentId, savedAt: Number(row.savedAt) } : null });
+  } catch (error) { console.error("[history load] " + (error?.code || error?.name || "Error")); return res.status(503).json({ error: "Could not load cloud history." }); }
+});
+app.put("/api/history", async (req, res) => {
+  res.set("Cache-Control", "no-store");
+  const { deviceId, conversations } = req.body || {};
+  const currentId = typeof req.body?.currentId === "string" ? req.body.currentId.slice(0, 100) : null;
+  const savedAt = Number(req.body?.savedAt);
+  if (typeof deviceId !== "string" || !/^[a-zA-Z0-9-]{20,100}$/.test(deviceId) || !Array.isArray(conversations) || conversations.length > 500 || !Number.isFinite(savedAt)) return res.status(400).json({ error: "Invalid history snapshot." });
+  if (JSON.stringify(conversations).length > 4000000) return res.status(413).json({ error: "History snapshot is too large." });
+  if (!historyPool) return res.status(503).json({ error: "Cloud history is not configured." });
+  try {
+    await ensureHistorySchema();
+    await historyPool.query("INSERT INTO elia_conversation_snapshots (device_id, conversations, current_id, saved_at, updated_at) VALUES ($1, $2::jsonb, $3, $4, now()) ON CONFLICT (device_id) DO UPDATE SET conversations = EXCLUDED.conversations, current_id = EXCLUDED.current_id, saved_at = EXCLUDED.saved_at, updated_at = now() WHERE elia_conversation_snapshots.saved_at <= EXCLUDED.saved_at", [deviceId, JSON.stringify(conversations), currentId, Math.trunc(savedAt)]);
+    return res.json({ ok: true });
+  } catch (error) { console.error("[history save] " + (error?.code || error?.name || "Error")); return res.status(503).json({ error: "Could not save cloud history." }); }
+});
 
 app.get("/api/health", (_req, res) => {
   res.set("Cache-Control", "no-store");
@@ -195,8 +230,8 @@ app.post("/api/chat", async (req, res) => {
     return res.status(503).json({ error: "The server is missing its GROQ_API_KEY environment variable." });
   }
 
-  const requestedModel = String(req.body?.model || "openai/gpt-oss-20b");
-  const selectedModel = availableChatModels.has(requestedModel) ? requestedModel : "openai/gpt-oss-20b";
+  const requestedModel = String(req.body?.model || "meta-models/muse-spark-open");
+  const selectedModel = availableChatModels.has(requestedModel) ? requestedModel : "meta-models/muse-spark-open";
   const thinkingLevel = ["low", "medium", "high"].includes(req.body?.thinkingLevel) ? req.body.thinkingLevel : "medium";
   const requestedMaxTokens = thinkingTokenLimits[thinkingLevel];
   const maxCompletionTokens = Math.min(requestedMaxTokens, modelTokenLimits[selectedModel] || requestedMaxTokens);
