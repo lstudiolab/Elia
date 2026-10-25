@@ -1,6 +1,7 @@
 import express from "express";
 import { readFile } from "node:fs/promises";
 import { execFile } from "node:child_process";
+import { existsSync } from "node:fs";
 import { promisify } from "node:util";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -10,11 +11,13 @@ const port = Number(process.env.PORT) || 3000;
 const root = path.dirname(fileURLToPath(import.meta.url));
 const defaultModel = process.env.GROQ_MODEL || "openai/gpt-oss-20b";
 const complexModel = process.env.GROQ_COMPLEX_MODEL || "openai/gpt-oss-120b";
+const visionModel = process.env.GROQ_VISION_MODEL || "qwen/qwen3.8-27b";
+const providerToolModels = new Set(["openai/gpt-oss-20b", "openai/gpt-oss-120b"]);
 const execFileAsync = promisify(execFile);
 const cppToolPath = path.join(root, "elia-tools");
 
 app.disable("x-powered-by");
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "35mb" }));
 app.use(express.static(path.join(root, "public"), { extensions: ["html"] }));
 
 app.get("/api/health", (_req, res) => {
@@ -23,7 +26,18 @@ app.get("/api/health", (_req, res) => {
     ok: true,
     configured: Boolean(process.env.GROQ_API_KEY),
     model: defaultModel,
-    complexModel
+    complexModel,
+    visionModel,
+    cppRuntime: existsSync(cppToolPath),
+    tools: {
+      calculator: existsSync(cppToolPath),
+      unitConvert: existsSync(cppToolPath),
+      currentTime: existsSync(cppToolPath),
+      textStats: existsSync(cppToolPath),
+      browserSearch: Boolean(process.env.GROQ_API_KEY) && (providerToolModels.has(defaultModel) || providerToolModels.has(complexModel)),
+      codeInterpreter: Boolean(process.env.GROQ_API_KEY) && (providerToolModels.has(defaultModel) || providerToolModels.has(complexModel)),
+      imageUnderstanding: Boolean(process.env.GROQ_API_KEY)
+    }
   });
 });
 
@@ -184,8 +198,14 @@ app.post("/api/chat", async (req, res) => {
 
   const messages = incoming.map((message) => {
     const role = ["user", "assistant"].includes(message?.role) ? message.role : "user";
-    return { role, content: String(message?.content ?? "").slice(0, 12000) };
-  }).filter((message) => message.content.trim());
+    const content = String(message?.content ?? "").slice(0, 12000);
+    const images = Array.isArray(message?.images)
+      ? message.images.filter((image) => typeof image === "string"
+        && image.length <= 11 * 1024 * 1024
+        && /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=\r\n]+$/.test(image)).slice(0, 3)
+      : [];
+    return { role, content, images };
+  }).filter((message) => message.content.trim() || message.images.length > 0);
 
   if (!messages.length || !messages.some((message) => message.role === "user")) {
     return res.status(400).json({ error: "Include a non-empty user message." });
@@ -198,11 +218,20 @@ app.post("/api/chat", async (req, res) => {
       return res.status(500).json({ error: "Elia's system instructions are empty. Check systempromt.md." });
     }
 
-    const selectedComplexModel = shouldUseComplexModel(messages);
-    const useWebSearch = shouldUseWebSearch(messages);
+    const hasImages = messages.some((message) => message.images.length > 0);
+    const selectedComplexModel = hasImages ? false : shouldUseComplexModel(messages);
+    const useWebSearch = hasImages ? false : shouldUseWebSearch(messages);
     const groqMessages = [
       { role: "system", content: systemPrompt },
-      ...messages.filter((message) => message.role !== "system")
+      ...messages.filter((message) => message.role !== "system").map((message) => message.images.length
+        ? {
+            role: message.role,
+            content: [
+              { type: "text", text: message.content || "Please describe the attached image." },
+              ...message.images.map((url) => ({ type: "image_url", image_url: { url } }))
+            ]
+          }
+        : { role: message.role, content: message.content })
     ];
 
     const localToolDefinitions = [
@@ -247,10 +276,16 @@ app.post("/api/chat", async (req, res) => {
         };
 
         if (useWebSearch) {
-          requestBody.tools = [{ type: "browser_search" }];
+          // Groq orchestrates these built-in tools on its own infrastructure.
+          requestBody.tools = [{ type: "browser_search" }, { type: "code_interpreter" }];
           requestBody.tool_choice = "required";
-        } else {
+        } else if (hasImages) {
+          // Qwen vision supports image inputs and user-defined function tools.
           requestBody.tools = localToolDefinitions;
+          requestBody.tool_choice = "auto";
+        } else {
+          // Code Interpreter is provider-sandboxed; our own deterministic tools run in C++.
+          requestBody.tools = [{ type: "code_interpreter" }, ...localToolDefinitions];
           requestBody.tool_choice = "auto";
         }
 
@@ -295,8 +330,8 @@ app.post("/api/chat", async (req, res) => {
       throw new Error("Tool execution did not complete.");
     }
 
-    let actualModel = selectedComplexModel ? complexModel : defaultModel;
-    let actualRoute = selectedComplexModel ? "complex" : "standard";
+    let actualModel = hasImages ? visionModel : selectedComplexModel ? complexModel : defaultModel;
+    let actualRoute = hasImages ? "vision" : selectedComplexModel ? "complex" : "standard";
     let completion;
 
     try {
@@ -308,7 +343,7 @@ app.post("/api/chat", async (req, res) => {
 
     // If a standard-model response clearly fails at a coding task, automatically
     // retry once on 120B. Never retry a request that already used the complex model.
-    if (!selectedComplexModel && shouldEscalateWeakAnswer(messages, completion.reply)) {
+    if (!hasImages && !selectedComplexModel && shouldEscalateWeakAnswer(messages, completion.reply)) {
       console.warn("[model escalation] Standard response was insufficient; retrying with complex model.", JSON.stringify({
         initialModel: actualModel,
         retryModel: complexModel,
