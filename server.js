@@ -9,10 +9,11 @@ import { fileURLToPath } from "node:url";
 const app = express();
 const port = Number(process.env.PORT) || 3000;
 const root = path.dirname(fileURLToPath(import.meta.url));
-const defaultModel = process.env.GROQ_MODEL || "openai/gpt-oss-20b";
-const complexModel = process.env.GROQ_COMPLEX_MODEL || "openai/gpt-oss-120b";
+const defaultModel = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+const complexModel = process.env.GROQ_COMPLEX_MODEL || "llama-3.3-70b-versatile";
 const visionModel = process.env.GROQ_VISION_MODEL || "qwen/qwen3.8-27b";
 const providerToolModels = new Set(["openai/gpt-oss-20b", "openai/gpt-oss-120b"]);
+const webSearchModel = "openai/gpt-oss-120b";
 const execFileAsync = promisify(execFile);
 const cppToolPath = path.join(root, "elia-tools");
 
@@ -371,12 +372,12 @@ app.post("/api/chat", async (req, res) => {
       throw new Error("Tool execution did not complete.");
     }
 
-    let actualModel = hasImages ? visionModel : selectedComplexModel ? complexModel : defaultModel;
-    let actualRoute = hasImages ? "vision" : selectedComplexModel ? "complex" : "standard";
+    let actualModel = hasImages ? visionModel : useWebSearch ? webSearchModel : selectedComplexModel ? complexModel : defaultModel;
+    let actualRoute = hasImages ? "vision" : useWebSearch ? "web_search" : selectedComplexModel ? "complex" : "standard";
     let completion;
 
     try {
-      completion = await requestCompletion(actualModel, selectedComplexModel);
+      completion = await requestCompletion(actualModel, selectedComplexModel || useWebSearch);
     } catch (error) {
       if (selectedComplexModel) throw error;
       throw error;
@@ -384,7 +385,7 @@ app.post("/api/chat", async (req, res) => {
 
     // If a standard-model response clearly fails at a coding task, automatically
     // retry once on 120B. Never retry a request that already used the complex model.
-    if (!hasImages && !selectedComplexModel && shouldEscalateWeakAnswer(messages, completion.reply)) {
+    if (!hasImages && !useWebSearch && !selectedComplexModel && shouldEscalateWeakAnswer(messages, completion.reply)) {
       console.warn("[model escalation] Standard response was insufficient; retrying with complex model.", JSON.stringify({
         initialModel: actualModel,
         retryModel: complexModel,
