@@ -2136,7 +2136,7 @@
           .replace(/[*_#>\x60]/g, "")
           .trim() || "No text preview";
       };
-      let conversationLayout = localStorage.getItem("elia-conversation-layout-v1") === "list" ? "list" : "grid";
+      let conversationLayout = "grid"; try { if (localStorage.getItem("elia-conversation-layout-v1") === "list") conversationLayout = "list"; } catch {}
       let conversationSelectionMode = false;
       const selectedConversationIds = new Set();
       const renderConversationCards = () => {
@@ -2438,6 +2438,7 @@
             const typingRow = $("#typingIndicator");
             if (typingRow?._tokenRevealTimer) window.clearTimeout(typingRow._tokenRevealTimer);
             typingRow?.remove();
+            voiceModePendingResponse = false;
             const builtInReply = "I can help you plan an image and write a detailed prompt, but direct image generation is not available in this chat yet. Tell me the subject, style, colors, and composition you want, and I’ll prepare a prompt you can use in an image generator.";
             conversation.messages.push({ id: uid(), role: "assistant", content: builtInReply, errorKind: "image-generation-unavailable" });
             conversation.updatedAt = Date.now();
