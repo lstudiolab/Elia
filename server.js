@@ -314,7 +314,7 @@ app.post("/api/chat", async (req, res) => {
           messages: requestMessages,
           temperature: 1,
           reasoning_effort: "high",
-          max_completion_tokens: isComplex ? 4096 : 2048,
+          max_completion_tokens: maxCompletionTokens,
           stream: false
         };
 
@@ -382,12 +382,12 @@ app.post("/api/chat", async (req, res) => {
       throw new Error("Tool execution did not complete.");
     }
 
-    let actualModel = hasImages ? visionModel : useWebSearch ? webSearchModel : selectedComplexModel ? complexModel : defaultModel;
-    let actualRoute = hasImages ? "vision" : useWebSearch ? "web_search" : selectedComplexModel ? "complex" : "standard";
+    let actualModel = hasImages ? visionModel : useWebSearch ? webSearchModel : selectedModel;
+    let actualRoute = hasImages ? "vision" : useWebSearch ? "web_search" : "selected_model";
     let completion;
 
     try {
-      completion = await requestCompletion(actualModel, selectedComplexModel || useWebSearch);
+      completion = await requestCompletion(actualModel, selectedComplexModel || useWebSearch || selectedModel === "openai/gpt-oss-120b");
     } catch (error) {
       if (selectedComplexModel) throw error;
       throw error;
@@ -395,7 +395,7 @@ app.post("/api/chat", async (req, res) => {
 
     // If a standard-model response clearly fails at a coding task, automatically
     // retry once on 120B. Never retry a request that already used the complex model.
-    if (!hasImages && !useWebSearch && !selectedComplexModel && shouldEscalateWeakAnswer(messages, completion.reply)) {
+    if (!hasImages && !useWebSearch && selectedModel === "openai/gpt-oss-20b" && shouldEscalateWeakAnswer(messages, completion.reply)) {
       console.warn("[model escalation] Standard response was insufficient; retrying with complex model.", JSON.stringify({
         initialModel: actualModel,
         retryModel: complexModel,
