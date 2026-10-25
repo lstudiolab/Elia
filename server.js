@@ -221,9 +221,41 @@ app.post("/api/chat", async (req, res) => {
     const hasImages = messages.some((message) => message.images.length > 0);
     const selectedComplexModel = hasImages ? false : shouldUseComplexModel(messages);
     const useWebSearch = hasImages ? false : shouldUseWebSearch(messages);
+
+    // Groq's free-tier token-per-minute allowance is much smaller than the model's
+    // context window. Keep recent history only, and reserve room for the answer.
+    // This is a character-based estimate, not an exact tokenizer.
+    const estimateTokens = (text) => Math.ceil(String(text || "").length / 4);
+    const systemTokens = estimateTokens(systemPrompt);
+    const inputBudget = Math.max(1200, 5600 - systemTokens);
+    const trimmedMessages = [];
+    let usedTokens = 0;
+    for (let i = messages.length - 1; i >= 0; i -= 1) {
+      const message = messages[i];
+      const textTokens = estimateTokens(message.content);
+      const imageTokens = message.images.length ? message.images.length * 1100 : 0;
+      const messageTokens = textTokens + imageTokens + 8;
+      if (trimmedMessages.length > 0 && usedTokens + messageTokens > inputBudget) continue;
+      if (trimmedMessages.length === 0 && message.role === "user" && messageTokens > inputBudget) {
+        const maxChars = Math.max(1000, (inputBudget - imageTokens) * 4);
+        trimmedMessages.push({ ...message, content: message.content.slice(-maxChars) });
+        usedTokens = inputBudget;
+        continue;
+      }
+      if (usedTokens + messageTokens <= inputBudget) {
+        trimmedMessages.push(message);
+        usedTokens += messageTokens;
+      }
+    }
+    trimmedMessages.reverse();
+    if (!trimmedMessages.some((message) => message.role === "user")) {
+      const lastUser = [...messages].reverse().find((message) => message.role === "user");
+      if (lastUser) trimmedMessages.push(lastUser);
+    }
+
     const groqMessages = [
       { role: "system", content: systemPrompt },
-      ...messages.filter((message) => message.role !== "system").map((message) => message.images.length
+      ...trimmedMessages.map((message) => message.images.length
         ? {
             role: message.role,
             content: [
@@ -271,7 +303,7 @@ app.post("/api/chat", async (req, res) => {
           messages: requestMessages,
           temperature: 1,
           reasoning_effort: "high",
-          max_completion_tokens: isComplex ? 16384 : 8192,
+          max_completion_tokens: isComplex ? 4096 : 2048,
           stream: false
         };
 
@@ -302,11 +334,17 @@ app.post("/api/chat", async (req, res) => {
         const data = await upstream.json().catch(() => ({}));
         if (!upstream.ok) {
           const providerMessage = data?.error?.message;
+          const retryAfter = Number(upstream.headers.get("retry-after") || 0);
           console.error("Groq request failed:", upstream.status, providerMessage || "Unknown upstream error");
           const error = new Error(upstream.status === 429
-            ? "The AI service is busy or rate-limited. Wait a moment and try again."
-            : "The AI provider rejected the request. Check the server's Groq configuration.");
-          error.status = upstream.status === 429 ? 429 : 502;
+            ? (retryAfter > 0
+              ? `Elia has reached Groq's temporary usage limit. Try again in about ${Math.ceil(retryAfter)} seconds.`
+              : "Elia has reached Groq's temporary usage limit. Wait a moment and try again.")
+            : (upstream.status === 413
+              ? "This message and its conversation history are too large for the current Groq token allowance. Shorten the message or start a new chat."
+              : "The AI provider rejected the request. Check the server's Groq configuration."));
+          error.status = upstream.status === 429 ? 429 : upstream.status === 413 ? 413 : 502;
+          error.retryAfter = retryAfter;
           throw error;
         }
 
@@ -385,8 +423,16 @@ app.post("/api/chat", async (req, res) => {
       totalTokens
     });
   } catch (error) {
-    console.error("Chat request failed:", error?.name || "Error");
-    return res.status(504).json({ error: "The AI request timed out or could not reach the provider. Try again." });
+    console.error("Chat request failed:", error?.status || error?.name || "Error");
+    if (error?.status === 429 || error?.status === 413) {
+      return res.status(error.status).json({
+        error: error.message,
+        ...(error.retryAfter > 0 ? { retryAfter: error.retryAfter } : {})
+      });
+    }
+    return res.status(error?.name === "TimeoutError" ? 504 : 502).json({
+      error: error?.message || "Elia could not reach the AI provider. Please try again."
+    });
   }
 });
 
