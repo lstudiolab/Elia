@@ -1234,6 +1234,14 @@
     /* Prevent pinch and double-tap page zoom on touch browsers. */
     html, body { touch-action: pan-x pan-y; }
 
+    /* Native selects use the platform picker on iOS. */
+    .composer-settings{width:min(100%,640px);margin:0 auto 10px;padding-left:8px;display:flex;align-items:center;gap:8px}
+    .setting-select{min-width:0;display:flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--panel) 86%,transparent);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%)}
+    .setting-label{color:var(--muted);font-size:11px;white-space:nowrap}
+    .setting-select select{min-width:0;max-width:190px;border:0;outline:0;background:transparent;color:var(--ink);font:inherit;font-size:12px;font-weight:600;appearance:auto;-webkit-appearance:menulist;cursor:pointer}
+    .thinking-select select{max-width:160px}
+    @media(max-width:760px){.composer-settings{width:100%;padding-left:0;margin-bottom:9px;gap:7px}.setting-select{flex:1;padding:8px 9px;gap:5px}.setting-select select{flex:1;width:0;max-width:none;font-size:12px}.setting-label{font-size:10px}.composer-dock{padding-top:12px}}
+    @media(max-width:390px){.composer-settings{gap:5px}.setting-select{padding:7px 6px}.setting-label{display:none}.setting-select select{font-size:11px}}
   </style>
 </head>
 <body>
@@ -1271,6 +1279,10 @@
         <section class="thread" id="thread" aria-live="polite" aria-label="Chat messages"></section>
       </section>
       <div class="composer-dock">
+        <div class="composer-settings" aria-label="Model and thinking settings">
+          <label class="setting-select"><span class="setting-label">Model</span><select id="modelSelect" aria-label="Choose Elia model"><option value="meta-models/muse-spark-open">Elia Oplus</option><option value="openai/gpt-oss-20b" selected>Elia Awlus</option><option value="qwen/qwen3.8-27b">Elia Argus</option><option value="openai/gpt-oss-120b">Elia Astrata</option></select></label>
+          <label class="setting-select thinking-select"><span class="setting-label">Thinking</span><select id="thinkingSelect" aria-label="Choose thinking level"><option value="low">Low · 8K tokens</option><option value="medium" selected>Medium · 12K tokens</option><option value="high">High · 20K tokens</option></select></label>
+        </div>
         <div class="composer-inner">
           <div class="attach-wrap">
             <button class="attach-button" id="attachButton" type="button" aria-label="Add photos or files" aria-expanded="false">+</button>
@@ -1317,6 +1329,13 @@
       let health = { configured: false, model: "Groq AI" };
       let toastTimer;
       let pendingFiles = [];
+      const modelSelect = $("#modelSelect");
+      const thinkingSelect = $("#thinkingSelect");
+      const MODEL_PREF_KEY = "elia-model-preference-v1";
+      const THINKING_PREF_KEY = "elia-thinking-preference-v1";
+      try { const savedModel = localStorage.getItem(MODEL_PREF_KEY); const savedThinking = localStorage.getItem(THINKING_PREF_KEY); if (savedModel && Array.from(modelSelect.options).some((option) => option.value === savedModel)) modelSelect.value = savedModel; if (["low","medium","high"].includes(savedThinking)) thinkingSelect.value = savedThinking; } catch {}
+      modelSelect.addEventListener("change", () => { try { localStorage.setItem(MODEL_PREF_KEY, modelSelect.value); } catch {} });
+      thinkingSelect.addEventListener("change", () => { try { localStorage.setItem(THINKING_PREF_KEY, thinkingSelect.value); } catch {} });
       const scrollToLatest = (behavior = "smooth") => requestAnimationFrame(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior }));
       const fileTextExtensions = /\.(txt|md|csv|json|html|css|js|ts|py|c|cpp|h|hpp|xml|yaml|yml|log)$/i;
       const readTextFile = (file) => new Promise((resolve) => {
@@ -1685,7 +1704,7 @@
           const response = await fetch("/api/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ messages: conversation.messages.map((message, index, all) => ({ role: message.role, content: message.content, ...(index === all.length - 1 && message.role === "user" && imagesToSend.length ? { images: imagesToSend } : {}) })) })
+            body: JSON.stringify({ model: modelSelect.value, thinkingLevel: thinkingSelect.value, messages: conversation.messages.map((message, index, all) => ({ role: message.role, content: message.content, ...(index === all.length - 1 && message.role === "user" && imagesToSend.length ? { images: imagesToSend } : {}) })) })
           });
           const data = await response.json().catch(() => ({}));
           const typingRow = $("#typingIndicator");
