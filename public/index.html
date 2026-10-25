@@ -1758,6 +1758,7 @@
     .preference-field select { width:100%;min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.75);color:var(--ink);font:inherit;font-size:14px; }
     .preference-field small { color:var(--muted);font-size:11px;line-height:1.45; }
     .preferences-tools { display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:3px; }
+    .preferences-note { margin:0;color:var(--muted);font-size:11px;line-height:1.5; }
     .preferences-tools button,.preferences-secondary,.preferences-primary { min-height:42px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.66);color:var(--ink);font:inherit;font-size:12px;font-weight:600; }
     .preferences-footer { display:flex;justify-content:flex-end;gap:9px;padding-top:4px; }
     .preferences-secondary,.preferences-primary { min-width:100px; }
@@ -1873,7 +1874,7 @@
       <label class="preference-field"><span>Appearance</span><select id="prefTheme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
       <label class="preference-field"><span>Motion</span><select id="prefMotion"><option value="system">System preference</option><option value="reduced">Reduce motion</option></select></label>
       <label class="preference-field"><span>Glass effects</span><select id="prefGlass"><option value="on">Liquid Glass effects</option><option value="reduced">Reduce transparency</option></select></label>
-      <div class="preferences-tools"><button type="button" id="exportBackupButton">Export all conversations</button><button type="button" id="importBackupButton">Import a backup</button><input type="file" id="importBackupFile" accept="application/json,.json" hidden></div>
+      <div class="preferences-tools"><button type="button" id="exportBackupButton">Export all conversations</button><button type="button" id="importBackupButton">Import a backup</button><input type="file" id="importBackupFile" accept="application/json,.json" hidden></div><p class="preferences-note">Import a backup on another device to restore conversations and carry over its sync key. Shared cloud history requires a configured database on the Elia server.</p>
       <div class="preferences-footer"><button type="button" id="preferencesCancel" class="preferences-secondary">Cancel</button><button type="button" id="preferencesSave" class="preferences-primary">Save settings</button></div>
     </form>
   </dialog>
@@ -2148,7 +2149,7 @@
           .replace(/[*_#>\x60]/g, "")
           .trim() || "No text preview";
       };
-      let conversationLayout = "grid";
+      let conversationLayout = localStorage.getItem("elia-conversation-layout-v1") === "list" ? "list" : "grid";
       let conversationSelectionMode = false;
       const selectedConversationIds = new Set();
       const renderConversationCards = () => {
