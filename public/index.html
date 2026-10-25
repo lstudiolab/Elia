@@ -2131,6 +2131,15 @@
         $("#conversationSelectedCount").textContent = selectedConversationIds.size + " selected";
         applyConversationSearch();
         cards.querySelectorAll("[data-conversation-id]").forEach((card) => card.addEventListener("click", (event) => {
+          const moreButton = event.target.closest("[data-card-more]");
+          if (moreButton) {
+            event.preventDefault(); event.stopPropagation();
+            const menu = $("#conversationCardMenu"); menu.dataset.conversationId = card.dataset.conversationId;
+            const rect = moreButton.getBoundingClientRect();
+            menu.style.left = Math.min(window.innerWidth - 198, Math.max(8, rect.right - 190)) + "px";
+            menu.style.top = Math.min(window.innerHeight - 150, Math.max(8, rect.bottom + 5)) + "px";
+            menu.hidden = false; return;
+          }
           const id = card.dataset.conversationId;
           if (conversationSelectionMode) {
             event.preventDefault();
