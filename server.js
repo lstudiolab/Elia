@@ -9,8 +9,8 @@ import { fileURLToPath } from "node:url";
 const app = express();
 const port = Number(process.env.PORT) || 3000;
 const root = path.dirname(fileURLToPath(import.meta.url));
-const defaultModel = process.env.GROQ_MODEL || "openai/gpt-oss-20b";
-const complexModel = process.env.GROQ_COMPLEX_MODEL || "openai/gpt-oss-120b";
+const defaultModel = "openai/gpt-oss-20b";
+const complexModel = "openai/gpt-oss-120b";
 const availableChatModels = new Set(["meta-models/muse-spark-open", "openai/gpt-oss-20b", "qwen/qwen3.8-27b", "openai/gpt-oss-120b"]);
 const thinkingTokenLimits = { low: 8000, medium: 12000, high: 20000 };
 const modelTokenLimits = { "qwen/qwen3.8-27b": 16384 };
@@ -313,10 +313,11 @@ app.post("/api/chat", async (req, res) => {
           model,
           messages: requestMessages,
           temperature: 1,
-          reasoning_effort: "high",
           max_completion_tokens: maxCompletionTokens,
           stream: false
         };
+
+        if (providerToolModels.has(model)) requestBody.reasoning_effort = "high";
 
         if (useWebSearch) {
           // Force the provider-hosted browser search for explicit/current research requests.
