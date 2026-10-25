@@ -1290,6 +1290,13 @@
         reader.onerror = () => resolve("[Could not read " + file.name + ".]");
         reader.readAsText(file);
       });
+      const readImageDataUrl = (file) => new Promise((resolve, reject) => {
+        if (!file.type.startsWith("image/")) return resolve("");
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(new Error("Could not read image " + file.name + "."));
+        reader.readAsDataURL(file);
+      });
       const renderPendingFiles = () => {
         const wrap = $("#pendingAttachments");
         wrap.innerHTML = pendingFiles.map((item, index) => '<div class="pending-attachment"><span>' + escapeHtml(item.file.name) + '</span><button type="button" data-remove-file="' + index + '" aria-label="Remove ' + escapeHtml(item.file.name) + '">×</button></div>').join("");
@@ -1298,7 +1305,7 @@
           renderPendingFiles();
           resizePrompt();
         }));
-        $("#attachmentNote").textContent = pendingFiles.some((item) => item.file.type.startsWith("image/")) ? "Images can be attached, but GPT-OSS 20B currently processes text only." : "";
+        $("#attachmentNote").textContent = pendingFiles.some((item) => item.file.type.startsWith("image/")) ? "Images can be attached, but Images are sent to Elia for visual analysis (up to 3 images per message)." : "";
       };
       const pickFiles = (files) => {
         for (const file of Array.from(files || [])) {
@@ -1558,12 +1565,19 @@
         renderPendingFiles();
         const attachmentMeta = filesToSend.map((item) => ({ name: item.file.name, image: item.preview || "" }));
         let promptText = text;
+        const imagesToSend = [];
         for (const item of filesToSend) {
           if (fileTextExtensions.test(item.file.name) && !item.file.type.startsWith("image/")) {
             const extracted = await readTextFile(item.file);
             promptText += (promptText ? "\n\n" : "") + "[Attached file: " + item.file.name + "]\n" + extracted;
           } else if (item.file.type.startsWith("image/")) {
-            promptText += (promptText ? "\n\n" : "") + "[Attached image: " + item.file.name + ". The current model cannot inspect image pixels.]";
+            if (imagesToSend.length < 3) {
+              try { imagesToSend.push(await readImageDataUrl(item.file)); }
+              catch (error) { showToast(error.message || "Could not read image."); }
+            } else {
+              promptText += (promptText ? "\n\n" : "") + "[Image not sent: " + item.file.name + ". Elia accepts up to 3 images per message.]";
+            }
+            promptText += (promptText ? "\n\n" : "") + "[Attached image: " + item.file.name + "]";
           } else {
             promptText += (promptText ? "\n\n" : "") + "[Attached file: " + item.file.name + " (" + item.file.type + ", " + item.file.size + " bytes). This file type is attached for reference but its contents were not extracted.]";
           }
@@ -1586,7 +1600,7 @@
           const response = await fetch("/api/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ messages: conversation.messages.map(({ role, content }) => ({ role, content })) })
+            body: JSON.stringify({ messages: conversation.messages.map((message, index, all) => ({ role: message.role, content: message.content, ...(index === all.length - 1 && message.role === "user" && imagesToSend.length ? { images: imagesToSend } : {}) })) })
           });
           const data = await response.json().catch(() => ({}));
           const typingRow = $("#typingIndicator");
