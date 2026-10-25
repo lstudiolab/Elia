@@ -22,6 +22,16 @@
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
     }
     * { box-sizing: border-box; }
+    #eliaLiquidCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.72;mix-blend-mode:multiply;}
+    body>.app{position:relative;z-index:1}
+    .sidebar{background:rgba(244,244,241,.72)!important;-webkit-backdrop-filter:blur(26px) saturate(155%);backdrop-filter:blur(26px) saturate(155%)}
+    .topbar{background:rgba(247,247,245,.52);-webkit-backdrop-filter:blur(24px) saturate(165%);backdrop-filter:blur(24px) saturate(165%)}
+    .composer{background:rgba(255,255,255,.62)!important;border-color:rgba(255,255,255,.8)!important;box-shadow:0 12px 36px rgba(43,47,40,.075),inset 0 1px 0 rgba(255,255,255,.88),inset 0 -1px 0 rgba(145,151,132,.13)!important;-webkit-backdrop-filter:blur(28px) saturate(185%);backdrop-filter:blur(28px) saturate(185%)}
+    .attach-button{background:rgba(255,255,255,.66)!important;border-color:rgba(255,255,255,.82)!important;-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%)}
+    .elia-settings-menu,.conversation-menu,.attachment-menu{background:rgba(250,250,247,.70)!important;border-color:rgba(255,255,255,.78)!important;box-shadow:0 18px 50px rgba(38,42,34,.13),inset 0 1px 0 rgba(255,255,255,.9)!important;-webkit-backdrop-filter:blur(32px) saturate(190%);backdrop-filter:blur(32px) saturate(190%)}
+    .composer-dock{background:linear-gradient(180deg,rgba(247,247,245,0),rgba(247,247,245,.74) 30%,rgba(247,247,245,.88) 100%)!important;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+    .history-item.active,.conversation-card{background:rgba(255,255,255,.48)}
+    @media(prefers-reduced-motion:reduce){#eliaLiquidCanvas{opacity:.3}}
     html, body { height: 100%; margin: 0; }
     body { background: var(--bg); color: var(--ink); }
     button, textarea { font: inherit; }
@@ -1370,6 +1380,7 @@
   </style>
 </head>
 <body>
+  <canvas id="eliaLiquidCanvas" aria-hidden="true"></canvas>
   <div class="app">
     <aside class="sidebar" aria-label="Conversation sidebar">
       <div class="brand">
@@ -2270,5 +2281,36 @@
       });
     })();
   </script>
+
+  <script>
+    (() => {
+      const canvas = document.getElementById("eliaLiquidCanvas");
+      if (!canvas) return;
+      const gl = canvas.getContext("webgl", { alpha: true, antialias: false, depth: false, stencil: false, powerPreference: "low-power" });
+      if (!gl) { canvas.style.display = "none"; return; }
+      const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const vertex = "attribute vec2 p; void main(){gl_Position=vec4(p,0.0,1.0);}";
+      const fragment = "precision mediump float; uniform vec2 r; uniform float t; varying vec2 v; void main(){vec2 uv=gl_FragCoord.xy/r; vec2 p=(uv-.5)*vec2(r.x/r.y,1.0); float tm=t*.16; float a=sin(p.x*1.7+tm+sin(p.y*2.4-tm*.7)); float b=cos(p.y*2.0-tm*.8+sin(p.x*2.1+tm*.5)); float c=sin((p.x+p.y)*1.7+tm*.45); float field=(a+b+c)/3.0; float glow=smoothstep(.65,-.2,abs(field-.12)); vec3 cream=vec3(.94,.94,.89); vec3 sage=vec3(.70,.78,.64); vec3 blue=vec3(.72,.82,.88); vec3 lilac=vec3(.84,.79,.89); float g1=smoothstep(.2,.95,sin(p.x*1.1+p.y*.65+tm)+.2); float g2=smoothstep(.25,.98,cos(p.y*1.4-p.x*.55-tm*.7)); vec3 col=mix(cream,sage,glow*.42*g1); col=mix(col,blue,glow*.28*g2); col=mix(col,lilac,glow*.16*(1.0-g1)); float edge=smoothstep(1.25,.15,length(p)); float alpha=(.045+glow*.12)*edge; gl_FragColor=vec4(col,alpha);}";
+      function shader(type, source) { const sh=gl.createShader(type); gl.shaderSource(sh,source); gl.compileShader(sh); if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS)){gl.deleteShader(sh);return null;} return sh; }
+      const vs=shader(gl.VERTEX_SHADER,vertex), fs=shader(gl.FRAGMENT_SHADER,fragment);
+      if(!vs||!fs){canvas.style.display="none";return;}
+      const program=gl.createProgram(); gl.attachShader(program,vs); gl.attachShader(program,fs); gl.linkProgram(program);
+      if(!gl.getProgramParameter(program,gl.LINK_STATUS)){canvas.style.display="none";return;}
+      gl.useProgram(program);
+      const buffer=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buffer); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
+      const position=gl.getAttribLocation(program,"p"); gl.enableVertexAttribArray(position); gl.vertexAttribPointer(position,2,gl.FLOAT,false,0,0);
+      const resolution=gl.getUniformLocation(program,"r"), time=gl.getUniformLocation(program,"t");
+      let width=0,height=0,frame=0,last=0,started=performance.now(),visible=!document.hidden;
+      function resize(){const dpr=Math.min(window.devicePixelRatio||1,1.5);width=Math.max(1,Math.floor(innerWidth*dpr));height=Math.max(1,Math.floor(innerHeight*dpr));if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;gl.viewport(0,0,width,height);gl.uniform2f(resolution,width,height);}}
+      function draw(now){frame=0;if(!visible)return;if(!reducedMotion&&now-last<32){frame=requestAnimationFrame(draw);return;}last=now;resize();gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.uniform1f(time,reducedMotion?0:(now-started)/1000);gl.drawArrays(gl.TRIANGLES,0,6);if(!reducedMotion)frame=requestAnimationFrame(draw);}
+      function start(){if(!frame){visible=true;frame=requestAnimationFrame(draw);}}
+      function stop(){visible=false;if(frame){cancelAnimationFrame(frame);frame=0;}}
+      document.addEventListener("visibilitychange",()=>document.hidden?stop():start());
+      window.addEventListener("resize",resize,{passive:true});
+      if(reducedMotion){resize();gl.uniform1f(time,0);gl.drawArrays(gl.TRIANGLES,0,6);}else start();
+      const observer=new MutationObserver(()=>{if(canvas.isConnected)start();else stop();});observer.observe(document.documentElement,{childList:true,subtree:true});
+    })();
+  </script>
+
 </body>
 </html>
