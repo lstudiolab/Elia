@@ -1251,6 +1251,121 @@
     @media(max-width:390px){.elia-settings{gap:4px}.elia-model-control,.elia-thinking-control{padding-left:7px;padding-right:20px;font-size:11px}.settings-chevron{right:5px}.elia-thinking-control{max-width:91px}.topbar{padding-left:9px;padding-right:9px}.conversation-menu-button{width:34px;height:34px}}
     .thread { padding-bottom:250px !important; }
     @media(max-width:760px) { .thread { padding-bottom:205px !important; } }
+
+    /* Elia motion system: small, crisp scale-ins with restrained depth and stagger. */
+    @keyframes eliaScaleIn {
+      0% { opacity: 0; transform: translateY(7px) scale(.965); }
+      70% { opacity: 1; transform: translateY(-1px) scale(1.004); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes eliaSoftIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .sidebar { animation: eliaSoftIn .42s cubic-bezier(.2,.75,.25,1) both; }
+    .topbar { animation: eliaSoftIn .38s cubic-bezier(.2,.75,.25,1) both; }
+    .workspace, #conversationsPage { animation: eliaSoftIn .42s cubic-bezier(.2,.75,.25,1) both; }
+    .brand-mark, .welcome-mark, .model-pill, .elia-settings,
+    .conversation-menu-button, .attach-button, .send-button,
+    .library-action, .icon-button {
+      transition: transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease,
+        border-color .22s ease, background-color .22s ease, color .22s ease;
+    }
+    .brand-mark, .welcome-mark { animation: eliaScaleIn .54s cubic-bezier(.2,.8,.2,1) both; }
+    .welcome-mark { animation-delay: 60ms; box-shadow: 0 1px 0 rgba(255,255,255,.7) inset, 0 8px 20px rgba(0,0,0,.045); }
+    .welcome h1, .welcome .eyebrow, .welcome .welcome-copy { animation: eliaSoftIn .48s ease both; }
+    .welcome .eyebrow { animation-delay: 80ms; }
+    .welcome h1 { animation-delay: 115ms; }
+    .welcome .welcome-copy { animation-delay: 155ms; }
+    .suggestion {
+      animation: eliaScaleIn .48s cubic-bezier(.2,.8,.2,1) both;
+      animation-delay: var(--card-delay, 160ms);
+      box-shadow: 0 1px 0 rgba(255,255,255,.72) inset, 0 3px 12px rgba(0,0,0,.025);
+      transition: transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease,
+        border-color .22s ease, background-color .22s ease;
+    }
+    .suggestion:nth-child(1) { --card-delay: 170ms; }
+    .suggestion:nth-child(2) { --card-delay: 215ms; }
+    .suggestion:nth-child(3) { --card-delay: 260ms; }
+    .suggestion:nth-child(4) { --card-delay: 305ms; }
+    .suggestion:active { transform: scale(.985); }
+    .message { animation: eliaScaleIn .32s cubic-bezier(.2,.8,.2,1) both; transform-origin: 50% 85%; }
+    .message.user .message-content { box-shadow: 0 1px 0 rgba(255,255,255,.36) inset, 0 3px 9px rgba(0,0,0,.035); }
+    .composer-dock { animation: eliaSoftIn .38s ease both; }
+    .composer { transition: border-color .2s ease, box-shadow .22s ease, background-color .22s ease; }
+    .attach-button, .send-button, .library-action, .conversation-menu-button {
+      box-shadow: 0 1px 0 rgba(255,255,255,.68) inset, 0 3px 10px rgba(0,0,0,.035);
+    }
+    .attach-button:hover, .conversation-menu-button:hover, .library-action:hover {
+      transform: scale(1.045);
+      box-shadow: 0 1px 0 rgba(255,255,255,.8) inset, 0 6px 16px rgba(0,0,0,.08);
+    }
+    .send-button:not(:disabled):hover { transform: scale(1.045); }
+    .send-button:not(:disabled):active, .attach-button:active,
+    .conversation-menu-button:active, .library-action:active { transform: scale(.94); }
+    .icon-button:active, .feedback-button:active { transform: scale(.92); }
+    .elia-settings label { transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease; }
+    .elia-settings label:focus-within { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent); }
+    .conversation-menu, .attach-menu { transform-origin: top right; }
+    .conversation-menu.open, .attach-menu.open { animation: eliaScaleIn .2s cubic-bezier(.2,.8,.2,1) both; }
+    #conversationCards .conversation-card {
+      animation: eliaScaleIn .46s cubic-bezier(.2,.8,.2,1) both;
+      animation-delay: var(--card-delay, 0ms);
+      transform-origin: 50% 75%;
+      border-color: color-mix(in srgb, var(--line) 82%, var(--ink));
+      box-shadow: 0 1px 0 rgba(255,255,255,.72) inset, 0 5px 16px rgba(0,0,0,.04);
+      transition: transform .24s cubic-bezier(.2,.8,.2,1), border-color .24s ease,
+        box-shadow .24s ease, background-color .24s ease;
+    }
+    #conversationCards .conversation-card::after {
+      content: "";
+      position: absolute;
+      z-index: 1;
+      inset: 0;
+      border: 1px solid rgba(255,255,255,.24);
+      border-radius: inherit;
+      pointer-events: none;
+      opacity: .5;
+      transition: opacity .2s ease;
+    }
+    #conversationCards .conversation-card:hover {
+      transform: translateY(-2px) scale(1.012) !important;
+      box-shadow: 0 1px 0 rgba(255,255,255,.8) inset, 0 12px 26px rgba(0,0,0,.09);
+    }
+    #conversationCards .conversation-card:hover::after { opacity: .95; }
+    #conversationCards .conversation-card:active { transform: scale(.985) !important; }
+    #conversationCards .conversation-card.has-image { box-shadow: 0 4px 18px rgba(0,0,0,.12); }
+    .conversation-card-date { opacity: .76; font-size: 10px; letter-spacing: .045em; }
+    button:focus-visible, select:focus-visible, input:focus-visible {
+      outline: 2px solid color-mix(in srgb, var(--accent) 66%, #8e9d80);
+      outline-offset: 3px;
+    }
+    .history-item, .new-chat, .conversation-menu-item, .attach-option, .feedback-button {
+      transition: transform .18s cubic-bezier(.2,.8,.2,1), background-color .18s ease,
+        color .18s ease, border-color .18s ease;
+    }
+    .history-item:active, .new-chat:active, .conversation-menu-item:active, .attach-option:active {
+      transform: scale(.985);
+    }
+    @media (prefers-color-scheme: dark) {
+      .brand-mark, .welcome-mark { box-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 8px 24px rgba(0,0,0,.2); }
+      .message.user .message-content { box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 4px 12px rgba(0,0,0,.18); }
+      #conversationCards .conversation-card { box-shadow: 0 1px 0 rgba(255,255,255,.05) inset, 0 7px 18px rgba(0,0,0,.22); }
+      #conversationCards .conversation-card::after { border-color: rgba(255,255,255,.08); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .sidebar, .topbar, .workspace, #conversationsPage, .brand-mark, .welcome-mark,
+      .welcome h1, .welcome .eyebrow, .welcome .welcome-copy, .suggestion, .message,
+      .composer-dock, #conversationCards .conversation-card, .conversation-menu.open, .attach-menu.open {
+        animation: none !important;
+      }
+      .brand-mark, .welcome-mark, .model-pill, .elia-settings, .conversation-menu-button,
+      .attach-button, .send-button, .library-action, .icon-button, .suggestion,
+      .conversation-card, .history-item, .new-chat, .conversation-menu-item, .attach-option,
+      .feedback-button, .composer {
+        transition: none !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1328,7 +1443,9 @@
       const notice = $("#notice");
       const historyBox = $("#history");
       const STORAGE_KEY = "elia-chat-v1";
+      const LAST_SAVED_KEY = "elia-chat-saved-at-v1";
       let conversations = [];
+      let persistenceQueue = Promise.resolve();
       let currentId = null;
       let busy = false;
       let health = { configured: false, model: "Groq AI" };
@@ -1397,29 +1514,58 @@
       const uid = () => (globalThis.crypto?.randomUUID?.() || String(Date.now()) + Math.random().toString(36).slice(2));
       const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
       const getCurrent = () => conversations.find((item) => item.id === currentId);
-      const save = () => {
-        try {
-          const serialized = JSON.stringify(conversations);
-          localStorage.setItem(STORAGE_KEY, serialized);
-          if (currentId) localStorage.setItem("elia-current-conversation-v1", currentId);
-          // Keep a second durable copy in IndexedDB for browsers that evict or reject localStorage.
-          if ("indexedDB" in window) {
-            const request = indexedDB.open("elia-local-history-v1", 1);
-            request.onupgradeneeded = () => {
-              if (!request.result.objectStoreNames.contains("state")) request.result.createObjectStore("state");
-            };
-            request.onsuccess = () => {
-              const db = request.result;
-              try {
-                const transaction = db.transaction("state", "readwrite");
-                transaction.objectStore("state").put({ conversations: serialized, currentId, savedAt: Date.now() }, "latest");
-                transaction.oncomplete = () => db.close();
-                transaction.onerror = () => db.close();
-              } catch { db.close(); }
-            };
-            request.onerror = () => {};
+      const openHistoryDatabase = () => new Promise((resolve, reject) => {
+        if (!("indexedDB" in window)) return reject(new Error("IndexedDB is unavailable."));
+        let request;
+        try { request = indexedDB.open("elia-local-history-v1", 1); }
+        catch (error) { reject(error); return; }
+        request.onupgradeneeded = () => {
+          if (!request.result.objectStoreNames.contains("state")) request.result.createObjectStore("state");
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error || new Error("Could not open local history."));
+      });
+      const writeHistorySnapshot = async (serialized, savedAt, selectedId) => {
+        const db = await openHistoryDatabase();
+        await new Promise((resolve, reject) => {
+          let transaction;
+          try {
+            transaction = db.transaction("state", "readwrite");
+            transaction.objectStore("state").put({ conversations: serialized, currentId: selectedId, savedAt, schemaVersion: 1 }, "latest");
+          } catch (error) {
+            db.close();
+            reject(error);
+            return;
           }
-        } catch {
+          transaction.oncomplete = () => { db.close(); resolve(); };
+          transaction.onerror = () => { db.close(); reject(transaction.error || new Error("Could not write local history.")); };
+          transaction.onabort = () => { db.close(); reject(transaction.error || new Error("Local history save was interrupted.")); };
+        });
+      };
+      const save = () => {
+        const savedAt = Date.now();
+        let serialized;
+        try { serialized = JSON.stringify(conversations); }
+        catch { showToast("Could not prepare this conversation for saving."); return; }
+
+        // localStorage gives an immediate synchronous save; IndexedDB is the durable
+        // fallback. A localStorage quota error must never prevent the backup write.
+        let localSaved = false;
+        try {
+          localStorage.setItem(STORAGE_KEY, serialized);
+          localStorage.setItem(LAST_SAVED_KEY, String(savedAt));
+          if (currentId) localStorage.setItem("elia-current-conversation-v1", currentId);
+          localSaved = true;
+        } catch {}
+
+        if ("indexedDB" in window) {
+          // Serializing writes prevents a slower, older snapshot from overwriting a newer one.
+          persistenceQueue = persistenceQueue.catch(() => {}).then(
+            () => writeHistorySnapshot(serialized, savedAt, currentId)
+          ).catch(() => {
+            if (!localSaved) showToast("Could not save chat history on this device.");
+          });
+        } else if (!localSaved) {
           showToast("Could not save chat history on this device.");
         }
       };
@@ -1485,7 +1631,7 @@
           cards.innerHTML = '<div class="conversation-library-empty" aria-label="No saved conversations"><span class="conversation-library-empty-logo">E</span></div>';
           return;
         }
-        cards.innerHTML = savedConversations.map((conversation) => {
+        cards.innerHTML = savedConversations.map((conversation, cardIndex) => {
           const lastAssistant = latestAssistantMessage(conversation);
           const image = imageFromMessage(lastAssistant);
           const title = conversation.title || "New conversation";
@@ -1496,7 +1642,7 @@
           const dateLabel = age < 7 * dayMs
             ? new Intl.DateTimeFormat(undefined, { weekday: "long" }).format(new Date(startedAt))
             : new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: new Date(startedAt).getFullYear() !== new Date().getFullYear() ? "numeric" : undefined }).format(new Date(startedAt));
-          return '<button type="button" class="conversation-card ' + (image ? "has-image" : "") + '" data-conversation-id="' + escapeHtml(conversation.id) + '" title="' + escapeHtml(title) + '">'
+          return '<button type="button" class="conversation-card ' + (image ? "has-image" : "") + '" style="--card-delay:' + (Math.min(cardIndex, 8) * 35) + 'ms" data-conversation-id="' + escapeHtml(conversation.id) + '" title="' + escapeHtml(title) + '">'
             + (image ? '<img class="conversation-card-image" src="' + escapeHtml(image) + '" alt="" loading="lazy">' : '')
             + '<span class="conversation-card-date">' + escapeHtml(dateLabel) + '</span>'
             + '<span class="conversation-card-top"><span class="conversation-card-title">' + escapeHtml(title) + '</span></span>'
@@ -1970,46 +2116,97 @@
         const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
         if (Array.isArray(stored)) conversations = stored.filter((item) => item && typeof item.id === "string" && Array.isArray(item.messages));
       } catch { conversations = []; }
+      let localSavedAt = 0;
       const navigationEntry = performance.getEntriesByType("navigation")[0];
       const isRefresh = navigationEntry && navigationEntry.type === "reload";
       let savedCurrentId = null;
       let savedLibraryOpen = false;
       try {
+        localSavedAt = Number(localStorage.getItem(LAST_SAVED_KEY) || 0);
         savedCurrentId = localStorage.getItem("elia-current-conversation-v1");
         savedLibraryOpen = localStorage.getItem("elia-library-open-v1") === "1";
       } catch {}
-      if (savedCurrentId && conversations.some((item) => item.id === savedCurrentId)) {
-        currentId = savedCurrentId;
-        renderHistory();
-        renderChat();
-      } else {
-        newConversation(false);
-      }
-      if (isRefresh && savedLibraryOpen) setConversationPage(true);
-      resizePrompt();
-      // Persist synchronously when the page is backgrounded/closed, and restore a backup
-      // only when the localStorage copy is empty or unreadable.
-      const persistBeforeExit = () => {
+
+      // Restore the IndexedDB snapshot before creating a new empty conversation.
+      // This avoids a fresh placeholder blocking recovery of the user's saved cards.
+      const initializeHistory = async () => {
+        const backup = await restoreIndexedDbHistory();
+        let backedUpConversations = [];
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations));
-          if (currentId) localStorage.setItem("elia-current-conversation-v1", currentId);
+          if (backup?.conversations) {
+            const parsed = JSON.parse(backup.conversations);
+            if (Array.isArray(parsed)) backedUpConversations = parsed.filter((item) => item && typeof item.id === "string" && Array.isArray(item.messages));
+          }
         } catch {}
-      };
-      window.addEventListener("pagehide", persistBeforeExit);
-      document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") persistBeforeExit(); });
-      restoreIndexedDbHistory().then((backup) => {
-        if (!backup || conversations.length) return;
-        try {
-          const recovered = JSON.parse(backup.conversations || "[]");
-          if (!Array.isArray(recovered) || !recovered.length) return;
-          conversations = recovered.filter((item) => item && typeof item.id === "string" && Array.isArray(item.messages));
-          if (backup.currentId && conversations.some((item) => item.id === backup.currentId)) currentId = backup.currentId;
-          if (currentId) localStorage.setItem("elia-current-conversation-v1", currentId);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations));
+
+        const localHasMessages = conversations.some((item) => item.messages.length > 0);
+        const backupHasMessages = backedUpConversations.some((item) => item.messages.length > 0);
+        const backupIsNewer = Number(backup?.savedAt || 0) > localSavedAt;
+        if (backedUpConversations.length && (
+          backupIsNewer ||
+          (!localHasMessages && backupHasMessages) ||
+          !conversations.length
+        )) {
+          conversations = backedUpConversations;
+          if (backup.currentId && conversations.some((item) => item.id === backup.currentId)) {
+            savedCurrentId = backup.currentId;
+          }
+          localSavedAt = Number(backup.savedAt || Date.now());
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations));
+            localStorage.setItem(LAST_SAVED_KEY, String(localSavedAt));
+            if (savedCurrentId) localStorage.setItem("elia-current-conversation-v1", savedCurrentId);
+          } catch {}
+        }
+
+        if (savedCurrentId && conversations.some((item) => item.id === savedCurrentId)) {
+          currentId = savedCurrentId;
           renderHistory();
           renderChat();
-          renderConversationCards();
+          updateConversationMenu();
+        } else {
+          const existing = conversations.find((item) => item.messages.length > 0) || conversations[0];
+          if (existing) {
+            currentId = existing.id;
+            renderHistory();
+            renderChat();
+            updateConversationMenu();
+          } else {
+            newConversation(false);
+          }
+        }
+        if (isRefresh && savedLibraryOpen) setConversationPage(true);
+        resizePrompt();
+      };
+
+      const persistBeforeExit = () => {
+        const savedAt = Date.now();
+        let serialized;
+        try {
+          serialized = JSON.stringify(conversations);
+          localStorage.setItem(STORAGE_KEY, serialized);
+          localStorage.setItem(LAST_SAVED_KEY, String(savedAt));
+          if (currentId) localStorage.setItem("elia-current-conversation-v1", currentId);
         } catch {}
+        if (serialized && "indexedDB" in window) {
+          persistenceQueue = persistenceQueue.catch(() => {}).then(
+            () => writeHistorySnapshot(serialized, savedAt, currentId)
+          ).catch(() => {});
+        }
+      };
+      window.addEventListener("pagehide", persistBeforeExit);
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") persistBeforeExit();
+      });
+      initializeHistory().catch(() => {
+        if (!currentId) {
+          const existing = conversations.find((item) => item.messages.length > 0) || conversations[0];
+          if (existing) currentId = existing.id;
+          else newConversation(false);
+        }
+        renderHistory();
+        renderChat();
+        resizePrompt();
       });
       fetch("/api/health").then((response) => response.json()).then((data) => {
         health = data;
