@@ -1625,179 +1625,6 @@
     }
 
     .message-text .markdown-table-wrap tr:last-child td { border-bottom:0; }
-
-
-    .chat-preferences-button { width:36px;height:36px;flex:0 0 36px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:rgba(255,255,255,.48);color:var(--ink);cursor:pointer; }
-    .chat-preferences-button:hover { background:var(--panel); }
-    body.conversation-library-open .chat-preferences-button { display:none!important; }
-    .composer { height:auto!important;min-height:46px!important; }
-    #prompt { min-height:24px!important;max-height:120px!important;line-height:1.45!important;overflow-y:auto!important; }
-    /* Elia interaction polish: Liquid Glass-inspired controls, purposeful motion and accessible fallbacks. */
-    :root[data-theme="light"] {
-      color-scheme:light;--bg:#f6f6f4;--panel:rgba(255,255,255,.9);--panel-soft:#ececea;
-      --ink:#18181a;--muted:#76767d;--line:rgba(60,60,67,.14);--accent:#09090b;--accent-ink:#fff;
-      --shadow:0 14px 38px rgba(0,0,0,.07);
-    }
-    :root[data-theme="dark"] {
-      color-scheme:dark;--bg:#101012;--panel:rgba(32,32,36,.92);--panel-soft:#29292e;
-      --ink:#f5f5f7;--muted:#a1a1a8;--line:rgba(235,235,245,.13);--accent:#f5f5f7;--accent-ink:#101012;
-      --shadow:0 18px 48px rgba(0,0,0,.32);
-    }
-    :root[data-theme="dark"] body,:root[data-theme="dark"] .app { background:var(--bg)!important;color:var(--ink)!important; }
-    :root[data-theme="dark"] .sidebar,:root[data-theme="dark"] .topbar {
-      background:rgba(24,24,27,.76)!important;border-color:var(--line)!important;
-    }
-    :root[data-theme="dark"] .composer-dock {
-      background:linear-gradient(180deg,rgba(16,16,18,0),rgba(16,16,18,.88) 28%,rgba(16,16,18,.97))!important;
-    }
-    :root[data-theme="dark"] .composer,:root[data-theme="dark"] .attach-button,
-    :root[data-theme="dark"] .suggestion,:root[data-theme="dark"] .status-card,
-    :root[data-theme="dark"] .new-chat,:root[data-theme="dark"] .library-action,
-    :root[data-theme="dark"] .library-view-toggle,:root[data-theme="dark"] .library-search input {
-      background-color:var(--panel)!important;border-color:var(--line)!important;color:var(--ink)!important;
-    }
-    :root[data-theme="dark"] .message.user .message-content { background:#29292e!important;color:var(--ink)!important; }
-    :root[data-theme="dark"] #conversationCards .conversation-card:not(.has-image) {
-      background:var(--panel)!important;color:var(--ink)!important;border-color:var(--line)!important;
-    }
-    :root[data-theme="dark"] #conversationCards .conversation-card:not(.has-image) .conversation-card-bottom { color:var(--muted)!important; }
-    :root[data-theme="dark"] .preferences-dialog { background:#202024;color:var(--ink);border-color:var(--line); }
-    :root[data-theme="dark"] .preference-field select,:root[data-theme="dark"] .preferences-tools button,
-    :root[data-theme="dark"] .preferences-secondary { background:#2a2a2f;color:var(--ink);border-color:var(--line); }
-    :root[data-theme="dark"] .preferences-primary { background:#f5f5f7;color:#141416;border-color:#f5f5f7; }
-    :root[data-theme="dark"] .voice-input-button { color:var(--ink); }
-    :root[data-theme="light"] .sidebar { background:rgba(244,244,241,.76)!important; }
-    :root[data-theme="light"] .topbar { background:rgba(247,247,245,.76)!important; }
-    :root[data-theme="light"] .new-chat,:root[data-theme="light"] .suggestion,
-    :root[data-theme="light"] .status-card,:root[data-theme="light"] .library-action,
-    :root[data-theme="light"] .library-view-toggle { background:rgba(255,255,255,.9)!important;color:var(--ink)!important;border-color:var(--line)!important; }
-    :root[data-theme="light"] .message.user .message-content { background:#e9e9e7!important;color:#202022!important; }
-    :root[data-theme="light"] .composer-dock { background:linear-gradient(180deg,rgba(247,247,245,0),rgba(247,247,245,.88) 28%,rgba(247,247,245,.97))!important; }
-    :root[data-theme="light"] .preferences-primary { background:#09090b;color:#fff;border-color:#09090b; }
-
-    /* Native-style glass belongs to controls and navigation, not reading surfaces. */
-    .topbar,.composer,.attach-button,.send-button,.library-action,.library-view-toggle,
-    .elia-settings-menu,.attach-menu,.conversation-menu,.preferences-close {
-      -webkit-backdrop-filter:blur(24px) saturate(175%);
-      backdrop-filter:blur(24px) saturate(175%);
-    }
-    .topbar { background:rgba(250,250,252,.62)!important; }
-    .composer {
-      position:relative!important;isolation:isolate!important;overflow:hidden!important;
-      background-color:rgba(252,252,255,.67)!important;
-      background-image:radial-gradient(130px circle at var(--glass-x,50%) var(--glass-y,0%),rgba(255,255,255,.72),transparent 76%)!important;
-      border:1px solid rgba(255,255,255,.75)!important;
-      box-shadow:0 1px 0 rgba(255,255,255,.82) inset,0 -1px 0 rgba(30,30,35,.035) inset,0 9px 28px rgba(25,25,30,.085)!important;
-      transition:background-color .22s ease,border-color .22s ease,box-shadow .24s ease,transform .24s cubic-bezier(.2,.8,.2,1)!important;
-    }
-    .composer:focus-within {
-      border-color:rgba(115,115,125,.25)!important;
-      box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 12px 30px rgba(25,25,30,.11)!important;
-    }
-    .attach-button,.send-button,.library-action,.library-view-toggle,.preferences-close {
-      position:relative;isolation:isolate;overflow:hidden;
-      background-image:radial-gradient(70px circle at var(--glass-x,50%) var(--glass-y,0%),rgba(255,255,255,.68),transparent 75%);
-      transition:transform .28s cubic-bezier(.2,.85,.25,1),background-color .22s ease,border-color .22s ease,box-shadow .24s ease;
-    }
-    .attach-button,.library-action,.library-view-toggle {
-      border-color:rgba(255,255,255,.72)!important;
-      box-shadow:0 1px 0 rgba(255,255,255,.72) inset,0 4px 14px rgba(20,20,25,.045)!important;
-    }
-    .send-button { box-shadow:0 1px 0 rgba(255,255,255,.24) inset,0 4px 12px rgba(0,0,0,.12); }
-    .send-button:not(:disabled):hover,.attach-button:hover,.library-action:hover,.library-view-toggle:hover { transform:translateY(-1px); }
-    .send-button:not(:disabled):active,.attach-button:active,.library-action:active,.library-view-toggle:active { transform:scale(.94); }
-    .preferences-trigger { width:38px;height:38px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:rgba(255,255,255,.5);color:var(--ink); }
-    .preferences-trigger:hover { background:var(--panel); }
-    @media (prefers-color-scheme:dark) {
-      :root:not([data-theme="light"]) .topbar { background:rgba(20,20,23,.66)!important; }
-      :root:not([data-theme="light"]) .composer { background-color:rgba(34,34,39,.73)!important;border-color:rgba(255,255,255,.15)!important;background-image:radial-gradient(130px circle at var(--glass-x,50%) var(--glass-y,0%),rgba(255,255,255,.16),transparent 76%)!important; }
-      :root:not([data-theme="light"]) .attach-button,:root:not([data-theme="light"]) .library-action,
-      :root:not([data-theme="light"]) .library-view-toggle { background-color:rgba(36,36,41,.82)!important;border-color:rgba(255,255,255,.14)!important;background-image:radial-gradient(70px circle at var(--glass-x,50%) var(--glass-y,0%),rgba(255,255,255,.18),transparent 75%); }
-    }
-    [data-glass="reduced"] .topbar,[data-glass="reduced"] .composer,[data-glass="reduced"] .attach-button,
-    [data-glass="reduced"] .send-button,[data-glass="reduced"] .library-action,[data-glass="reduced"] .library-view-toggle,
-    [data-glass="reduced"] .elia-settings-menu,[data-glass="reduced"] .attach-menu,[data-glass="reduced"] .preferences-dialog {
-      -webkit-backdrop-filter:none!important;backdrop-filter:none!important;background-image:none!important;
-    }
-    @media(prefers-reduced-transparency:reduce) {
-      .topbar,.composer,.attach-button,.send-button,.library-action,.library-view-toggle,.elia-settings-menu,.attach-menu {
-        -webkit-backdrop-filter:none!important;backdrop-filter:none!important;background-image:none!important;
-      }
-    }
-
-    /* Conversation history controls and settings sheet. */
-    #conversationsPage:not([hidden]) { animation:library-enter .34s cubic-bezier(.2,.8,.2,1) both; }
-    #chatWorkspace:not([hidden]) { animation:workspace-enter .28s cubic-bezier(.2,.8,.2,1) both; }
-    @keyframes library-enter { from{opacity:0;transform:translateY(7px) scale(.994)}to{opacity:1;transform:translateY(0) scale(1)} }
-    @keyframes workspace-enter { from{opacity:.7}to{opacity:1} }
-    #conversationCards .conversation-card { animation:card-enter .48s cubic-bezier(.16,1,.3,1) both; }
-    @keyframes card-enter { from{opacity:0;transform:translateY(11px) scale(.975)}to{opacity:1;transform:translateY(0) scale(1)} }
-    .conversations-heading { padding-top:15px!important; }
-    #conversationCount { font-variant-numeric:tabular-nums; }
-    #conversationCards.preview-short .conversation-card-bottom { -webkit-line-clamp:2!important; }
-    #conversationCards.preview-medium .conversation-card-bottom { -webkit-line-clamp:4!important; }
-    #conversationCards.preview-long .conversation-card-bottom { -webkit-line-clamp:7!important; }
-    .preferences-dialog {
-      width:min(430px,calc(100vw - 28px));max-width:calc(100vw - 28px);
-      max-height:min(88dvh,760px);overflow:auto;padding:0;
-      border:1px solid rgba(255,255,255,.76);border-radius:30px;
-      background:rgba(250,250,252,.94);color:#1c1c1e;
-      box-shadow:0 24px 90px rgba(0,0,0,.24),0 1px 0 rgba(255,255,255,.78) inset;
-      -webkit-backdrop-filter:blur(32px) saturate(160%);backdrop-filter:blur(32px) saturate(160%);
-    }
-    .preferences-dialog::backdrop { background:rgba(16,16,20,.28);-webkit-backdrop-filter:blur(9px);backdrop-filter:blur(9px); }
-    .preferences-dialog[open] { animation:preferences-enter .24s cubic-bezier(.18,.8,.25,1) both; }
-    @keyframes preferences-enter { from{opacity:0;transform:translateY(12px) scale(.975)}to{opacity:1;transform:translateY(0) scale(1)} }
-    .preferences-dialog form { padding:24px;display:grid;gap:16px; }
-    .preferences-header { display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:2px; }
-    .preferences-header h2 { margin:0;font-size:24px;font-weight:700;letter-spacing:-.7px; }
-    .preferences-header p { margin:5px 0 0;color:var(--muted);font-size:13px;line-height:1.45; }
-    .preferences-close { width:34px;height:34px;flex:0 0 34px;border:1px solid var(--line);border-radius:50%;background:rgba(255,255,255,.5);font-size:24px;line-height:1;cursor:pointer; }
-    .preference-field { display:grid;gap:7px; }
-    .preference-field>span { color:var(--ink);font-size:13px;font-weight:630; }
-    .preference-field select { width:100%;min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.75);color:var(--ink);font:inherit;font-size:14px; }
-    .preference-field small { color:var(--muted);font-size:11px;line-height:1.45; }
-    .preferences-tools { display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:3px; }
-    .preferences-note { margin:0;color:var(--muted);font-size:11px;line-height:1.5; }
-    .preferences-tools button,.preferences-secondary,.preferences-primary { min-height:42px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.66);color:var(--ink);font:inherit;font-size:12px;font-weight:600; }
-    .preferences-footer { display:flex;justify-content:flex-end;gap:9px;padding-top:4px; }
-    .preferences-secondary,.preferences-primary { min-width:100px; }
-    .preferences-primary { background:#09090b;color:#fff;border-color:#09090b; }
-    .preferences-tools button:active,.preferences-secondary:active,.preferences-primary:active { transform:scale(.98); }
-    .voice-input-button { width:32px;height:32px;flex:0 0 32px;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:var(--muted);cursor:pointer;transition:transform .2s ease,background .2s ease,color .2s ease; }
-    .voice-input-button:hover { background:rgba(128,128,136,.12);color:var(--ink); }
-    .voice-input-button[aria-pressed="true"] { background:#ffe9eb;color:#c82333;animation:voice-pulse 1.25s ease-in-out infinite; }
-    @keyframes voice-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(220,45,60,.17)}50%{box-shadow:0 0 0 5px rgba(220,45,60,0)} }
-    .feedback-button[data-speak] { margin-right:4px; }
-    .feedback-button[data-speak][aria-pressed="true"] { color:var(--accent);background:color-mix(in srgb,var(--accent) 11%,transparent); }
-    .message { animation:message-enter .26s cubic-bezier(.2,.8,.25,1) both; }
-    @keyframes message-enter { from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)} }
-    /* Keep the chat scroll inside the workspace; the composer remains fixed above the safe area. */
-    html,body { height:100%;overflow:hidden; }
-    .app { height:100dvh!important;min-height:0!important;overflow:hidden!important; }
-    .main { height:100dvh!important;min-height:0!important;overflow:hidden!important; }
-    .workspace { flex:1 1 auto!important;min-height:0!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:contain!important;-webkit-overflow-scrolling:touch!important;padding-bottom:180px!important; }
-    .thread { padding-bottom:28px!important; }
-    #conversationsPage { flex:1 1 auto!important;height:calc(100dvh - 70px)!important;min-height:0!important;max-height:calc(100dvh - 70px)!important; }
-    #conversationCards { height:calc(100dvh - 190px)!important; }
-    #conversationCards.selection-mode .conversation-card { cursor:copy; }
-    @media(max-width:760px) {
-      .app,.main { height:100dvh!important;min-height:0!important; }
-      .main { display:flex!important;flex-direction:column!important; }
-      .workspace { flex:1 1 auto!important;height:auto!important;min-height:0!important;padding-bottom:170px!important; }
-      #conversationsPage { height:calc(100dvh - 60px)!important;max-height:calc(100dvh - 60px)!important;padding-bottom:80px!important; }
-      #conversationCards { height:calc(100dvh - 165px)!important;padding-bottom:90px!important; }
-      .composer-dock { padding-bottom:max(10px,env(safe-area-inset-bottom))!important; }
-      .preferences-dialog form { padding:21px 18px;gap:13px; }
-      .preferences-header h2 { font-size:22px; }
-    }
-    @media(max-width:390px) {
-      .voice-input-button { width:28px;height:28px;flex-basis:28px; }
-      .composer { gap:4px!important; }
-      .preferences-tools { grid-template-columns:1fr; }
-    }
-    [data-motion="reduced"] *,[data-motion="reduced"] *::before,[data-motion="reduced"] *::after { animation:none!important;transition:none!important;scroll-behavior:auto!important; }
-
 </style>
 </head>
 <body>
@@ -1828,8 +1655,8 @@
     </aside>
 
     <main class="main">
-      <header class="topbar"><div class="top-left"><button class="icon-button conversation-back-button" id="openConversations" type="button" aria-label="All conversations" title="All conversations"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><div class="elia-settings" id="eliaSettings" aria-label="Elia model and thinking settings"><label class="native-setting-label"><span class="sr-only">Model</span><select id="modelSelect" class="native-setting-select" aria-label="AI model"><option value="meta-models/muse-spark-open">Elia Oplus</option><option value="openai/gpt-oss-20b">Elia Awlus</option><option value="qwen/qwen3.8-27b">Elia Argus</option><option value="openai/gpt-oss-120b">Elia Astrata</option></select></label><label class="native-setting-label thinking-setting-label"><span class="sr-only">Thinking level</span><select id="thinkingSelect" class="native-setting-select thinking-setting-select" aria-label="Thinking level"><option value="low">Thinking · Low</option><option value="medium">Thinking · Medium</option><option value="high">Thinking · High</option></select></label></div><button class="chat-preferences-button" id="chatPreferencesButton" type="button" aria-label="Elia settings" title="Elia settings"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button><div class="conversation-menu-wrap" id="conversationMenuWrap"><button class="conversation-menu-button" id="conversationMenuButton" type="button" aria-label="Conversation actions" title="Conversation actions" aria-haspopup="menu" aria-expanded="false"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></button><select class="native-action-picker" id="conversationNativePicker" aria-label="Conversation actions"><option value="">Conversation actions</option><option value="share">Share</option><option value="pin">Pin / Unpin</option><option value="rename">Rename</option><option value="delete">Delete</option></select><div class="conversation-menu" id="conversationMenu" role="menu" aria-label="Conversation actions"><button class="conversation-menu-item" type="button" role="menuitem" data-conversation-action="share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.7 6.6-4.1M8.7 13.3l6.6 4.1"/></svg>Share</button><button class="conversation-menu-item" type="button" role="menuitem" data-conversation-action="pin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5-4 1-4 4-1 5-2-2-5 5-2-2 5-5-2-2 5-1 4-4z"/></svg><span id="pinMenuLabel">Pin</span></button><button class="conversation-menu-item" type="button" role="menuitem" data-conversation-action="rename"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>Rename</button><div class="conversation-menu-separator" role="separator"></div><button class="conversation-menu-item destructive" type="button" role="menuitem" data-conversation-action="delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m4 4v6m6-6v6"/></svg>Delete</button></div></div></header>
-      <section class="conversations-page" id="conversationsPage" hidden><div class="conversations-heading" id="conversationsHeading"><div class="library-heading-copy"><strong>Conversations</strong><span id="conversationCount">Your saved chats</span></div><div class="library-heading-actions"><button type="button" id="conversationLayoutToggle" class="library-view-toggle" aria-label="Switch to list view" title="Switch layout"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h6v6H4zM14 5h6v6h-6zM4 15h6v5H4zM14 15h6v5h-6z"/></svg></button><button type="button" id="conversationSelectToggle" class="library-view-toggle" aria-label="Select conversations" title="Select conversations">Select</button><button type="button" id="conversationPreferencesButton" class="library-view-toggle" aria-label="Conversation settings" title="Conversation settings"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button></div></div><div class="library-search" id="librarySearch"><input id="conversationSearch" type="search" placeholder="Search conversations" aria-label="Search conversations"></div><div class="conversation-bulk-actions" id="conversationBulkActions" hidden><span id="conversationSelectedCount">0 selected</span><button type="button" id="conversationSelectAll">Select all</button><button type="button" id="conversationDeleteSelected">Delete selected</button><button type="button" id="conversationCancelSelection">Cancel</button></div><div class="conversation-cards" id="conversationCards" aria-label="All conversations"></div></section><div class="conversation-library-actions" id="conversationLibraryActions" aria-label="Conversation library actions"><button class="library-action" id="searchConversationsButton" type="button" aria-label="Search conversations" title="Search conversations"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg></button><button class="library-action" id="libraryNewConversationButton" type="button" aria-label="New conversation" title="New conversation"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8"/><path d="M16 3.5a2.1 2.1 0 0 1 3 3L11 14.5 7 16l1.5-4z"/></svg></button></div>
+      <header class="topbar"><div class="top-left"><button class="icon-button conversation-back-button" id="openConversations" type="button" aria-label="All conversations" title="All conversations"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><div class="elia-settings" id="eliaSettings" aria-label="Elia model and thinking settings"><label class="native-setting-label"><span class="sr-only">Model</span><select id="modelSelect" class="native-setting-select" aria-label="AI model"><option value="meta-models/muse-spark-open">Elia Oplus</option><option value="openai/gpt-oss-20b">Elia Awlus</option><option value="qwen/qwen3.8-27b">Elia Argus</option><option value="openai/gpt-oss-120b">Elia Astrata</option></select></label><label class="native-setting-label thinking-setting-label"><span class="sr-only">Thinking level</span><select id="thinkingSelect" class="native-setting-select thinking-setting-select" aria-label="Thinking level"><option value="low">Thinking · Low</option><option value="medium">Thinking · Medium</option><option value="high">Thinking · High</option></select></label></div><div class="conversation-menu-wrap" id="conversationMenuWrap"><button class="conversation-menu-button" id="conversationMenuButton" type="button" aria-label="Conversation actions" title="Conversation actions" aria-haspopup="menu" aria-expanded="false"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></button><select class="native-action-picker" id="conversationNativePicker" aria-label="Conversation actions"><option value="">Conversation actions</option><option value="share">Share</option><option value="pin">Pin / Unpin</option><option value="rename">Rename</option><option value="delete">Delete</option></select><div class="conversation-menu" id="conversationMenu" role="menu" aria-label="Conversation actions"><button class="conversation-menu-item" type="button" role="menuitem" data-conversation-action="share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.7 6.6-4.1M8.7 13.3l6.6 4.1"/></svg>Share</button><button class="conversation-menu-item" type="button" role="menuitem" data-conversation-action="pin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5-4 1-4 4-1 5-2-2-5 5-2-2 5-5-2-2 5-1 4-4z"/></svg><span id="pinMenuLabel">Pin</span></button><button class="conversation-menu-item" type="button" role="menuitem" data-conversation-action="rename"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>Rename</button><div class="conversation-menu-separator" role="separator"></div><button class="conversation-menu-item destructive" type="button" role="menuitem" data-conversation-action="delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m4 4v6m6-6v6"/></svg>Delete</button></div></div></header>
+      <section class="conversations-page" id="conversationsPage" hidden><div class="conversations-heading" id="conversationsHeading"><div class="library-heading-copy"><strong>Conversations</strong><span id="conversationCount">Your saved chats</span></div><div class="library-heading-actions"><button type="button" id="conversationLayoutToggle" class="library-view-toggle" aria-label="Switch to list view" title="Switch layout"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h6v6H4zM14 5h6v6h-6zM4 15h6v5H4zM14 15h6v5h-6z"/></svg></button><button type="button" id="conversationSelectToggle" class="library-view-toggle" aria-label="Select conversations" title="Select conversations">Select</button></div></div><div class="library-search" id="librarySearch"><input id="conversationSearch" type="search" placeholder="Search conversations" aria-label="Search conversations"></div><div class="conversation-bulk-actions" id="conversationBulkActions" hidden><span id="conversationSelectedCount">0 selected</span><button type="button" id="conversationSelectAll">Select all</button><button type="button" id="conversationDeleteSelected">Delete selected</button><button type="button" id="conversationCancelSelection">Cancel</button></div><div class="conversation-cards" id="conversationCards" aria-label="All conversations"></div></section><div class="conversation-library-actions" id="conversationLibraryActions" aria-label="Conversation library actions"><button class="library-action" id="searchConversationsButton" type="button" aria-label="Search conversations" title="Search conversations"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg></button><button class="library-action" id="libraryNewConversationButton" type="button" aria-label="New conversation" title="New conversation"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8"/><path d="M16 3.5a2.1 2.1 0 0 1 3 3L11 14.5 7 16l1.5-4z"/></svg></button></div>
       <section class="workspace" id="chatWorkspace">
         <section class="welcome" id="welcome"><div class="welcome-mark" aria-hidden="true">E</div></section>
 
@@ -1851,7 +1678,6 @@
             <form id="chatForm">
               <div class="composer">
                 <textarea id="prompt" rows="1" maxlength="12000" placeholder="Ask Elia" aria-label="Ask Elia"></textarea>
-                <button class="voice-input-button" id="dictateButton" type="button" aria-label="Dictate message" title="Dictate message"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1M12 18v4m-4 0h8"/></svg></button>
                 <button class="send-button" id="sendButton" type="submit" aria-label="Send message" disabled>
                   <svg id="sendIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 19V5m-6 6 6-6 6 6"/></svg>
                 </button>
@@ -1865,19 +1691,6 @@
     </main>
   </div>
   <div class="toast" id="toast" role="status"></div>
-  <dialog id="appPreferencesDialog" class="preferences-dialog" aria-labelledby="preferencesTitle">
-    <form method="dialog" id="appPreferencesForm">
-      <div class="preferences-header"><div><h2 id="preferencesTitle">Elia settings</h2><p>Make Elia feel right for you.</p></div><button type="button" class="preferences-close" id="preferencesClose" aria-label="Close settings">×</button></div>
-      <label class="preference-field"><span>Open Elia to</span><select id="prefOpenTo"><option value="recent">Recent conversations</option><option value="new">A new conversation</option></select></label>
-      <label class="preference-field"><span>Keep conversations</span><select id="prefRetention"><option value="forever">Forever</option><option value="365">1 year</option><option value="30">30 days</option></select><small>Older conversations may be permanently deleted when this changes.</small></label>
-      <label class="preference-field"><span>Conversation preview</span><select id="prefPreview"><option value="short">Short</option><option value="medium">Medium</option><option value="long">Long</option></select></label>
-      <label class="preference-field"><span>Appearance</span><select id="prefTheme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
-      <label class="preference-field"><span>Motion</span><select id="prefMotion"><option value="system">System preference</option><option value="reduced">Reduce motion</option></select></label>
-      <label class="preference-field"><span>Glass effects</span><select id="prefGlass"><option value="on">Liquid Glass effects</option><option value="reduced">Reduce transparency</option></select></label>
-      <div class="preferences-tools"><button type="button" id="exportBackupButton">Export all conversations</button><button type="button" id="importBackupButton">Import a backup</button><input type="file" id="importBackupFile" accept="application/json,.json" hidden></div><p class="preferences-note">Import a backup on another device to restore conversations and carry over its sync key. Shared cloud history requires a configured database on the Elia server.</p>
-      <div class="preferences-footer"><button type="button" id="preferencesCancel" class="preferences-secondary">Cancel</button><button type="button" id="preferencesSave" class="preferences-primary">Save settings</button></div>
-    </form>
-  </dialog>
 
   <script>
     (() => {
@@ -1911,43 +1724,6 @@
       const thinkingSelect = $("#thinkingSelect");
       const MODEL_PREF_KEY = "elia-model-preference-v1";
       const THINKING_PREF_KEY = "elia-thinking-preference-v1";
-
-      const APP_PREFERENCES_KEY = "elia-app-preferences-v1";
-      const defaultAppPreferences = { openTo:"recent", retention:"forever", preview:"medium", theme:"system", motion:"system", glass:"on" };
-      let appPreferences = { ...defaultAppPreferences };
-      try {
-        const storedPreferences = JSON.parse(localStorage.getItem(APP_PREFERENCES_KEY) || "{}");
-        for (const key of Object.keys(defaultAppPreferences)) {
-          if (typeof storedPreferences[key] === "string") appPreferences[key] = storedPreferences[key];
-        }
-      } catch {}
-      if (!["recent","new"].includes(appPreferences.openTo)) appPreferences.openTo = "recent";
-      if (!["forever","365","30"].includes(appPreferences.retention)) appPreferences.retention = "forever";
-      if (!["short","medium","long"].includes(appPreferences.preview)) appPreferences.preview = "medium";
-      if (!["system","light","dark"].includes(appPreferences.theme)) appPreferences.theme = "system";
-      if (!["system","reduced"].includes(appPreferences.motion)) appPreferences.motion = "system";
-      if (!["on","reduced"].includes(appPreferences.glass)) appPreferences.glass = "on";
-      const applyAppPreferences = () => {
-        document.documentElement.dataset.theme = appPreferences.theme;
-        document.documentElement.dataset.motion = appPreferences.motion;
-        document.documentElement.dataset.glass = appPreferences.glass;
-        const cards = $("#conversationCards");
-        if (cards) {
-          cards.classList.remove("preview-short","preview-medium","preview-long");
-          cards.classList.add("preview-" + appPreferences.preview);
-        }
-      };
-      const persistAppPreferences = () => {
-        try { localStorage.setItem(APP_PREFERENCES_KEY, JSON.stringify(appPreferences)); } catch {}
-        applyAppPreferences();
-      };
-      const expiredConversations = (retention = appPreferences.retention, list = conversations) => {
-        if (retention === "forever") return [];
-        const cutoff = Date.now() - Number(retention) * 86400000;
-        return list.filter((conversation) => Number(conversation.updatedAt || conversation.createdAt || Date.now()) < cutoff);
-      };
-      applyAppPreferences();
-
       try {
         const savedModel = localStorage.getItem(MODEL_PREF_KEY);
         const savedThinking = localStorage.getItem(THINKING_PREF_KEY);
@@ -1983,7 +1759,7 @@
       thinkingSelect.addEventListener("change", () => {
         try { localStorage.setItem(THINKING_PREF_KEY, thinkingSelect.value); } catch {}
       });
-      const scrollToLatest = (behavior = "smooth") => requestAnimationFrame(() => { const workspace = $("#chatWorkspace"); if (workspace) workspace.scrollTo({ top: workspace.scrollHeight, behavior }); });
+      const scrollToLatest = (behavior = "smooth") => requestAnimationFrame(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior }));
       const fileTextExtensions = /\.(txt|md|csv|json|html|css|js|ts|py|c|cpp|h|hpp|xml|yaml|yml|log)$/i;
       const readTextFile = (file) => new Promise((resolve) => {
         if (file.size > 200000) return resolve("[File " + file.name + " is too large to include as text.]");
@@ -2149,22 +1925,14 @@
           .replace(/[*_#>\x60]/g, "")
           .trim() || "No text preview";
       };
-      let conversationLayout = localStorage.getItem("elia-conversation-layout-v1") === "list" ? "list" : "grid";
+      let conversationLayout = "grid";
       let conversationSelectionMode = false;
       const selectedConversationIds = new Set();
       const renderConversationCards = () => {
         const cards = $("#conversationCards");
         const savedConversations = conversations.filter((conversation) => (conversation.messages || []).length > 0).sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || Number(b.updatedAt || 0) - Number(a.updatedAt || 0));
-        cards.classList.remove("preview-short","preview-medium","preview-long");
-        cards.classList.add("preview-" + appPreferences.preview);
-        cards.classList.toggle("list-view", conversationLayout === "list");
-        cards.classList.toggle("selection-mode", conversationSelectionMode);
         if (!savedConversations.length) {
           cards.innerHTML = '<div class="conversation-library-empty" aria-label="No saved conversations"><span class="conversation-library-empty-logo">E</span></div>';
-          $("#conversationCount").textContent = "No saved conversations";
-          $("#conversationBulkActions").hidden = !conversationSelectionMode;
-          $("#conversationSelectedCount").textContent = selectedConversationIds.size + " selected";
-          $("#conversationSelectToggle").textContent = conversationSelectionMode ? "Done" : "Select";
           return;
         }
         cards.innerHTML = savedConversations.map((conversation, cardIndex) => {
@@ -2172,7 +1940,7 @@
           const image = imageFromMessage(lastAssistant);
           const title = conversation.title || "New conversation";
           const preview = previewFromMessage(lastAssistant);
-          const startedAt = Number(conversation.updatedAt || conversation.createdAt || Date.now());
+          const startedAt = Number(conversation.createdAt || conversation.updatedAt || Date.now());
           const age = Math.max(0, Date.now() - startedAt);
           const dayMs = 86400000;
           const dateLabel = age < 7 * dayMs
@@ -2210,9 +1978,7 @@
       const applyConversationSearch = () => {
         const query = ($("#conversationSearch")?.value || "").trim().toLowerCase();
         $("#conversationCards").querySelectorAll("[data-conversation-id]").forEach((card) => {
-          const conversation = conversations.find((item) => item.id === card.dataset.conversationId);
-          const searchableText = [card.textContent, conversation?.title || "", ...(conversation?.messages || []).map((message) => String(message.displayContent ?? message.content ?? ""))].join(" ").toLowerCase();
-          card.hidden = Boolean(query) && !searchableText.includes(query);
+          card.hidden = Boolean(query) && !card.textContent.toLowerCase().includes(query);
         });
       };
       const setConversationPage = (show) => {
@@ -2230,8 +1996,7 @@
           $("#conversationSearch").value = "";
           $("#librarySearch").classList.remove("open");
         }
-$("#chatWorkspace").scrollTo({ top: 0, behavior: "auto" });
-        $("#conversationCards").scrollTop = 0;
+        window.scrollTo({ top: 0, behavior: "smooth" });
       };
       const renderHistory = () => {
         if (!conversations.length) { historyBox.innerHTML = '<div class="history-empty">Your conversations will appear here.</div>'; renderConversationCards(); return; }
@@ -2313,7 +2078,6 @@ $("#chatWorkspace").scrollTo({ top: 0, behavior: "auto" });
           : "";
         const feedbackMarkup = message.role === "assistant"
           ? '<div class="feedback-actions" aria-label="Rate this response" data-message-id="' + escapeHtml(message.id || (message.id = uid())) + '">'
-            + '<button class="feedback-button" type="button" data-speak="true" aria-label="Read answer aloud" aria-pressed="false" title="Read answer aloud"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9v6h4l5 4V5L7 9H3z"/><path d="M16 9a5 5 0 0 1 0 6m2-9a9 9 0 0 1 0 12"/></svg></button>'
             + '<button class="feedback-button ' + (message.feedback === "up" ? "selected" : "") + '" type="button" data-feedback="up" aria-label="Thumbs up" aria-pressed="' + String(message.feedback === "up") + '" title="Thumbs up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3Zm0 0 5-8c2 0 3 2 2 4l-1 4h6a2 2 0 0 1 2 2l-2 7a2 2 0 0 1-2 2H7"/></svg></button>'
             + '<button class="feedback-button ' + (message.feedback === "down" ? "selected" : "") + '" type="button" data-feedback="down" aria-label="Thumbs down" aria-pressed="' + String(message.feedback === "down") + '" title="Thumbs down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 14V3H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3Zm0 0 5 8c2 0 3-2 2-4l-1-4h6a2 2 0 0 0 2-2l-2-7a2 2 0 0 0-2-2H7"/></svg></button>'
             + '</div>' : "";
@@ -2354,7 +2118,7 @@ $("#chatWorkspace").scrollTo({ top: 0, behavior: "auto" });
         thread.innerHTML = "";
         messages.forEach(appendMessage);
         updateConversationMenu();
-        if (messages.length) scrollToLatest("auto");
+        if (messages.length) requestAnimationFrame(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }));
       };
       const addTyping = () => {
         const row = document.createElement("article");
@@ -2503,36 +2267,6 @@ $("#chatWorkspace").scrollTo({ top: 0, behavior: "auto" });
       };
 
       thread.addEventListener("click", async (event) => {
-        const speakButton = event.target.closest("button[data-speak]");
-        if (speakButton) {
-          const actions = speakButton.closest(".feedback-actions");
-          const conversation = getCurrent();
-          const message = conversation?.messages.find((item) => item.role === "assistant" && item.id === actions?.dataset.messageId);
-          if (!message) return;
-          if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return showToast("Read-aloud is not supported in this browser.");
-          if (window.speechSynthesis.speaking && speakButton.getAttribute("aria-pressed") === "true") {
-            window.speechSynthesis.cancel();
-            document.querySelectorAll("[data-speak]").forEach((item) => item.setAttribute("aria-pressed","false"));
-            return;
-          }
-          window.speechSynthesis.cancel();
-          document.querySelectorAll("[data-speak]").forEach((item) => item.setAttribute("aria-pressed","false"));
-          const tick = String.fromCharCode(96);
-          const plainText = String(message.content || "")
-            .replace(new RegExp("!\\[([^\\]]*)\\]\\([^)]*\\)","g"),"$1")
-            .replace(new RegExp("\\[([^\\]]+)\\]\\([^)]*\\)","g"),"$1")
-            .replace(new RegExp(tick.repeat(3)+"[\\s\\S]*?"+tick.repeat(3),"g")," Code block omitted. ")
-            .replace(new RegExp(tick+"([^"+tick+"]+)"+tick,"g"),"$1")
-            .replace(/[*_>#|~-]/g," ").replace(/\s+/g," ").trim();
-          if (!plainText) return showToast("There is no text to read aloud.");
-          const utterance = new SpeechSynthesisUtterance(plainText);
-          utterance.lang = navigator.language || "en-US";
-          utterance.onend = () => speakButton.setAttribute("aria-pressed","false");
-          utterance.onerror = () => speakButton.setAttribute("aria-pressed","false");
-          speakButton.setAttribute("aria-pressed","true");
-          window.speechSynthesis.speak(utterance);
-          return;
-        }
         const button = event.target.closest("button[data-feedback]");
         if (!button || button.disabled) return;
         const actions = button.closest(".feedback-actions");
@@ -2671,41 +2405,6 @@ $("#chatWorkspace").scrollTo({ top: 0, behavior: "auto" });
           $("#attachButton").setAttribute("aria-expanded", "false");
         }
       });
-      let activeRecognition = null;
-      $("#dictateButton").addEventListener("click", () => {
-        if (activeRecognition) { try { activeRecognition.stop(); } catch {} return; }
-        const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!Recognition) return showToast("Voice dictation is not available here. Use your keyboard microphone instead.");
-        try {
-          const recognition = new Recognition();
-          activeRecognition = recognition;
-          const originalText = promptBox.value.trim();
-          recognition.lang = navigator.language || "en-US";
-          recognition.interimResults = true;
-          recognition.continuous = false;
-          $("#dictateButton").setAttribute("aria-pressed","true");
-          $("#dictateButton").setAttribute("aria-label","Stop dictation");
-          recognition.onresult = (resultEvent) => {
-            const transcript = Array.from(resultEvent.results).map((result) => result[0]?.transcript || "").join(" ").trim();
-            promptBox.value = [originalText,transcript].filter(Boolean).join(originalText ? " " : "");
-            resizePrompt();
-          };
-          recognition.onerror = (recognitionEvent) => {
-            if (recognitionEvent.error !== "no-speech" && recognitionEvent.error !== "aborted") showToast("Voice dictation stopped: " + recognitionEvent.error + ".");
-          };
-          recognition.onend = () => {
-            activeRecognition = null;
-            $("#dictateButton").setAttribute("aria-pressed","false");
-            $("#dictateButton").setAttribute("aria-label","Dictate message");
-            resizePrompt();
-          };
-          recognition.start();
-        } catch {
-          activeRecognition = null;
-          $("#dictateButton").setAttribute("aria-pressed","false");
-          showToast("Could not start voice dictation. Check microphone permissions.");
-        }
-      });
       promptBox.addEventListener("input", resizePrompt);
       promptBox.addEventListener("keydown", (event) => {
         if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
@@ -2747,153 +2446,6 @@ $("#chatWorkspace").scrollTo({ top: 0, behavior: "auto" });
         if (!currentId) newConversation(false);
         save(); renderHistory(); renderChat(); renderConversationCards();
         showToast("Selected conversations deleted.");
-      });
-
-      const preferencesDialog = $("#appPreferencesDialog");
-      const fillPreferencesForm = () => {
-        $("#prefOpenTo").value = appPreferences.openTo;
-        $("#prefRetention").value = appPreferences.retention;
-        $("#prefPreview").value = appPreferences.preview;
-        $("#prefTheme").value = appPreferences.theme;
-        $("#prefMotion").value = appPreferences.motion;
-        $("#prefGlass").value = appPreferences.glass;
-      };
-      const openPreferences = () => {
-        fillPreferencesForm();
-        if (typeof preferencesDialog.showModal === "function") {
-          if (!preferencesDialog.open) preferencesDialog.showModal();
-        } else preferencesDialog.setAttribute("open", "");
-      };
-      const glassControls = ".composer,.attach-button,.send-button,.library-action,.library-view-toggle,.elia-settings-menu,.attach-menu,.conversation-menu,.preferences-close";
-      document.addEventListener("pointermove", (event) => {
-        const target = event.target.closest?.(glassControls);
-        if (!target) return;
-        const rect = target.getBoundingClientRect();
-        if (!rect.width || !rect.height) return;
-        const x = Math.max(0,Math.min(100,((event.clientX-rect.left)/rect.width)*100));
-        const y = Math.max(0,Math.min(100,((event.clientY-rect.top)/rect.height)*100));
-        target.style.setProperty("--glass-x",x.toFixed(1)+"%");
-        target.style.setProperty("--glass-y",y.toFixed(1)+"%");
-      },{passive:true});
-      $("#conversationPreferencesButton").addEventListener("click", openPreferences);
-      $("#chatPreferencesButton").addEventListener("click", openPreferences);
-      $("#preferencesClose").addEventListener("click", () => preferencesDialog.close());
-      $("#preferencesCancel").addEventListener("click", () => preferencesDialog.close());
-      preferencesDialog.addEventListener("click", (event) => {
-        if (event.target === preferencesDialog) preferencesDialog.close();
-      });
-      $("#preferencesSave").addEventListener("click", () => {
-        const next = {
-          openTo: $("#prefOpenTo").value, retention: $("#prefRetention").value,
-          preview: $("#prefPreview").value, theme: $("#prefTheme").value,
-          motion: $("#prefMotion").value, glass: $("#prefGlass").value
-        };
-        const expired = expiredConversations(next.retention);
-        if (expired.length && next.retention !== appPreferences.retention &&
-            !window.confirm("This setting will permanently delete " + expired.length + " conversation" + (expired.length === 1 ? "" : "s") + " last active outside the selected period. Continue?")) {
-          fillPreferencesForm();
-          return;
-        }
-        appPreferences = next;
-        persistAppPreferences();
-        if (expired.length) {
-          const expiredIds = new Set(expired.map((item) => item.id));
-          conversations = conversations.filter((item) => !expiredIds.has(item.id));
-          if (!conversations.some((item) => item.id === currentId)) currentId = conversations.find((item) => item.messages.length)?.id || null;
-        }
-        if (!currentId && appPreferences.openTo === "new") newConversation(false);
-        renderHistory(); renderChat(); renderConversationCards(); save();
-        preferencesDialog.close();
-        showToast("Settings saved.");
-      });
-      $("#exportBackupButton").addEventListener("click", () => {
-        const payload = {
-          format:"elia-conversation-backup", version:1, exportedAt:new Date().toISOString(), syncKey:deviceId,
-          currentId, conversations, preferences:appPreferences, model:modelSelect.value, thinking:thinkingSelect.value
-        };
-        const blob = new Blob([JSON.stringify(payload,null,2)],{type:"application/json;charset=utf-8"});
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url; link.download = "elia-backup-" + new Date().toISOString().slice(0,10) + ".json";
-        document.body.appendChild(link); link.click(); link.remove();
-        setTimeout(() => URL.revokeObjectURL(url),1000);
-        showToast("Conversation backup exported.");
-      });
-      $("#importBackupButton").addEventListener("click", () => $("#importBackupFile").click());
-      $("#importBackupFile").addEventListener("change", async (event) => {
-        const file = event.target.files?.[0];
-        event.target.value = "";
-        if (!file) return;
-        if (file.size > 12000000) return showToast("Backups must be smaller than 12 MB.");
-        try {
-          const payload = JSON.parse(await file.text());
-          const source = Array.isArray(payload) ? payload : payload?.conversations;
-          if (!Array.isArray(source)) throw new Error("This file is not an Elia conversation backup.");
-          const imported = source.slice(0,500).map((item) => {
-            if (!item || typeof item.id !== "string" || !Array.isArray(item.messages)) return null;
-            const messages = item.messages.slice(-2000).map((message) => {
-              if (!message || !["user","assistant"].includes(message.role)) return null;
-              const safeAttachments = Array.isArray(message.attachments) ? message.attachments.slice(0,10).map((attachment) => {
-                if (!attachment || typeof attachment.name !== "string") return null;
-                let image = typeof attachment.image === "string" ? attachment.image : "";
-                if (!(image.startsWith("https://") || /^data:image\/(?:png|jpeg|webp|gif);base64,/i.test(image) && image.length <= 400000)) image = "";
-                return { name:attachment.name.slice(0,200), image };
-              }).filter(Boolean) : [];
-              return {
-                id:typeof message.id === "string" ? message.id.slice(0,160) : uid(), role:message.role,
-                content:String(message.content ?? "").slice(0,300000),
-                displayContent:String(message.displayContent ?? message.content ?? "").slice(0,300000),
-                attachments:safeAttachments,
-                ...(message.feedback === "up" || message.feedback === "down" ? {feedback:message.feedback} : {}),
-                ...(Number.isFinite(message.durationMs) ? {durationMs:message.durationMs} : {}),
-                ...(Number.isFinite(message.totalTokens) ? {totalTokens:message.totalTokens} : {})
-              };
-            }).filter(Boolean);
-            if (!messages.length) return null;
-            return { id:item.id.slice(0,100), title:String(item.title || "Imported conversation").slice(0,100),
-              createdAt:Number(item.createdAt) || Date.now(), updatedAt:Number(item.updatedAt) || Date.now(),
-              pinned:Boolean(item.pinned), messages };
-          }).filter(Boolean);
-          if (!imported.length) throw new Error("No valid conversations were found in this backup.");
-          if (!window.confirm("Import and merge " + imported.length + " conversation" + (imported.length === 1 ? "" : "s") + " with this Elia history?")) return;
-          const byId = new Map(conversations.map((item) => [item.id,item]));
-          for (const item of imported) {
-            const existing = byId.get(item.id);
-            if (!existing || Number(item.updatedAt) > Number(existing.updatedAt)) byId.set(item.id,item);
-          }
-          conversations = Array.from(byId.values()).sort((a,b) => Number(b.updatedAt || 0)-Number(a.updatedAt || 0));
-          if (payload && typeof payload === "object" && payload.currentId && conversations.some((item) => item.id === payload.currentId)) currentId = payload.currentId;
-          if (typeof payload?.syncKey === "string" && /^[a-zA-Z0-9-]{20,100}$/.test(payload.syncKey)) {
-            deviceId = payload.syncKey;
-            try { localStorage.setItem(DEVICE_ID_KEY, deviceId); } catch {}
-          }
-          if (payload?.preferences && typeof payload.preferences === "object") {
-            const incoming = payload.preferences;
-            if (["recent","new"].includes(incoming.openTo)) appPreferences.openTo = incoming.openTo;
-            if (["forever","365","30"].includes(incoming.retention)) appPreferences.retention = incoming.retention;
-            if (["short","medium","long"].includes(incoming.preview)) appPreferences.preview = incoming.preview;
-            if (["system","light","dark"].includes(incoming.theme)) appPreferences.theme = incoming.theme;
-            if (["system","reduced"].includes(incoming.motion)) appPreferences.motion = incoming.motion;
-            if (["on","reduced"].includes(incoming.glass)) appPreferences.glass = incoming.glass;
-            persistAppPreferences();
-          }
-          const expiredAfterImport = expiredConversations();
-          if (expiredAfterImport.length) {
-            const expiredIds = new Set(expiredAfterImport.map((item) => item.id));
-            conversations = conversations.filter((item) => !expiredIds.has(item.id));
-            if (!conversations.some((item) => item.id === currentId)) currentId = conversations.find((item) => item.messages.length)?.id || null;
-          }
-          const importedModel = modelNames.find((item) => item.value === payload?.model);
-          if (importedModel) setSelectedModel(importedModel);
-          if (["low","medium","high"].includes(payload?.thinking)) {
-            thinkingSelect.value = payload.thinking;
-            thinkingSelect.dispatchEvent(new Event("change",{bubbles:true}));
-          }
-          renderHistory(); renderChat(); renderConversationCards(); save();
-          showToast("Backup imported and merged.");
-        } catch (error) {
-          showToast(error.message || "Could not import that backup.");
-        }
       });
       $("#searchConversationsButton").addEventListener("click", () => {
         const search = $("#librarySearch");
@@ -3035,20 +2587,7 @@ $("#chatWorkspace").scrollTo({ top: 0, behavior: "auto" });
             newConversation(false);
           }
         }
-        const expired = expiredConversations();
-        if (expired.length) {
-          const expiredIds = new Set(expired.map((item) => item.id));
-          conversations = conversations.filter((item) => !expiredIds.has(item.id));
-          if (!conversations.some((item) => item.id === currentId)) currentId = conversations.find((item) => item.messages.length)?.id || null;
-          save();
-        }
-        if (appPreferences.openTo === "recent") {
-          setConversationPage(true);
-        } else {
-          if (getCurrent()?.messages?.length) newConversation(false);
-          else if (!getCurrent()) newConversation(false);
-          setConversationPage(false);
-        }
+        if (isRefresh && savedLibraryOpen) setConversationPage(true);
         resizePrompt();
       };
 
