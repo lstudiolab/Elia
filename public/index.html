@@ -96,8 +96,12 @@
     .message-text a { color:#356ac3; text-decoration:underline; text-underline-offset:2px; }
     .message-text img.markdown-image { display:block; max-width:100%; width:auto; height:auto; max-height:620px; object-fit:contain; border-radius:12px; margin:.8em 0; background:transparent!important; }
     .message-text code { background:rgba(120,120,128,.12); }
-    .message-text pre { background:transparent!important; }
-    .message-text pre code { background:transparent!important; }
+    /* Fenced code renders as its own distinct, shaded panel within the assistant reply. */
+    .message-text pre { background:var(--code-panel,#202124)!important; color:#f4f4f5; border:1px solid rgba(128,128,140,.28); border-radius:14px; padding:16px; margin:14px 0; max-width:100%; overflow-x:auto; white-space:pre; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+    .message-text pre code { display:block; color:inherit; background:transparent!important; padding:0; border-radius:0; font-size:13px; line-height:1.65; white-space:pre; tab-size:2; }
+    .message-text pre + p,.message-text p + pre { margin-top:14px; }
+    @media(prefers-color-scheme:light){.message-text pre{--code-panel:#202124}}
+    @media(prefers-color-scheme:dark){.message-text pre{--code-panel:#171719;border-color:rgba(255,255,255,.14)}}
     .message-text table { width:100%; border-collapse:collapse; margin:.8em 0; font-size:.95em; }
     .message-text th,.message-text td { border:1px solid var(--line); padding:7px 9px; text-align:left; vertical-align:top; }
     .message-text th { font-weight:650; background:rgba(120,120,128,.08); }
