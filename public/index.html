@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#f7f7f5">
   <meta name="description" content="Elia — a calm, personal AI chat experience.">
   <title>Elia — AI, in your flow</title>
@@ -1150,6 +1150,53 @@
     @media (prefers-reduced-transparency: reduce) {
       .composer { background: rgba(248, 248, 252, 0.96); -webkit-backdrop-filter: none; backdrop-filter: none; }
     }
+
+  
+    /* iPhone 11 and compact-phone layout refinements */
+    @media (max-width: 430px) {
+      html, body { width: 100%; min-width: 0; overflow-x: hidden; }
+      .app, .main { width: 100%; min-width: 0; }
+      .topbar { padding-left: max(14px, env(safe-area-inset-left)); padding-right: max(14px, env(safe-area-inset-right)); gap: 8px; }
+      .top-left { min-width: 0; gap: 8px; }
+      .mobile-brand { min-width: 0; gap: 7px; }
+      .mobile-brand .brand-name { font-size: 15px; }
+      .model-pill { min-width: 0; max-width: 48vw; }
+      .top-actions { flex: 0 0 auto; gap: 3px; }
+      .workspace { width: 100%; min-width: 0; padding-left: 15px; padding-right: 15px; }
+      .welcome { width: 100%; padding-top: 32px; padding-bottom: 36px; }
+      h1 { max-width: 100%; font-size: clamp(28px, 8vw, 36px); overflow-wrap: anywhere; }
+      .welcome-copy { max-width: 34rem; padding: 0 5px; }
+      .suggestions { width: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .suggestion { min-width: 0; }
+      .thread { width: 100%; min-width: 0; padding-bottom: 170px; overflow-wrap: anywhere; }
+      .message-content { max-width: 92%; }
+      .message.assistant .message-content { max-width: 100%; }
+      .message-text { min-width: 0; overflow-wrap: anywhere; }
+      .message-text pre { max-width: 100%; }
+      .composer-dock {
+        left: 0; right: 0; width: 100%;
+        padding: 14px max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom));
+        padding-left: max(12px, env(safe-area-inset-left));
+        background: linear-gradient(180deg, rgba(245,245,247,0), rgba(245,245,247,.88) 20%, rgba(245,245,247,.97) 60%);
+      }
+      .composer-inner { width: 100%; gap: 8px; }
+      .attach-button { width: 40px; height: 40px; }
+      .composer { min-width: 0; gap: 7px; padding: 7px 8px 7px 13px; }
+      #prompt { min-width: 0; font-size: 16px; line-height: 1.4; max-height: 112px; }
+      .send-button { width: 34px; height: 34px; }
+      .thread { padding-bottom: 150px; }
+    }
+    @media (max-width: 360px) {
+      .topbar { padding-left: 10px; padding-right: 10px; }
+      .model-pill { max-width: 42vw; }
+      .workspace { padding-left: 12px; padding-right: 12px; }
+      .suggestions { grid-template-columns: 1fr; }
+      .composer-dock { padding-left: 10px; padding-right: 10px; }
+      .composer-inner { gap: 7px; }
+      .attach-button { width: 38px; height: 38px; }
+    }
+    /* Prevent pinch and double-tap page zoom on touch browsers. */
+    html, body { touch-action: pan-x pan-y; }
 
   </style>
 </head>
