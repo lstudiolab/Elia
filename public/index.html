@@ -230,6 +230,9 @@
     .attach-option span,.conversation-menu-item svg { width:20px; height:20px; flex:0 0 20px; color:#62636a; }
     .conversation-menu-wrap { position:relative; display:flex; align-items:center; }
     .conversation-menu-button { display:grid; place-items:center; width:42px; height:42px; border:1px solid rgba(120,120,120,.18); border-radius:50%; color:var(--ink); background:rgba(255,255,255,.68); cursor:pointer; }
+    /* Hide the three-dot conversation actions while in the messaging view. */
+    body:not(.conversation-library-open) #conversationMenuWrap { display:none!important; }
+
     .conversation-menu-button:hover,.conversation-menu-button[aria-expanded="true"] { background:rgba(118,118,128,.12); }
     .conversation-menu { position:absolute; z-index:20; top:50px; right:0; display:none; width:205px; }
     .conversation-menu.open { display:block; animation:appear .12s ease both; }
