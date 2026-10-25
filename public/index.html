@@ -1706,6 +1706,7 @@
     .preferences-footer { display:flex;justify-content:flex-end;gap:9px;padding-top:4px; }
     .preferences-secondary,.preferences-primary { min-width:100px; }
     .preferences-primary { background:#09090b;color:#fff;border-color:#09090b; }
+    .conversation-card[role="button"] { font:inherit;color:var(--ink); }
     .conversation-card-more { position:absolute!important;z-index:5;top:10px;right:10px;display:grid;place-items:center;width:32px;height:32px;border:1px solid rgba(255,255,255,.7);border-radius:50%;background:rgba(248,248,250,.8);color:#252529;box-shadow:0 2px 9px rgba(0,0,0,.08);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);cursor:pointer;opacity:0;transform:scale(.92);transition:opacity .18s ease,transform .18s ease; }
     #conversationCards .conversation-card:hover .conversation-card-more,#conversationCards .conversation-card:focus-visible .conversation-card-more { opacity:1;transform:scale(1); }
     .conversation-card-more svg { width:17px;height:17px; }
@@ -2757,6 +2758,38 @@
           if (!currentId) newConversation(false);
           renderHistory(); renderChat(); renderConversationCards(); save(); showToast("Backup imported and merged.");
         } catch (error) { showToast(error.message || "Could not import that backup."); }
+      });
+      const conversationCardMenu = $("#conversationCardMenu");
+      conversationCardMenu.querySelectorAll("[data-card-action]").forEach((button) => button.addEventListener("click", () => {
+        const id = conversationCardMenu.dataset.conversationId;
+        const conversation = conversations.find((item) => item.id === id);
+        const action = button.dataset.cardAction;
+        conversationCardMenu.hidden = true;
+        if (!conversation) return;
+        if (action === "pin") {
+          conversation.pinned = !conversation.pinned; conversation.updatedAt = Date.now(); save(); renderHistory(); renderConversationCards();
+          showToast(conversation.pinned ? "Conversation pinned." : "Conversation unpinned.");
+        } else if (action === "rename") {
+          const title = window.prompt("Rename conversation", conversation.title || "New conversation");
+          if (title === null) return;
+          const trimmed = title.trim(); if (!trimmed) return showToast("Conversation title cannot be empty.");
+          conversation.title = trimmed.slice(0,100); conversation.updatedAt = Date.now(); save(); renderHistory(); renderConversationCards(); showToast("Conversation renamed.");
+        } else if (action === "delete") {
+          if (!window.confirm("Delete this conversation? This cannot be undone.")) return;
+          conversations = conversations.filter((item) => item.id !== id); selectedConversationIds.delete(id);
+          if (currentId === id) currentId = conversations.find((item) => item.messages.length)?.id || null;
+          if (!currentId) newConversation(false);
+          save(); renderHistory(); renderChat(); renderConversationCards(); showToast("Conversation deleted.");
+        }
+      }));
+      document.addEventListener("click", (event) => {
+        if (!event.target.closest("#conversationCardMenu") && !event.target.closest("[data-card-more]")) conversationCardMenu.hidden = true;
+      });
+      document.addEventListener("keydown", (event) => { if (event.key === "Escape") conversationCardMenu.hidden = true; });
+      $("#conversationCards").addEventListener("keydown", (event) => {
+        const card = event.target.closest("[data-conversation-id]");
+        if (!card || event.target !== card || !["Enter"," "].includes(event.key)) return;
+        event.preventDefault(); card.click();
       });
       $("#searchConversationsButton").addEventListener("click", () => {
         const search = $("#librarySearch");
