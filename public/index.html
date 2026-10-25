@@ -1925,6 +1925,9 @@
           .replace(/[*_#>\x60]/g, "")
           .trim() || "No text preview";
       };
+      let conversationLayout = "grid";
+      let conversationSelectionMode = false;
+      const selectedConversationIds = new Set();
       const renderConversationCards = () => {
         const cards = $("#conversationCards");
         const savedConversations = conversations.filter((conversation) => (conversation.messages || []).length > 0).sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || Number(b.updatedAt || 0) - Number(a.updatedAt || 0));
@@ -1945,14 +1948,29 @@
             : new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: new Date(startedAt).getFullYear() !== new Date().getFullYear() ? "numeric" : undefined }).format(new Date(startedAt));
           return '<button type="button" class="conversation-card ' + (image ? "has-image" : "") + '" style="--card-delay:' + (Math.min(cardIndex, 8) * 35) + 'ms" data-conversation-id="' + escapeHtml(conversation.id) + '" title="' + escapeHtml(title) + '">'
             + (image ? '<img class="conversation-card-image" src="' + escapeHtml(image) + '" alt="" loading="lazy">' : '')
+            + (conversationSelectionMode ? '<input class="conversation-card-select" type="checkbox" tabindex="-1" aria-hidden="true" ' + (selectedConversationIds.has(conversation.id) ? 'checked' : '') + '>' : '')
             + '<span class="conversation-card-date">' + escapeHtml(dateLabel) + '</span>'
             + '<span class="conversation-card-top"><span class="conversation-card-title">' + escapeHtml(title) + '</span></span>'
             + '<span class="conversation-card-bottom">' + escapeHtml(preview) + '</span></button>';
         }).join("");
+        cards.classList.toggle("list-view", conversationLayout === "list");
+        cards.classList.toggle("selection-mode", conversationSelectionMode);
+        $("#conversationLayoutToggle").setAttribute("aria-label", conversationLayout === "grid" ? "Switch to list view" : "Switch to grid view");
+        $("#conversationCount").textContent = savedConversations.length + (savedConversations.length === 1 ? " saved conversation" : " saved conversations");
+        $("#conversationSelectToggle").textContent = conversationSelectionMode ? "Done" : "Select";
+        $("#conversationBulkActions").hidden = !conversationSelectionMode;
+        $("#conversationSelectedCount").textContent = selectedConversationIds.size + " selected";
         applyConversationSearch();
-        cards.querySelectorAll("[data-conversation-id]").forEach((card) => card.addEventListener("click", () => {
+        cards.querySelectorAll("[data-conversation-id]").forEach((card) => card.addEventListener("click", (event) => {
+          const id = card.dataset.conversationId;
+          if (conversationSelectionMode) {
+            event.preventDefault();
+            if (selectedConversationIds.has(id)) selectedConversationIds.delete(id); else selectedConversationIds.add(id);
+            renderConversationCards();
+            return;
+          }
           if (busy) return showToast("Wait for the current response to finish.");
-          currentId = card.dataset.conversationId;
+          currentId = id;
           try { localStorage.setItem("elia-current-conversation-v1", currentId); } catch {}
           setConversationPage(false); renderHistory(); renderChat();
         }));
@@ -2399,6 +2417,36 @@
         newConversation(); setConversationPage(false);
       });
       $("#openConversations").addEventListener("click", () => setConversationPage($("#conversationsPage").hidden));
+      $("#conversationLayoutToggle").addEventListener("click", () => {
+        conversationLayout = conversationLayout === "grid" ? "list" : "grid";
+        try { localStorage.setItem("elia-conversation-layout-v1", conversationLayout); } catch {}
+        renderConversationCards();
+      });
+      $("#conversationSelectToggle").addEventListener("click", () => {
+        conversationSelectionMode = !conversationSelectionMode;
+        if (!conversationSelectionMode) selectedConversationIds.clear();
+        renderConversationCards();
+      });
+      $("#conversationSelectAll").addEventListener("click", () => {
+        const visibleIds = Array.from($("#conversationCards").querySelectorAll("[data-conversation-id]")).filter((card) => !card.hidden).map((card) => card.dataset.conversationId);
+        if (visibleIds.every((id) => selectedConversationIds.has(id))) visibleIds.forEach((id) => selectedConversationIds.delete(id));
+        else visibleIds.forEach((id) => selectedConversationIds.add(id));
+        renderConversationCards();
+      });
+      $("#conversationCancelSelection").addEventListener("click", () => {
+        conversationSelectionMode = false; selectedConversationIds.clear(); renderConversationCards();
+      });
+      $("#conversationDeleteSelected").addEventListener("click", () => {
+        const ids = Array.from(selectedConversationIds);
+        if (!ids.length) return showToast("Select conversations to delete.");
+        if (!window.confirm("Delete " + ids.length + " selected conversation" + (ids.length === 1 ? "" : "s") + "? This cannot be undone.")) return;
+        conversations = conversations.filter((conversation) => !selectedConversationIds.has(conversation.id));
+        if (!conversations.some((conversation) => conversation.id === currentId)) currentId = conversations[0]?.id || null;
+        selectedConversationIds.clear(); conversationSelectionMode = false;
+        if (!currentId) newConversation(false);
+        save(); renderHistory(); renderChat(); renderConversationCards();
+        showToast("Selected conversations deleted.");
+      });
       $("#searchConversationsButton").addEventListener("click", () => {
         const search = $("#librarySearch");
         const opening = !search.classList.contains("open");
