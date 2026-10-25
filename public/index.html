@@ -1522,13 +1522,8 @@
         const modelName = selectedModelOption ? selectedModelOption.textContent.trim().replace(/^Elia\s+/, "") : "Oplus";
         $("#modelControlName").textContent = "Elia " + modelName;
         const highLabel = modelSelect.value === "qwen/qwen3.8-27b" ? "16K max" : "20K";
-        $("#highThinkingDetail").textContent = highLabel;
-        settingsMenu.querySelectorAll("[data-model]").forEach((button) => button.setAttribute("aria-checked", String(button.dataset.model === modelSelect.value)));
-        settingsMenu.querySelectorAll("[data-thinking]").forEach((button) => {
-          button.setAttribute("aria-checked", String(button.dataset.thinking === thinkingSelect.value));
-          const detail = button.querySelector(".menu-detail");
-          if (detail && button.dataset.thinking === "high") detail.textContent = highLabel;
-        });
+        const highOption = Array.from(thinkingSelect.options).find((option) => option.value === "high");
+        if (highOption) highOption.textContent = modelSelect.value === "qwen/qwen3.8-27b" ? "High · 16K max" : "High · 20K";
       };
       updateSettingsLabels();
       modelSelect.addEventListener("change", () => { try { localStorage.setItem(MODEL_PREF_KEY, modelSelect.value); } catch {} updateSettingsLabels(); });
