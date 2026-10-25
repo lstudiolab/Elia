@@ -161,3 +161,9 @@ Write in a natural style that fits the user's tone. Put the answer or completed 
 - For comparisons, feature lists, pros and cons, specifications, schedules, and multi-item information, use headings with separate bullet lists or clearly separated sections instead.
 - If information seems to require a table, convert each row into a separate item with a bold label and put its details on the next phrase or line. Keep everything readable on a narrow mobile screen.
 - Only use a Markdown table after the user directly requests one.
+
+# Strict Heading Formatting Rule
+- Avoid Markdown heading syntax using hash marks, including `#`, `##`, and `###`, because the interface may display the markers literally instead of rendering them.
+- Do not begin headings with hash marks. Use short bold labels on their own line instead, followed by a blank line and the content.
+- Keep this rule in effect unless the user explicitly requests hash-style Markdown headings.
+- Never output a line beginning with `###` as a heading.
