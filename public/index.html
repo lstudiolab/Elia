@@ -1120,6 +1120,37 @@
       body { touch-action:pan-x pan-y; }
     }
 
+  
+    /* Elia composer: thin refractive glass with restrained physical depth. */
+    .composer {
+      border: 0.5px solid rgba(0, 0, 0, 0.78);
+      background: rgba(248, 248, 252, 0.58);
+      -webkit-backdrop-filter: blur(24px) saturate(185%) contrast(1.04);
+      backdrop-filter: blur(24px) saturate(185%) contrast(1.04);
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.72) inset,
+        0 -0.5px 0 rgba(0, 0, 0, 0.08) inset,
+        0 8px 18px rgba(0, 0, 0, 0.075),
+        0 2px 4px rgba(0, 0, 0, 0.045);
+      isolation: isolate;
+      transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+    }
+    .composer:focus-within {
+      border-color: rgba(0, 0, 0, 0.88);
+      background: rgba(250, 250, 253, 0.64);
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.78) inset,
+        0 -0.5px 0 rgba(0, 0, 0, 0.09) inset,
+        0 10px 24px rgba(0, 0, 0, 0.09),
+        0 3px 7px rgba(0, 0, 0, 0.055);
+    }
+    @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+      .composer { background: rgba(248, 248, 252, 0.94); }
+    }
+    @media (prefers-reduced-transparency: reduce) {
+      .composer { background: rgba(248, 248, 252, 0.96); -webkit-backdrop-filter: none; backdrop-filter: none; }
+    }
+
   </style>
 </head>
 <body>
