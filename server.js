@@ -1,5 +1,7 @@
 import express from "express";
 import { readFile } from "node:fs/promises";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -8,6 +10,8 @@ const port = Number(process.env.PORT) || 3000;
 const root = path.dirname(fileURLToPath(import.meta.url));
 const defaultModel = process.env.GROQ_MODEL || "openai/gpt-oss-20b";
 const complexModel = process.env.GROQ_COMPLEX_MODEL || "openai/gpt-oss-120b";
+const execFileAsync = promisify(execFile);
+const cppToolPath = path.join(root, "elia-tools");
 
 app.disable("x-powered-by");
 app.use(express.json({ limit: "1mb" }));
@@ -201,43 +205,94 @@ app.post("/api/chat", async (req, res) => {
       ...messages.filter((message) => message.role !== "system")
     ];
 
+    const localToolDefinitions = [
+      { type: "function", function: { name: "Calculator", description: "Evaluate a mathematical expression using arithmetic, parentheses, modulo, and exponentiation.", parameters: { type: "object", properties: { expression: { type: "string", description: "Math expression, e.g. (12 + 8) * 3" } }, required: ["expression"], additionalProperties: false } } },
+      { type: "function", function: { name: "UnitConvert", description: "Convert units of length, mass, volume, or temperature.", parameters: { type: "object", properties: { value: { type: "number" }, from: { type: "string" }, to: { type: "string" } }, required: ["value", "from", "to"], additionalProperties: false } } },
+      { type: "function", function: { name: "CurrentTime", description: "Get the current UTC time from the server clock.", parameters: { type: "object", properties: {}, additionalProperties: false } } },
+      { type: "function", function: { name: "TextStats", description: "Count characters and whitespace-separated words in a text.", parameters: { type: "object", properties: { text: { type: "string", description: "Text to analyze." } }, required: ["text"], additionalProperties: false } } }
+    ];
+
+    async function executeCppTool(name, args) {
+      let cliArgs;
+      if (name === "Calculator") {
+        if (typeof args.expression !== "string" || args.expression.length > 500) throw new Error("expression must be a string of at most 500 characters");
+        cliArgs = [name, args.expression];
+      } else if (name === "UnitConvert") {
+        if (typeof args.value !== "number" || !Number.isFinite(args.value) || typeof args.from !== "string" || typeof args.to !== "string") throw new Error("value, from, and to are required");
+        cliArgs = [name, String(args.value), args.from.slice(0, 40), args.to.slice(0, 40)];
+      } else if (name === "CurrentTime") {
+        cliArgs = [name];
+      } else if (name === "TextStats") {
+        if (typeof args.text !== "string" || args.text.length > 10000) throw new Error("text must be a string of at most 10000 characters");
+        cliArgs = [name, args.text];
+      } else {
+        throw new Error("Tool is not registered.");
+      }
+      const { stdout } = await execFileAsync(cppToolPath, cliArgs, { timeout: 3000, maxBuffer: 16 * 1024 });
+      return stdout.trim();
+    }
+
     async function requestCompletion(model, isComplex) {
-      const requestBody = {
-        model,
-        messages: groqMessages,
-        temperature: 1,
-        reasoning_effort: "high",
-        max_completion_tokens: isComplex ? 16384 : 8192,
-        stream: false
-      };
+      const requestMessages = [...groqMessages];
+      const maxToolRounds = 4;
 
-      if (useWebSearch) {
-        requestBody.tools = [{ type: "browser_search" }];
-        requestBody.tool_choice = "required";
+      for (let round = 0; round <= maxToolRounds; round += 1) {
+        const requestBody = {
+          model,
+          messages: requestMessages,
+          temperature: 1,
+          reasoning_effort: "high",
+          max_completion_tokens: isComplex ? 16384 : 8192,
+          stream: false
+        };
+
+        if (useWebSearch) {
+          requestBody.tools = [{ type: "browser_search" }];
+          requestBody.tool_choice = "required";
+        } else {
+          requestBody.tools = localToolDefinitions;
+          requestBody.tool_choice = "auto";
+        }
+
+        const upstream = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+          signal: AbortSignal.timeout(useWebSearch ? 120000 : 90000)
+        });
+
+        const data = await upstream.json().catch(() => ({}));
+        if (!upstream.ok) {
+          const providerMessage = data?.error?.message;
+          console.error("Groq request failed:", upstream.status, providerMessage || "Unknown upstream error");
+          const error = new Error(upstream.status === 429
+            ? "The AI service is busy or rate-limited. Wait a moment and try again."
+            : "The AI provider rejected the request. Check the server's Groq configuration.");
+          error.status = upstream.status === 429 ? 429 : 502;
+          throw error;
+        }
+
+        const message = data?.choices?.[0]?.message;
+        if (!Array.isArray(message?.tool_calls) || message.tool_calls.length === 0) {
+          return { data, reply: message?.content };
+        }
+        if (useWebSearch) return { data, reply: message?.content };
+        if (round === maxToolRounds) throw new Error("Tool call limit reached.");
+
+        requestMessages.push({ role: "assistant", content: message.content || "", tool_calls: message.tool_calls });
+        for (const call of message.tool_calls) {
+          let result;
+          try {
+            const args = JSON.parse(call?.function?.arguments || "{}");
+            if (!args || typeof args !== "object" || Array.isArray(args)) throw new Error("Tool arguments must be a JSON object.");
+            result = await executeCppTool(call?.function?.name, args);
+          } catch (error) {
+            result = JSON.stringify({ ok: false, error: error?.message || "Tool execution failed." });
+          }
+          requestMessages.push({ role: "tool", tool_call_id: call.id, content: result });
+        }
       }
-
-      const upstream = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(requestBody),
-        signal: AbortSignal.timeout(useWebSearch ? 120000 : 90000)
-      });
-
-      const data = await upstream.json().catch(() => ({}));
-      if (!upstream.ok) {
-        const providerMessage = data?.error?.message;
-        console.error("Groq request failed:", upstream.status, providerMessage || "Unknown upstream error");
-        const error = new Error(upstream.status === 429
-          ? "The AI service is busy or rate-limited. Wait a moment and try again."
-          : "The AI provider rejected the request. Check the server's Groq configuration.");
-        error.status = upstream.status === 429 ? 429 : 502;
-        throw error;
-      }
-
-      return { data, reply: data?.choices?.[0]?.message?.content };
+      throw new Error("Tool execution did not complete.");
     }
 
     let actualModel = selectedComplexModel ? complexModel : defaultModel;
