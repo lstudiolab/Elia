@@ -2379,6 +2379,7 @@
         const conversation = getCurrent();
         const modelCommand = pendingFiles.length ? null : requestedModel(text);
         if (modelCommand) {
+          voiceModePendingResponse = false;
           setSelectedModel(modelCommand);
           conversation.messages.push({ id: uid(), role: "user", content: text, displayContent: text });
           conversation.messages.push({ id: uid(), role: "assistant", content: "I’ve switched to **" + modelCommand.names[0].replace(/^elia /, "Elia ") + "**. The model menu is updated, and I’ll use it for your next response." });
@@ -2489,6 +2490,7 @@
           save();
           renderHistory();
         } catch (error) {
+          voiceModePendingResponse = false;
           const typingRow = $("#typingIndicator");
           if (typingRow?._tokenRevealTimer) window.clearTimeout(typingRow._tokenRevealTimer);
           typingRow?.remove();
