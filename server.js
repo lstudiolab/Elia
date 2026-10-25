@@ -195,7 +195,11 @@ app.post("/api/chat", async (req, res) => {
     return res.status(503).json({ error: "The server is missing its GROQ_API_KEY environment variable." });
   }
 
-  const requestedModel = req.body?.model || "openai/gpt-oss-20b";
+  const requestedModel = String(req.body?.model || "openai/gpt-oss-20b");
+  const selectedModel = availableChatModels.has(requestedModel) ? requestedModel : "openai/gpt-oss-20b";
+  const thinkingLevel = ["low", "medium", "high"].includes(req.body?.thinkingLevel) ? req.body.thinkingLevel : "medium";
+  const requestedMaxTokens = thinkingTokenLimits[thinkingLevel];
+  const maxCompletionTokens = Math.min(requestedMaxTokens, modelTokenLimits[selectedModel] || requestedMaxTokens);
   const incoming = req.body?.messages;
   if (!Array.isArray(incoming) || incoming.length < 1 || incoming.length > 80) {
     return res.status(400).json({ error: "Send between 1 and 80 messages." });
