@@ -1157,13 +1157,13 @@
     }
 
   
-    /* Conversation cards: taller, with preview directly beneath the title. */
+    /* Compact conversation cards with preview directly beneath the title. */
     #conversationCards { align-items:stretch!important;gap:12px!important; }
     #conversationCards .conversation-card,
     #conversationCards .conversation-card:nth-child(n) {
-      min-height:230px!important;height:auto!important;
+      min-height:135px!important;height:auto!important;
       justify-content:flex-start!important;gap:0!important;
-      padding:16px 14px 18px!important;
+      padding:12px 13px!important;
     }
     #conversationCards .conversation-card-date { margin:0 0 8px!important; }
     #conversationCards .conversation-card-top {
@@ -1188,7 +1188,7 @@
     @media(max-width:760px) {
       #conversationCards { grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important; }
       #conversationCards .conversation-card,
-      #conversationCards .conversation-card:nth-child(n) { min-height:230px!important;padding:15px 12px 17px!important; }
+      #conversationCards .conversation-card:nth-child(n) { min-height:135px!important;padding:12px 11px!important;border-radius:70px!important; }
     }
 
   
