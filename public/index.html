@@ -1631,7 +1631,7 @@
     .chat-preferences-button:hover { background:var(--panel); }
     body.conversation-library-open .chat-preferences-button { display:none!important; }
     .composer { height:auto!important;min-height:46px!important; }
-    #prompt { height:auto!important;min-height:24px!important;max-height:120px!important;line-height:1.45!important;overflow-y:auto!important; }
+    #prompt { min-height:24px!important;max-height:120px!important;line-height:1.45!important;overflow-y:auto!important; }
     /* Elia interaction polish: Liquid Glass-inspired controls, purposeful motion and accessible fallbacks. */
     :root[data-theme="light"] {
       color-scheme:light;--bg:#f6f6f4;--panel:rgba(255,255,255,.9);--panel-soft:#ececea;
@@ -2172,7 +2172,7 @@
           const image = imageFromMessage(lastAssistant);
           const title = conversation.title || "New conversation";
           const preview = previewFromMessage(lastAssistant);
-          const startedAt = Number(conversation.createdAt || conversation.updatedAt || Date.now());
+          const startedAt = Number(conversation.updatedAt || conversation.createdAt || Date.now());
           const age = Math.max(0, Date.now() - startedAt);
           const dayMs = 86400000;
           const dateLabel = age < 7 * dayMs
@@ -2876,6 +2876,12 @@ $("#chatWorkspace").scrollTo({ top: 0, behavior: "auto" });
             if (["system","reduced"].includes(incoming.motion)) appPreferences.motion = incoming.motion;
             if (["on","reduced"].includes(incoming.glass)) appPreferences.glass = incoming.glass;
             persistAppPreferences();
+          }
+          const expiredAfterImport = expiredConversations();
+          if (expiredAfterImport.length) {
+            const expiredIds = new Set(expiredAfterImport.map((item) => item.id));
+            conversations = conversations.filter((item) => !expiredIds.has(item.id));
+            if (!conversations.some((item) => item.id === currentId)) currentId = conversations.find((item) => item.messages.length)?.id || null;
           }
           const importedModel = modelNames.find((item) => item.value === payload?.model);
           if (importedModel) setSelectedModel(importedModel);
