@@ -1904,6 +1904,43 @@
       const thinkingSelect = $("#thinkingSelect");
       const MODEL_PREF_KEY = "elia-model-preference-v1";
       const THINKING_PREF_KEY = "elia-thinking-preference-v1";
+
+      const APP_PREFERENCES_KEY = "elia-app-preferences-v1";
+      const defaultAppPreferences = { openTo:"recent", retention:"forever", preview:"medium", theme:"system", motion:"system", glass:"on" };
+      let appPreferences = { ...defaultAppPreferences };
+      try {
+        const storedPreferences = JSON.parse(localStorage.getItem(APP_PREFERENCES_KEY) || "{}");
+        for (const key of Object.keys(defaultAppPreferences)) {
+          if (typeof storedPreferences[key] === "string") appPreferences[key] = storedPreferences[key];
+        }
+      } catch {}
+      if (!["recent","new"].includes(appPreferences.openTo)) appPreferences.openTo = "recent";
+      if (!["forever","365","30"].includes(appPreferences.retention)) appPreferences.retention = "forever";
+      if (!["short","medium","long"].includes(appPreferences.preview)) appPreferences.preview = "medium";
+      if (!["system","light","dark"].includes(appPreferences.theme)) appPreferences.theme = "system";
+      if (!["system","reduced"].includes(appPreferences.motion)) appPreferences.motion = "system";
+      if (!["on","reduced"].includes(appPreferences.glass)) appPreferences.glass = "on";
+      const applyAppPreferences = () => {
+        document.documentElement.dataset.theme = appPreferences.theme;
+        document.documentElement.dataset.motion = appPreferences.motion;
+        document.documentElement.dataset.glass = appPreferences.glass;
+        const cards = $("#conversationCards");
+        if (cards) {
+          cards.classList.remove("preview-short","preview-medium","preview-long");
+          cards.classList.add("preview-" + appPreferences.preview);
+        }
+      };
+      const persistAppPreferences = () => {
+        try { localStorage.setItem(APP_PREFERENCES_KEY, JSON.stringify(appPreferences)); } catch {}
+        applyAppPreferences();
+      };
+      const expiredConversations = (retention = appPreferences.retention, list = conversations) => {
+        if (retention === "forever") return [];
+        const cutoff = Date.now() - Number(retention) * 86400000;
+        return list.filter((conversation) => Number(conversation.updatedAt || conversation.createdAt || Date.now()) < cutoff);
+      };
+      applyAppPreferences();
+
       try {
         const savedModel = localStorage.getItem(MODEL_PREF_KEY);
         const savedThinking = localStorage.getItem(THINKING_PREF_KEY);
@@ -1939,7 +1976,7 @@
       thinkingSelect.addEventListener("change", () => {
         try { localStorage.setItem(THINKING_PREF_KEY, thinkingSelect.value); } catch {}
       });
-      const scrollToLatest = (behavior = "smooth") => requestAnimationFrame(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior }));
+      const scrollToLatest = (behavior = "smooth") => requestAnimationFrame(() => { const workspace = $("#chatWorkspace"); if (workspace) workspace.scrollTo({ top: workspace.scrollHeight, behavior }); });
       const fileTextExtensions = /\.(txt|md|csv|json|html|css|js|ts|py|c|cpp|h|hpp|xml|yaml|yml|log)$/i;
       const readTextFile = (file) => new Promise((resolve) => {
         if (file.size > 200000) return resolve("[File " + file.name + " is too large to include as text.]");
@@ -2111,8 +2148,16 @@
       const renderConversationCards = () => {
         const cards = $("#conversationCards");
         const savedConversations = conversations.filter((conversation) => (conversation.messages || []).length > 0).sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || Number(b.updatedAt || 0) - Number(a.updatedAt || 0));
+        cards.classList.remove("preview-short","preview-medium","preview-long");
+        cards.classList.add("preview-" + appPreferences.preview);
+        cards.classList.toggle("list-view", conversationLayout === "list");
+        cards.classList.toggle("selection-mode", conversationSelectionMode);
         if (!savedConversations.length) {
           cards.innerHTML = '<div class="conversation-library-empty" aria-label="No saved conversations"><span class="conversation-library-empty-logo">E</span></div>';
+          $("#conversationCount").textContent = "No saved conversations";
+          $("#conversationBulkActions").hidden = !conversationSelectionMode;
+          $("#conversationSelectedCount").textContent = selectedConversationIds.size + " selected";
+          $("#conversationSelectToggle").textContent = conversationSelectionMode ? "Done" : "Select";
           return;
         }
         cards.innerHTML = savedConversations.map((conversation, cardIndex) => {
@@ -2158,7 +2203,9 @@
       const applyConversationSearch = () => {
         const query = ($("#conversationSearch")?.value || "").trim().toLowerCase();
         $("#conversationCards").querySelectorAll("[data-conversation-id]").forEach((card) => {
-          card.hidden = Boolean(query) && !card.textContent.toLowerCase().includes(query);
+          const conversation = conversations.find((item) => item.id === card.dataset.conversationId);
+          const searchableText = [card.textContent, conversation?.title || "", ...(conversation?.messages || []).map((message) => String(message.displayContent ?? message.content ?? ""))].join(" ").toLowerCase();
+          card.hidden = Boolean(query) && !searchableText.includes(query);
         });
       };
       const setConversationPage = (show) => {
@@ -2176,7 +2223,8 @@
           $("#conversationSearch").value = "";
           $("#librarySearch").classList.remove("open");
         }
-        window.scrollTo({ top: 0, behavior: "smooth" });
+$("#chatWorkspace").scrollTo({ top: 0, behavior: "auto" });
+        $("#conversationCards").scrollTop = 0;
       };
       const renderHistory = () => {
         if (!conversations.length) { historyBox.innerHTML = '<div class="history-empty">Your conversations will appear here.</div>'; renderConversationCards(); return; }
@@ -2298,7 +2346,7 @@
         thread.innerHTML = "";
         messages.forEach(appendMessage);
         updateConversationMenu();
-        if (messages.length) requestAnimationFrame(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }));
+        if (messages.length) scrollToLatest("auto");
       };
       const addTyping = () => {
         const row = document.createElement("article");
@@ -2767,7 +2815,20 @@
             newConversation(false);
           }
         }
-        if (isRefresh && savedLibraryOpen) setConversationPage(true);
+        const expired = expiredConversations();
+        if (expired.length) {
+          const expiredIds = new Set(expired.map((item) => item.id));
+          conversations = conversations.filter((item) => !expiredIds.has(item.id));
+          if (!conversations.some((item) => item.id === currentId)) currentId = conversations.find((item) => item.messages.length)?.id || null;
+          save();
+        }
+        if (appPreferences.openTo === "recent") {
+          setConversationPage(true);
+        } else {
+          if (getCurrent()?.messages?.length) newConversation(false);
+          else if (!getCurrent()) newConversation(false);
+          setConversationPage(false);
+        }
         resizePrompt();
       };
 
