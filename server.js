@@ -276,16 +276,19 @@ app.post("/api/chat", async (req, res) => {
         };
 
         if (useWebSearch) {
-          // Groq orchestrates these built-in tools on its own infrastructure.
-          requestBody.tools = [{ type: "browser_search" }, { type: "code_interpreter" }];
+          // Force the provider-hosted browser search for explicit/current research requests.
+          requestBody.tools = [{ type: "browser_search" }];
           requestBody.tool_choice = "required";
         } else if (hasImages) {
-          // Qwen vision supports image inputs and user-defined function tools.
+          // Vision model accepts images and local function tools; no GPT-OSS-only tools here.
           requestBody.tools = localToolDefinitions;
           requestBody.tool_choice = "auto";
-        } else {
-          // Code Interpreter is provider-sandboxed; our own deterministic tools run in C++.
+        } else if (providerToolModels.has(model)) {
+          // Groq runs Code Interpreter in a provider-managed sandbox. C++ tools run locally.
           requestBody.tools = [{ type: "code_interpreter" }, ...localToolDefinitions];
+          requestBody.tool_choice = "auto";
+        } else {
+          requestBody.tools = localToolDefinitions;
           requestBody.tool_choice = "auto";
         }
 
