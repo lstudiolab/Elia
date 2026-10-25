@@ -1281,7 +1281,7 @@
     .elia-settings-trigger{display:block;max-width:min(58vw,280px);min-width:0;padding:8px 0;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:var(--ink);font:inherit;font-size:15px;font-weight:620;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
     .elia-settings-trigger:hover,.elia-settings-trigger[aria-expanded="true"]{color:color-mix(in srgb,var(--ink) 72%,var(--accent))}
     .native-model-picker{position:absolute;inset:0;width:100%;height:100%;opacity:.015;cursor:pointer;z-index:2;border:0;background:transparent;color:transparent;-webkit-appearance:none;appearance:none}
-    .native-thinking-picker{position:fixed;left:-10000px;top:0;width:1px;height:1px;opacity:.01;pointer-events:none}
+    .native-thinking-picker{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(320px,85vw);height:44px;opacity:.02;z-index:1000;pointer-events:auto;border:0;background:transparent;color:transparent;-webkit-appearance:none;appearance:none}
     .elia-settings-trigger{position:relative}
     .elia-settings-menu{position:absolute;z-index:40;top:calc(100% + 7px);left:-12px;width:min(270px,calc(100vw - 90px));padding:12px;display:grid;gap:12px;border:1px solid var(--line);border-radius:17px;background:var(--panel);box-shadow:0 14px 38px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.55);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);transform-origin:top left;animation:eliaScaleIn .18s cubic-bezier(.2,.8,.2,1) both}
     .elia-settings-menu[hidden]{display:none!important}
@@ -1513,7 +1513,8 @@
       modelMenuPicker.addEventListener("change", () => {
         if (modelMenuPicker.value === "thinking") {
           thinkingMenuPicker.value = thinkingSelect.value;
-          thinkingMenuPicker.style.pointerEvents = "auto";
+          const nativeSetter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value")?.set;
+          if (nativeSetter) nativeSetter.call(thinkingMenuPicker, thinkingSelect.value);
           thinkingMenuPicker.focus({ preventScroll: true });
           thinkingMenuPicker.click();
           return;
