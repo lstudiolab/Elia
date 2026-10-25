@@ -55,7 +55,13 @@ If multiple tools are needed, call them in the order required by the application
 
 Example requests, only if supported by the application's tool protocol:
 ```
-{"type":"tool_call","tool":"WebSearch","arguments":{"query":"latest C++ standard status"}}
+{
+"type":"tool_call",
+ "tool":"WebSearch",
+ "arguments": {
+   "query": "latest C++ standard status"
+   }
+}
 ```
 {"type":"tool_call","tool":"Shell","arguments":{"command":"pwd && ls"}}
 {"type":"tool_call","tool":"CodeRun","arguments":{"language":"python","code":"print(1 + 1)"}}
