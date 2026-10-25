@@ -2103,7 +2103,7 @@
           const dateLabel = age < 7 * dayMs
             ? new Intl.DateTimeFormat(undefined, { weekday: "long" }).format(new Date(startedAt))
             : new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: new Date(startedAt).getFullYear() !== new Date().getFullYear() ? "numeric" : undefined }).format(new Date(startedAt));
-          return '<button type="button" class="conversation-card ' + (image ? "has-image" : "") + '" style="--card-delay:' + (Math.min(cardIndex, 8) * 35) + 'ms" data-conversation-id="' + escapeHtml(conversation.id) + '" title="' + escapeHtml(title) + '">'
+          return '<button type="button" class="conversation-card ' + (image ? "has-image" : "") + '" style="--card-delay:' + (Math.min(cardIndex, 8) * 35) + 'ms" data-conversation-id="' + escapeHtml(conversation.id) + '" aria-pressed="' + String(selectedConversationIds.has(conversation.id)) + '" title="' + escapeHtml(title) + '">'
             + (image ? '<img class="conversation-card-image" src="' + escapeHtml(image) + '" alt="" loading="lazy">' : '')
             + (conversationSelectionMode ? '<input class="conversation-card-select" type="checkbox" tabindex="-1" aria-hidden="true" ' + (selectedConversationIds.has(conversation.id) ? 'checked' : '') + '>' : '')
             + '<span class="conversation-card-date">' + escapeHtml(dateLabel) + '</span>'
