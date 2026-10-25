@@ -393,23 +393,6 @@ app.post("/api/chat", async (req, res) => {
       throw error;
     }
 
-    // If a standard-model response clearly fails at a coding task, automatically
-    // retry once on 120B. Never retry a request that already used the complex model.
-    if (!hasImages && !useWebSearch && selectedModel === "openai/gpt-oss-20b" && shouldEscalateWeakAnswer(messages, completion.reply)) {
-      console.warn("[model escalation] Standard response was insufficient; retrying with complex model.", JSON.stringify({
-        initialModel: actualModel,
-        retryModel: complexModel,
-        reason: "weak_coding_response"
-      }));
-      try {
-        completion = await requestCompletion(complexModel, true);
-        actualModel = complexModel;
-        actualRoute = "complex_fallback";
-      } catch (error) {
-        console.error("[model escalation] Complex-model retry failed.");
-        // Preserve the initial response if the fallback request itself fails.
-      }
-    }
 
     const { data } = completion;
     const reply = completion.reply;
