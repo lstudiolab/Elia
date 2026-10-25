@@ -2675,6 +2675,131 @@ $("#chatWorkspace").scrollTo({ top: 0, behavior: "auto" });
         save(); renderHistory(); renderChat(); renderConversationCards();
         showToast("Selected conversations deleted.");
       });
+
+      const preferencesDialog = $("#appPreferencesDialog");
+      const fillPreferencesForm = () => {
+        $("#prefOpenTo").value = appPreferences.openTo;
+        $("#prefRetention").value = appPreferences.retention;
+        $("#prefPreview").value = appPreferences.preview;
+        $("#prefTheme").value = appPreferences.theme;
+        $("#prefMotion").value = appPreferences.motion;
+        $("#prefGlass").value = appPreferences.glass;
+      };
+      const openPreferences = () => {
+        fillPreferencesForm();
+        if (typeof preferencesDialog.showModal === "function") {
+          if (!preferencesDialog.open) preferencesDialog.showModal();
+        } else preferencesDialog.setAttribute("open", "");
+      };
+      $("#conversationPreferencesButton").addEventListener("click", openPreferences);
+      $("#preferencesClose").addEventListener("click", () => preferencesDialog.close());
+      $("#preferencesCancel").addEventListener("click", () => preferencesDialog.close());
+      preferencesDialog.addEventListener("click", (event) => {
+        if (event.target === preferencesDialog) preferencesDialog.close();
+      });
+      $("#preferencesSave").addEventListener("click", () => {
+        const next = {
+          openTo: $("#prefOpenTo").value, retention: $("#prefRetention").value,
+          preview: $("#prefPreview").value, theme: $("#prefTheme").value,
+          motion: $("#prefMotion").value, glass: $("#prefGlass").value
+        };
+        const expired = expiredConversations(next.retention);
+        if (expired.length && next.retention !== appPreferences.retention &&
+            !window.confirm("This setting will permanently delete " + expired.length + " conversation" + (expired.length === 1 ? "" : "s") + " last active outside the selected period. Continue?")) {
+          fillPreferencesForm();
+          return;
+        }
+        appPreferences = next;
+        persistAppPreferences();
+        if (expired.length) {
+          const expiredIds = new Set(expired.map((item) => item.id));
+          conversations = conversations.filter((item) => !expiredIds.has(item.id));
+          if (!conversations.some((item) => item.id === currentId)) currentId = conversations.find((item) => item.messages.length)?.id || null;
+        }
+        if (!currentId && appPreferences.openTo === "new") newConversation(false);
+        renderHistory(); renderChat(); renderConversationCards(); save();
+        preferencesDialog.close();
+        showToast("Settings saved.");
+      });
+      $("#exportBackupButton").addEventListener("click", () => {
+        const payload = {
+          format:"elia-conversation-backup", version:1, exportedAt:new Date().toISOString(),
+          currentId, conversations, preferences:appPreferences, model:modelSelect.value, thinking:thinkingSelect.value
+        };
+        const blob = new Blob([JSON.stringify(payload,null,2)],{type:"application/json;charset=utf-8"});
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url; link.download = "elia-backup-" + new Date().toISOString().slice(0,10) + ".json";
+        document.body.appendChild(link); link.click(); link.remove();
+        setTimeout(() => URL.revokeObjectURL(url),1000);
+        showToast("Conversation backup exported.");
+      });
+      $("#importBackupButton").addEventListener("click", () => $("#importBackupFile").click());
+      $("#importBackupFile").addEventListener("change", async (event) => {
+        const file = event.target.files?.[0];
+        event.target.value = "";
+        if (!file) return;
+        if (file.size > 12000000) return showToast("Backups must be smaller than 12 MB.");
+        try {
+          const payload = JSON.parse(await file.text());
+          const source = Array.isArray(payload) ? payload : payload?.conversations;
+          if (!Array.isArray(source)) throw new Error("This file is not an Elia conversation backup.");
+          const imported = source.slice(0,500).map((item) => {
+            if (!item || typeof item.id !== "string" || !Array.isArray(item.messages)) return null;
+            const messages = item.messages.slice(-2000).map((message) => {
+              if (!message || !["user","assistant"].includes(message.role)) return null;
+              const safeAttachments = Array.isArray(message.attachments) ? message.attachments.slice(0,10).map((attachment) => {
+                if (!attachment || typeof attachment.name !== "string") return null;
+                let image = typeof attachment.image === "string" ? attachment.image : "";
+                if (!(image.startsWith("https://") || /^data:image\/(?:png|jpeg|webp|gif);base64,/i.test(image) && image.length <= 400000)) image = "";
+                return { name:attachment.name.slice(0,200), image };
+              }).filter(Boolean) : [];
+              return {
+                id:typeof message.id === "string" ? message.id.slice(0,160) : uid(), role:message.role,
+                content:String(message.content ?? "").slice(0,300000),
+                displayContent:String(message.displayContent ?? message.content ?? "").slice(0,300000),
+                attachments:safeAttachments,
+                ...(message.feedback === "up" || message.feedback === "down" ? {feedback:message.feedback} : {}),
+                ...(Number.isFinite(message.durationMs) ? {durationMs:message.durationMs} : {}),
+                ...(Number.isFinite(message.totalTokens) ? {totalTokens:message.totalTokens} : {})
+              };
+            }).filter(Boolean);
+            if (!messages.length) return null;
+            return { id:item.id.slice(0,100), title:String(item.title || "Imported conversation").slice(0,100),
+              createdAt:Number(item.createdAt) || Date.now(), updatedAt:Number(item.updatedAt) || Date.now(),
+              pinned:Boolean(item.pinned), messages };
+          }).filter(Boolean);
+          if (!imported.length) throw new Error("No valid conversations were found in this backup.");
+          if (!window.confirm("Import and merge " + imported.length + " conversation" + (imported.length === 1 ? "" : "s") + " with this Elia history?")) return;
+          const byId = new Map(conversations.map((item) => [item.id,item]));
+          for (const item of imported) {
+            const existing = byId.get(item.id);
+            if (!existing || Number(item.updatedAt) > Number(existing.updatedAt)) byId.set(item.id,item);
+          }
+          conversations = Array.from(byId.values()).sort((a,b) => Number(b.updatedAt || 0)-Number(a.updatedAt || 0));
+          if (payload && typeof payload === "object" && payload.currentId && conversations.some((item) => item.id === payload.currentId)) currentId = payload.currentId;
+          if (payload?.preferences && typeof payload.preferences === "object") {
+            const incoming = payload.preferences;
+            if (["recent","new"].includes(incoming.openTo)) appPreferences.openTo = incoming.openTo;
+            if (["forever","365","30"].includes(incoming.retention)) appPreferences.retention = incoming.retention;
+            if (["short","medium","long"].includes(incoming.preview)) appPreferences.preview = incoming.preview;
+            if (["system","light","dark"].includes(incoming.theme)) appPreferences.theme = incoming.theme;
+            if (["system","reduced"].includes(incoming.motion)) appPreferences.motion = incoming.motion;
+            if (["on","reduced"].includes(incoming.glass)) appPreferences.glass = incoming.glass;
+            persistAppPreferences();
+          }
+          const importedModel = modelNames.find((item) => item.value === payload?.model);
+          if (importedModel) setSelectedModel(importedModel);
+          if (["low","medium","high"].includes(payload?.thinking)) {
+            thinkingSelect.value = payload.thinking;
+            thinkingSelect.dispatchEvent(new Event("change",{bubbles:true}));
+          }
+          renderHistory(); renderChat(); renderConversationCards(); save();
+          showToast("Backup imported and merged.");
+        } catch (error) {
+          showToast(error.message || "Could not import that backup.");
+        }
+      });
       $("#searchConversationsButton").addEventListener("click", () => {
         const search = $("#librarySearch");
         const opening = !search.classList.contains("open");
