@@ -1242,6 +1242,8 @@
     .thinking-select select{max-width:160px}
     @media(max-width:760px){.composer-settings{width:100%;padding-left:0;margin-bottom:9px;gap:7px}.setting-select{flex:1;padding:8px 9px;gap:5px}.setting-select select{flex:1;width:0;max-width:none;font-size:12px}.setting-label{font-size:10px}.composer-dock{padding-top:12px}}
     @media(max-width:390px){.composer-settings{gap:5px}.setting-select{padding:7px 6px}.setting-label{display:none}.setting-select select{font-size:11px}}
+    .thread { padding-bottom:250px !important; }
+    @media(max-width:760px) { .thread { padding-bottom:205px !important; } }
   </style>
 </head>
 <body>
@@ -1334,7 +1336,9 @@
       const MODEL_PREF_KEY = "elia-model-preference-v1";
       const THINKING_PREF_KEY = "elia-thinking-preference-v1";
       try { const savedModel = localStorage.getItem(MODEL_PREF_KEY); const savedThinking = localStorage.getItem(THINKING_PREF_KEY); if (savedModel && Array.from(modelSelect.options).some((option) => option.value === savedModel)) modelSelect.value = savedModel; if (["low","medium","high"].includes(savedThinking)) thinkingSelect.value = savedThinking; } catch {}
-      modelSelect.addEventListener("change", () => { try { localStorage.setItem(MODEL_PREF_KEY, modelSelect.value); } catch {} });
+      const updateThinkingTokenLabel = () => { const highOption = Array.from(thinkingSelect.options).find((option) => option.value === "high"); if (highOption) highOption.textContent = modelSelect.value === "qwen/qwen3.8-27b" ? "High · 16K max" : "High · 20K tokens"; };
+      updateThinkingTokenLabel();
+      modelSelect.addEventListener("change", () => { try { localStorage.setItem(MODEL_PREF_KEY, modelSelect.value); } catch {} updateThinkingTokenLabel(); });
       thinkingSelect.addEventListener("change", () => { try { localStorage.setItem(THINKING_PREF_KEY, thinkingSelect.value); } catch {} });
       const scrollToLatest = (behavior = "smooth") => requestAnimationFrame(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior }));
       const fileTextExtensions = /\.(txt|md|csv|json|html|css|js|ts|py|c|cpp|h|hpp|xml|yaml|yml|log)$/i;
