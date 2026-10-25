@@ -103,7 +103,23 @@
     .attach-wrap { position: relative; flex: 0 0 auto; }
     .attach-button { width: 46px; height: 46px; display: grid; place-items: center; border: 1px solid #e3e3dc; border-radius: 50%; background: white; box-shadow: 0 7px 24px rgba(40,40,30,.05); cursor: pointer; font-size: 25px; color: #55564e; }
     .attach-button:hover { background: #f0f0ec; }
-    .attach-menu { position: absolute; left: 0; bottom: 56px; display: none; width: 190px; padding: 6px; border: 1px solid var(--line); border-radius: 15px; background: white; box-shadow: 0 14px 40px rgba(30,30,20,.13); }
+
+    /* Apple-style translucent action menus for attachment and conversation controls. */
+    .attach-menu,.conversation-menu { border:1px solid rgba(120,120,120,.2); border-radius:16px; background:rgba(250,250,252,.94); -webkit-backdrop-filter:saturate(180%) blur(24px); backdrop-filter:saturate(180%) blur(24px); box-shadow:0 12px 36px rgba(0,0,0,.16),0 1px 3px rgba(0,0,0,.06); padding:6px; }
+    .attach-option,.conversation-menu-item { min-height:42px; display:flex; align-items:center; gap:11px; width:100%; padding:10px 11px; border:0; border-radius:10px; background:transparent; color:#202124; text-align:left; font-size:14px; font-weight:500; cursor:pointer; }
+    .attach-option:hover,.conversation-menu-item:hover { background:rgba(118,118,128,.13); }
+    .attach-option span,.conversation-menu-item svg { width:20px; height:20px; flex:0 0 20px; color:#62636a; }
+    .conversation-menu-wrap { position:relative; display:flex; align-items:center; }
+    .conversation-menu-button { display:grid; place-items:center; width:42px; height:42px; border:1px solid rgba(120,120,120,.18); border-radius:50%; color:var(--ink); background:rgba(255,255,255,.68); cursor:pointer; }
+    .conversation-menu-button:hover,.conversation-menu-button[aria-expanded="true"] { background:rgba(118,118,128,.12); }
+    .conversation-menu { position:absolute; z-index:20; top:50px; right:0; display:none; width:205px; }
+    .conversation-menu.open { display:block; animation:appear .12s ease both; }
+    .conversation-menu-separator { height:1px; margin:5px 7px; background:rgba(120,120,128,.2); }
+    .conversation-menu-item.destructive { color:#d92d20; }
+    .conversation-menu-item.destructive svg { color:#d92d20; }
+    @media(max-width:700px) { .topbar { padding:0 17px; } .conversation-menu-button { width:40px; height:40px; } }
+
+    .attach-menu { position: absolute; left: 0; bottom: 56px; display: none; width: 205px; }
     .attach-menu.open { display: block; animation: appear .12s ease both; }
     .attach-option { display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 10px; border: 0; border-radius: 9px; background: transparent; text-align: left; font-size: 12px; cursor: pointer; }
     .attach-option:hover { background: #f3f3ef; }
@@ -1227,7 +1243,7 @@
     </aside>
 
     <main class="main">
-      <header class="topbar"><div class="top-left"><button class="icon-button conversation-back-button" id="openConversations" type="button" aria-label="All conversations" title="All conversations"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button></div></header>
+      <header class="topbar"><div class="top-left"><button class="icon-button conversation-back-button" id="openConversations" type="button" aria-label="All conversations" title="All conversations"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button></div><div class="conversation-menu-wrap" id="conversationMenuWrap"><button class="conversation-menu-button" id="conversationMenuButton" type="button" aria-label="Conversation actions" title="Conversation actions" aria-haspopup="menu" aria-expanded="false"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></button><div class="conversation-menu" id="conversationMenu" role="menu" aria-label="Conversation actions"><button class="conversation-menu-item" type="button" role="menuitem" data-conversation-action="share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.7 6.6-4.1M8.7 13.3l6.6 4.1"/></svg>Share</button><button class="conversation-menu-item" type="button" role="menuitem" data-conversation-action="pin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5-4 1-4 4-1 5-2-2-5 5-2-2 5-5-2-2 5-1 4-4z"/></svg><span id="pinMenuLabel">Pin</span></button><button class="conversation-menu-item" type="button" role="menuitem" data-conversation-action="rename"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>Rename</button><div class="conversation-menu-separator" role="separator"></div><button class="conversation-menu-item destructive" type="button" role="menuitem" data-conversation-action="delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m4 4v6m6-6v6"/></svg>Delete</button></div></div></header>
       <section class="conversations-page" id="conversationsPage" hidden><div class="conversations-heading" aria-hidden="true"></div><div class="library-search" id="librarySearch"><input id="conversationSearch" type="search" placeholder="Search conversations" aria-label="Search conversations"></div><div class="conversation-cards" id="conversationCards" aria-label="All conversations"></div></section><div class="conversation-library-actions" id="conversationLibraryActions" aria-label="Conversation library actions"><button class="library-action" id="searchConversationsButton" type="button" aria-label="Search conversations" title="Search conversations"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg></button><button class="library-action" id="libraryNewConversationButton" type="button" aria-label="New conversation" title="New conversation"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8"/><path d="M16 3.5a2.1 2.1 0 0 1 3 3L11 14.5 7 16l1.5-4z"/></svg></button></div>
       <section class="workspace" id="chatWorkspace">
         <section class="welcome" id="welcome"><div class="welcome-mark" aria-hidden="true">E</div></section>
@@ -1385,6 +1401,7 @@
         conversations.unshift({ id: currentId, title: "New conversation", messages: [], createdAt: Date.now(), updatedAt: Date.now() });
         renderHistory();
         renderChat();
+        updateConversationMenu();
         save();
         if (focus) promptBox.focus();
       };
@@ -1408,7 +1425,7 @@
       };
       const renderConversationCards = () => {
         const cards = $("#conversationCards");
-        const savedConversations = conversations.filter((conversation) => (conversation.messages || []).length > 0);
+        const savedConversations = conversations.filter((conversation) => (conversation.messages || []).length > 0).sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || Number(b.updatedAt || 0) - Number(a.updatedAt || 0));
         if (!savedConversations.length) {
           cards.innerHTML = '<div class="conversation-library-empty" aria-label="No saved conversations"><span class="conversation-library-empty-logo">E</span></div>';
           return;
@@ -1463,7 +1480,7 @@
       };
       const renderHistory = () => {
         if (!conversations.length) { historyBox.innerHTML = '<div class="history-empty">Your conversations will appear here.</div>'; renderConversationCards(); return; }
-        historyBox.innerHTML = conversations.slice(0, 20).map((conversation) =>
+        historyBox.innerHTML = [...conversations].sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || Number(b.updatedAt || 0) - Number(a.updatedAt || 0)).slice(0, 20).map((conversation) =>
           '<button class="history-item ' + (conversation.id === currentId ? "active" : "") + '" data-id="' + escapeHtml(conversation.id) + '" title="' + escapeHtml(conversation.title) + '">'
           + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5 8 8 0 0 1-3.6-.85L4 20l1.85-4.9A7.5 7.5 0 1 1 20 11.5Z"/></svg>'
           + '<span>' + escapeHtml(conversation.title) + '</span></button>').join("");
@@ -1533,6 +1550,7 @@
         thread.classList.toggle("visible", Boolean(messages.length));
         thread.innerHTML = "";
         messages.forEach(appendMessage);
+        updateConversationMenu();
         if (messages.length) requestAnimationFrame(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }));
       };
       const addTyping = () => {
@@ -1698,6 +1716,69 @@
         menu.classList.toggle("open", open);
         $("#attachButton").setAttribute("aria-expanded", String(open));
       });
+
+      const conversationMenuButton = $("#conversationMenuButton");
+      const conversationMenu = $("#conversationMenu");
+      const closeConversationMenu = () => {
+        conversationMenu.classList.remove("open");
+        conversationMenuButton.setAttribute("aria-expanded", "false");
+      };
+      const updateConversationMenu = () => {
+        const conversation = getCurrent();
+        conversationMenuButton.disabled = !conversation;
+        conversationMenuButton.style.opacity = conversation ? "1" : ".45";
+        $("#pinMenuLabel").textContent = conversation?.pinned ? "Unpin" : "Pin";
+      };
+      conversationMenuButton.addEventListener("click", () => {
+        const open = !conversationMenu.classList.contains("open");
+        conversationMenu.classList.toggle("open", open);
+        conversationMenuButton.setAttribute("aria-expanded", String(open));
+        updateConversationMenu();
+      });
+      conversationMenu.querySelectorAll("[data-conversation-action]").forEach((button) => button.addEventListener("click", async () => {
+        const action = button.dataset.conversationAction;
+        const conversation = getCurrent();
+        closeConversationMenu();
+        if (!conversation) return showToast("Open a conversation first.");
+        if (action === "share") {
+          const text = (conversation.title || "Elia conversation") + "\n\n" + (conversation.messages || []).map((message) => (message.role === "user" ? "You" : "Elia") + ":\n" + String(message.displayContent ?? message.content ?? "")).join("\n\n");
+          try {
+            if (navigator.share) await navigator.share({ title: conversation.title || "Elia conversation", text });
+            else if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(text); showToast("Conversation copied to clipboard."); }
+            else {
+              const blob = new Blob([text], {type:"text/plain;charset=utf-8"});
+              const url = URL.createObjectURL(blob); const a = document.createElement("a");
+              a.href = url; a.download = (conversation.title || "elia-conversation").replace(/[^a-z0-9-]/gi,"-").toLowerCase() + ".txt"; a.click(); URL.revokeObjectURL(url);
+              showToast("Conversation exported.");
+            }
+          } catch (error) { if (error?.name !== "AbortError") showToast("Could not share this conversation."); }
+        } else if (action === "pin") {
+          conversation.pinned = !conversation.pinned;
+          conversation.updatedAt = Date.now(); save(); renderHistory(); updateConversationMenu();
+          showToast(conversation.pinned ? "Conversation pinned." : "Conversation unpinned.");
+        } else if (action === "rename") {
+          const name = window.prompt("Rename conversation", conversation.title || "New conversation");
+          if (name === null) return;
+          const title = name.trim();
+          if (!title) return showToast("Conversation title cannot be empty.");
+          conversation.title = title.slice(0, 100); conversation.updatedAt = Date.now();
+          save(); renderHistory(); updateConversationMenu(); showToast("Conversation renamed.");
+        } else if (action === "delete") {
+          if (!window.confirm("Delete this conversation? This cannot be undone.")) return;
+          const index = conversations.findIndex((item) => item.id === conversation.id);
+          if (index >= 0) conversations.splice(index, 1);
+          if (conversations.length) currentId = conversations[0].id;
+          else currentId = null;
+          save();
+          if (!currentId) newConversation(false);
+          renderHistory(); renderChat(); updateConversationMenu();
+          showToast("Conversation deleted.");
+        }
+      }));
+      document.addEventListener("click", (event) => {
+        if (!event.target.closest("#conversationMenuWrap")) closeConversationMenu();
+      });
+
       document.querySelectorAll("[data-picker]").forEach((button) => button.addEventListener("click", () => {
         $("#attachMenu").classList.remove("open");
         $("#attachButton").setAttribute("aria-expanded", "false");
