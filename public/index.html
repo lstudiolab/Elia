@@ -1465,7 +1465,17 @@
         transition: none !important;
       }
     }
-  </style>
+  
+    /* Markdown tables keep readable column widths and scroll horizontally instead of crushing text. */
+    .message-text .markdown-table-wrap { display:block; width:100%; max-width:100%; margin:.85em 0; overflow-x:auto; overflow-y:hidden; overscroll-behavior-inline:contain; -webkit-overflow-scrolling:touch; border:1px solid var(--line); border-radius:12px; scrollbar-width:thin; }
+    .message-text .markdown-table-wrap:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+    .message-text .markdown-table-wrap table { width:max-content; min-width:100%; max-width:none; margin:0; border:0; border-collapse:separate; border-spacing:0; font-size:.95em; }
+    .message-text .markdown-table-wrap th,.message-text .markdown-table-wrap td { min-width:112px; max-width:320px; padding:10px 12px; white-space:normal; overflow-wrap:anywhere; }
+    .message-text .markdown-table-wrap th { white-space:nowrap; }
+    .message-text .markdown-table-wrap tr > * + * { border-left:0; }
+    .message-text .markdown-table-wrap tbody tr:first-child td { border-top:0; }
+    .message-text .markdown-table-wrap tr:last-child td { border-bottom:0; }
+</style>
 </head>
 <body>
   <canvas id="eliaLiquidCanvas" aria-hidden="true"></canvas>
@@ -1860,7 +1870,7 @@
             const cells = (line) => line.trim().replace(/^\||\|$/g, '').split('|').map((cell) => cell.trim());
             const head = cells(lines[0]);
             const body = lines.slice(2).filter((line) => line.includes('|'));
-            return '<table><thead><tr>' + head.map((cell) => '<th>' + formatInlineMarkdown(cell) + '</th>').join('') + '</tr></thead><tbody>' + body.map((line) => '<tr>' + cells(line).map((cell) => '<td>' + formatInlineMarkdown(cell) + '</td>').join('') + '</tr>').join('') + '</tbody></table>';
+            return '<div class="markdown-table-wrap" role="region" aria-label="Scrollable table" tabindex="0"><table><thead><tr>' + head.map((cell) => '<th>' + formatInlineMarkdown(cell) + '</th>').join('') + '</tr></thead><tbody>' + body.map((line) => '<tr>' + cells(line).map((cell) => '<td>' + formatInlineMarkdown(cell) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>';
           }
           return '<p>' + lines.map((line) => formatInlineMarkdown(line)).join('<br>') + '</p>';
         }).join('');
