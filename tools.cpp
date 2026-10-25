@@ -1,4 +1,5 @@
 #include <cmath>
+#include <cctype>
 #include <ctime>
 #include <iomanip>
 #include <iostream>
@@ -117,7 +118,7 @@ int main(int argc, char** argv) {
     } else if (tool == "UnitConvert") {
       if (argc != 5) throw std::runtime_error("UnitConvert requires value, from, and to arguments.");
       const double value = number(argv[2]);
-      std::cout << "{\"ok\":true,\"value\":" << format(convert(value, argv[3], argv[4])) << ",\"from\":\"" << argv[3] << "\",\"to\":\"" << argv[4] << "\"}\n";
+      std::cout << "{\"ok\":true,\"value\":" << format(convert(value, argv[3], argv[4])) << "}\n";
     } else if (tool == "CurrentTime") {
       const std::time_t now = std::time(nullptr);
       std::tm utc{};
