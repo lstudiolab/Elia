@@ -2114,12 +2114,13 @@
           const dateLabel = age < 7 * dayMs
             ? new Intl.DateTimeFormat(undefined, { weekday: "long" }).format(new Date(startedAt))
             : new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: new Date(startedAt).getFullYear() !== new Date().getFullYear() ? "numeric" : undefined }).format(new Date(startedAt));
-          return '<button type="button" class="conversation-card ' + (image ? "has-image" : "") + '" style="--card-delay:' + (Math.min(cardIndex, 8) * 35) + 'ms" data-conversation-id="' + escapeHtml(conversation.id) + '" aria-pressed="' + String(selectedConversationIds.has(conversation.id)) + '" title="' + escapeHtml(title) + '">'
+          return '<article class="conversation-card ' + (image ? "has-image" : "") + '" style="--card-delay:' + (Math.min(cardIndex, 8) * 35) + 'ms" data-conversation-id="' + escapeHtml(conversation.id) + '" role="button" tabindex="0" aria-pressed="' + String(selectedConversationIds.has(conversation.id)) + '" title="' + escapeHtml(title) + '">'
             + (image ? '<img class="conversation-card-image" src="' + escapeHtml(image) + '" alt="" loading="lazy">' : '')
             + (conversationSelectionMode ? '<input class="conversation-card-select" type="checkbox" tabindex="-1" aria-hidden="true" ' + (selectedConversationIds.has(conversation.id) ? 'checked' : '') + '>' : '')
+            + '<button type="button" class="conversation-card-more" data-card-more aria-label="Conversation actions" title="Conversation actions"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></button>'
             + '<span class="conversation-card-date">' + escapeHtml(dateLabel) + '</span>'
             + '<span class="conversation-card-top"><span class="conversation-card-title">' + escapeHtml(title) + '</span></span>'
-            + '<span class="conversation-card-bottom">' + escapeHtml(preview) + '</span></button>';
+            + '<span class="conversation-card-bottom">' + escapeHtml(preview) + '</span></article>';
         }).join("");
         cards.classList.toggle("list-view", conversationLayout === "list");
         cards.classList.toggle("selection-mode", conversationSelectionMode);
