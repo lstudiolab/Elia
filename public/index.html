@@ -67,6 +67,29 @@
     @keyframes eliaSubmenuLiquid{0%{opacity:0;transform:translateX(-8px) scale(.92,.8);filter:blur(3px)}65%{opacity:1;transform:translateX(2px) scale(1.015,1.04);filter:blur(0)}100%{opacity:1;transform:translateX(0) scale(1);filter:blur(0)}}
     @keyframes eliaLiquidDrift{from{transform:translate3d(-3%,0,0) rotate(-3deg)}to{transform:translate3d(3%,2%,0) rotate(3deg)}}
     @media(prefers-reduced-motion:reduce){.elia-settings-menu,.elia-settings-menu::before,.settings-menu-item,.thinking-submenu,.thinking-submenu .settings-menu-item{animation:none!important;transition:none!important}}
+    /* Unified rounder geometry across Elia's interface */
+    :root{--elia-round-sm:14px;--elia-round-md:20px;--elia-round-lg:28px;--elia-round-xl:34px}
+    .elia-settings-menu{border-radius:26px!important;padding:10px!important}
+    .settings-menu-item{border-radius:15px!important;min-height:44px;padding:11px 13px}
+    .settings-menu-item:active{border-radius:19px!important}
+    .thinking-submenu{border-radius:20px;margin:4px 0 4px 8px;padding:6px 0 6px 9px}
+    .conversation-menu,.attach-menu{border-radius:25px!important;padding:9px!important}
+    .conversation-menu-item,.attach-option,.native-menu-option{border-radius:15px!important;min-height:44px}
+    .suggestion{border-radius:22px!important}
+    .status-card,.new-chat,.attachment-chip,.pending-attachment,.notice{border-radius:18px!important}
+    .toast{border-radius:20px!important}
+    .message.user .message-content{border-radius:25px 25px 9px 25px!important}
+    .message-text pre{border-radius:20px!important}
+    .message-text code{border-radius:9px}
+    .icon-button{border-radius:15px}
+    .send-button,.attach-button,.conversation-menu-button,.conversation-back-button{border-radius:50%!important}
+    .elia-settings-trigger{border-radius:999px!important}
+    .conversation-card{border-radius:32px!important}
+    .composer{border-radius:999px!important}
+    .brand-mark,.welcome-mark{border-radius:18px}
+    input,textarea,select,.modal,.dialog,.settings-menu-field select{border-radius:18px}
+    button{ -webkit-tap-highlight-color:transparent }
+
     .native-menu-heading{padding:8px 10px 5px;color:#85858b;font-size:11px;font-weight:650;letter-spacing:.25px}
     .native-menu-option{width:100%;min-height:35px;display:flex;align-items:center;gap:8px;padding:7px 10px;border:0;border-radius:9px;background:transparent;text-align:left;color:#202124;font-size:13px;cursor:pointer}
     .native-menu-option:hover,.native-menu-option:focus-visible{background:rgba(118,118,128,.13);outline:none}
