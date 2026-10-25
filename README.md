@@ -55,3 +55,7 @@ The service uses Render's injected `PORT` value automatically. `/api/health` rep
 - `POST /api/chat` — body: `{ "messages": [{ "role": "user", "content": "Hello" }] }`
 
 The chat endpoint validates message count and size, keeps the API key server-side, and forwards requests to Groq's OpenAI-compatible chat completions endpoint.
+
+## Persistent conversation history
+
+Conversation messages and their library cards are saved in the browser immediately, with IndexedDB as a local backup. To preserve history through browser-data loss and make it available again from the same device ID, configure `DATABASE_URL` on the Render service to point to a persistent PostgreSQL database. The server creates its `elia_conversation_snapshots` table automatically. The Render Blueprint declares `DATABASE_URL` as a secret environment variable; add the connection string in the Render Dashboard. Without it, cloud history is unavailable and history is limited to that browser's local storage.
