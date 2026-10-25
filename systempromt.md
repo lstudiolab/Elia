@@ -63,6 +63,7 @@ Example requests, only if supported by the application's tool protocol:
    }
 }
 ```
+```
 {
 "type": "tool_call",
 "tool": "Shell",
