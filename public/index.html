@@ -1908,7 +1908,7 @@
       thinkingSelect.addEventListener("change", () => {
         try { localStorage.setItem(THINKING_PREF_KEY, thinkingSelect.value); } catch {}
       });
-      const scrollToLatest = (behavior = "smooth") => requestAnimationFrame(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior }));
+      const scrollToLatest = (behavior = "smooth") => requestAnimationFrame(() => { const workspace = $("#chatWorkspace"); if (workspace) workspace.scrollTo({ top: workspace.scrollHeight, behavior }); });
       const fileTextExtensions = /\.(txt|md|csv|json|html|css|js|ts|py|c|cpp|h|hpp|xml|yaml|yml|log)$/i;
       const readTextFile = (file) => new Promise((resolve) => {
         if (file.size > 200000) return resolve("[File " + file.name + " is too large to include as text.]");
@@ -2074,7 +2074,7 @@
           .replace(/[*_#>\x60]/g, "")
           .trim() || "No text preview";
       };
-      let conversationLayout = "grid";
+      let conversationLayout = localStorage.getItem("elia-conversation-layout-v1") === "list" ? "list" : "grid";
       let conversationSelectionMode = false;
       const selectedConversationIds = new Set();
       const renderConversationCards = () => {
@@ -2127,7 +2127,9 @@
       const applyConversationSearch = () => {
         const query = ($("#conversationSearch")?.value || "").trim().toLowerCase();
         $("#conversationCards").querySelectorAll("[data-conversation-id]").forEach((card) => {
-          card.hidden = Boolean(query) && !card.textContent.toLowerCase().includes(query);
+          const conversation = conversations.find((item) => item.id === card.dataset.conversationId);
+          const searchableText = [card.textContent, conversation?.title || "", ...(conversation?.messages || []).map((message) => String(message.displayContent ?? message.content ?? ""))].join(" ").toLowerCase();
+          card.hidden = Boolean(query) && !searchableText.includes(query);
         });
       };
       const setConversationPage = (show) => {
@@ -2145,7 +2147,7 @@
           $("#conversationSearch").value = "";
           $("#librarySearch").classList.remove("open");
         }
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        $("#chatWorkspace").scrollTo({ top: 0, behavior: "auto" }); $("#conversationCards").scrollTop = 0;
       };
       const renderHistory = () => {
         if (!conversations.length) { historyBox.innerHTML = '<div class="history-empty">Your conversations will appear here.</div>'; renderConversationCards(); return; }
@@ -2267,7 +2269,7 @@
         thread.innerHTML = "";
         messages.forEach(appendMessage);
         updateConversationMenu();
-        if (messages.length) requestAnimationFrame(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }));
+        if (messages.length) scrollToLatest("auto");
       };
       const addTyping = () => {
         const row = document.createElement("article");
