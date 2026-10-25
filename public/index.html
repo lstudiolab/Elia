@@ -2649,6 +2649,64 @@
         target.style.setProperty("--glass-x", Math.max(0,Math.min(100,((event.clientX-rect.left)/rect.width)*100)).toFixed(1) + "%");
         target.style.setProperty("--glass-y", Math.max(0,Math.min(100,((event.clientY-rect.top)/rect.height)*100)).toFixed(1) + "%");
       }, { passive:true });
+      $("#exportBackupButton").addEventListener("click", () => {
+        const payload = { format:"elia-conversation-backup", version:1, exportedAt:new Date().toISOString(), syncKey:deviceId, currentId, conversations, preferences:appPreferences, model:modelSelect.value, thinking:thinkingSelect.value };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type:"application/json;charset=utf-8" });
+        const url = URL.createObjectURL(blob); const link = document.createElement("a");
+        link.href = url; link.download = "elia-backup-" + new Date().toISOString().slice(0,10) + ".json";
+        document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showToast("Conversation backup exported.");
+      });
+      $("#importBackupButton").addEventListener("click", () => $("#importBackupFile").click());
+      $("#importBackupFile").addEventListener("change", async (event) => {
+        const file = event.target.files?.[0]; event.target.value = ""; if (!file) return;
+        if (file.size > 12000000) return showToast("Backups must be smaller than 12 MB.");
+        try {
+          const payload = JSON.parse(await file.text());
+          const source = Array.isArray(payload) ? payload : payload?.conversations;
+          if (!Array.isArray(source)) throw new Error("This is not an Elia conversation backup.");
+          const imported = source.slice(0, 500).map((item) => {
+            if (!item || typeof item.id !== "string" || !Array.isArray(item.messages)) return null;
+            const messages = item.messages.slice(-2000).filter((message) => message && ["user","assistant"].includes(message.role)).map((message) => ({
+              id:typeof message.id === "string" ? message.id.slice(0,160) : uid(), role:message.role,
+              content:String(message.content ?? "").slice(0,300000), displayContent:String(message.displayContent ?? message.content ?? "").slice(0,300000),
+              attachments:Array.isArray(message.attachments) ? message.attachments.slice(0,8).filter((a) => a && typeof a.name === "string").map((a) => {
+                let image = typeof a.image === "string" ? a.image : "";
+                if (!(image.startsWith("https://") || (/^data:image\/(png|jpeg|webp|gif);base64,/i.test(image) && image.length < 400000))) image = "";
+                return { name:a.name.slice(0,200), image };
+              }) : [],
+              ...(message.feedback === "up" || message.feedback === "down" ? { feedback:message.feedback } : {}),
+              ...(Number.isFinite(message.durationMs) ? { durationMs:message.durationMs } : {}),
+              ...(Number.isFinite(message.totalTokens) ? { totalTokens:message.totalTokens } : {})
+            }));
+            if (!messages.length) return null;
+            return { id:item.id.slice(0,100), title:String(item.title || "Imported conversation").slice(0,100), createdAt:Number(item.createdAt) || Date.now(), updatedAt:Number(item.updatedAt) || Date.now(), pinned:Boolean(item.pinned), messages };
+          }).filter(Boolean);
+          if (!imported.length) throw new Error("No valid conversations were found in this backup.");
+          if (!window.confirm("Import and merge " + imported.length + " conversation" + (imported.length === 1 ? "" : "s") + " with this Elia history?")) return;
+          const merged = new Map(conversations.map((item) => [item.id, item]));
+          for (const item of imported) { const existing = merged.get(item.id); if (!existing || Number(item.updatedAt) > Number(existing.updatedAt)) merged.set(item.id, item); }
+          conversations = Array.from(merged.values()).sort((a,b) => Number(b.updatedAt || 0) - Number(a.updatedAt || 0));
+          if (payload && typeof payload === "object" && payload.currentId && conversations.some((item) => item.id === payload.currentId)) currentId = payload.currentId;
+          if (typeof payload?.syncKey === "string" && /^[a-zA-Z0-9-]{20,100}$/.test(payload.syncKey)) { deviceId = payload.syncKey; try { localStorage.setItem(DEVICE_ID_KEY, deviceId); } catch {} }
+          if (payload?.preferences && typeof payload.preferences === "object") {
+            const p = payload.preferences;
+            if (["recent","new"].includes(p.openTo)) appPreferences.openTo = p.openTo;
+            if (["forever","365","30"].includes(p.retention)) appPreferences.retention = p.retention;
+            if (["short","medium","long"].includes(p.preview)) appPreferences.preview = p.preview;
+            if (["system","light","dark"].includes(p.theme)) appPreferences.theme = p.theme;
+            if (["system","reduced"].includes(p.motion)) appPreferences.motion = p.motion;
+            if (["on","reduced"].includes(p.glass)) appPreferences.glass = p.glass;
+            persistAppPreferences();
+          }
+          const importModel = modelNames.find((item) => item.value === payload?.model); if (importModel) setSelectedModel(importModel);
+          if (["low","medium","high"].includes(payload?.thinking)) { thinkingSelect.value = payload.thinking; thinkingSelect.dispatchEvent(new Event("change", { bubbles:true })); }
+          const expired = expiredConversations(); if (expired.length) { const ids = new Set(expired.map((item) => item.id)); conversations = conversations.filter((item) => !ids.has(item.id)); }
+          if (!conversations.some((item) => item.id === currentId)) currentId = conversations.find((item) => item.messages.length)?.id || null;
+          if (!currentId) newConversation(false);
+          renderHistory(); renderChat(); renderConversationCards(); save(); showToast("Backup imported and merged.");
+        } catch (error) { showToast(error.message || "Could not import that backup."); }
+      });
       $("#searchConversationsButton").addEventListener("click", () => {
         const search = $("#librarySearch");
         const opening = !search.classList.contains("open");
