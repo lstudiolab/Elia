@@ -82,6 +82,26 @@
     .message-content { min-width: 0; max-width: min(82%, 690px); padding: 0; }
     .message.user .message-content { padding: 12px 16px; border-radius: 22px 22px 6px 22px; background: #e9e9e4; color: #292a24; }
     .message.assistant .message-content { max-width: 100%; width: 100%; padding: 0 4px; }
+
+    /* Render assistant replies as transparent Markdown content, including inline images and headings. */
+    .message.assistant .message-content,.message.assistant .message-text { background:transparent!important; box-shadow:none!important; }
+    .message-text { white-space:normal; overflow-wrap:anywhere; }
+    .message-text h1,.message-text h2,.message-text h3,.message-text h4,.message-text h5,.message-text h6 { color:var(--ink); line-height:1.28; font-weight:700; margin:1.15em 0 .5em; letter-spacing:-.025em; }
+    .message-text h1 { font-size:1.8em; } .message-text h2 { font-size:1.5em; } .message-text h3 { font-size:1.25em; }
+    .message-text h1:first-child,.message-text h2:first-child,.message-text h3:first-child { margin-top:0; }
+    .message-text p { margin:.55em 0; } .message-text p:first-child { margin-top:0; } .message-text p:last-child { margin-bottom:0; }
+    .message-text ul,.message-text ol { margin:.6em 0; padding-left:1.65em; } .message-text li { margin:.25em 0; }
+    .message-text blockquote { margin:.8em 0; padding:.15em 0 .15em 1em; border-left:3px solid #b8b8af; color:var(--muted); }
+    .message-text hr { border:0; border-top:1px solid var(--line); margin:1.2em 0; }
+    .message-text a { color:#356ac3; text-decoration:underline; text-underline-offset:2px; }
+    .message-text img.markdown-image { display:block; max-width:100%; width:auto; height:auto; max-height:620px; object-fit:contain; border-radius:12px; margin:.8em 0; background:transparent!important; }
+    .message-text code { background:rgba(120,120,128,.12); }
+    .message-text pre { background:transparent!important; }
+    .message-text pre code { background:transparent!important; }
+    .message-text table { width:100%; border-collapse:collapse; margin:.8em 0; font-size:.95em; }
+    .message-text th,.message-text td { border:1px solid var(--line); padding:7px 9px; text-align:left; vertical-align:top; }
+    .message-text th { font-weight:650; background:rgba(120,120,128,.08); }
+
     .message-text { color: #33342e; font-size: 14px; line-height: 1.8; overflow-wrap: anywhere; white-space: pre-wrap; }
     .message.user .message-text { line-height: 1.65; }
     .message-text code { padding: 2px 5px; border-radius: 5px; background: #efefea; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9em; }
@@ -1492,13 +1512,60 @@
         }));
         renderConversationCards();
       };
-      const formatText = (text) => {
-        const escaped = escapeHtml(text);
-        return escaped
-          .replace(/```([\s\S]*?)```/g, (_, code) => '<pre><code>' + code.trim() + '</code></pre>')
-          .replace(/`([^`\n]+)`/g, "<code>$1</code>")
-          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-          .replace(/\n/g, "<br>");
+      const formatInlineMarkdown = (source) => {
+        let out = escapeHtml(source);
+        const codeBlocks = [];
+        out = out.replace(/```([\s\S]*?)```/g, (_, code) => {
+          const index = codeBlocks.push('<pre><code>' + code.replace(/^\n|\n$/g, '') + '</code></pre>') - 1;
+          return '\u0000BLOCK' + index + '\u0000';
+        });
+        const inlineCode = [];
+        out = out.replace(/`([^`\n]+)`/g, (_, code) => {
+          const index = inlineCode.push('<code>' + code + '</code>') - 1;
+          return '\u0000CODE' + index + '\u0000';
+        });
+        out = out.replace(/!\[([^\]]*)\]\((https?:\/\/[^\s)]+)(?:\s+["'][^"']*["'])?\)/g, (_, alt, url) =>
+          '<img class="markdown-image" src="' + url.replace(/&amp;/g, '&amp;') + '" alt="' + alt + '" loading="lazy">');
+        out = out.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)(?:\s+["'][^"']*["'])?\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+        out = out.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          .replace(/__(.+?)__/g, '<strong>$1</strong>')
+          .replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<em>$1</em>')
+          .replace(/~~(.+?)~~/g, '<del>$1</del>');
+        out = out.replace(/\u0000CODE(\d+)\u0000/g, (_, index) => inlineCode[Number(index)]);
+        out = out.replace(/\u0000BLOCK(\d+)\u0000/g, (_, index) => codeBlocks[Number(index)]);
+        return out;
+      };
+      const formatText = (source) => {
+        const text = String(source ?? '').replace(/\r\n?/g, '\n');
+        if (!text.trim()) return '';
+        const blocks = text.split(/\n{2,}/);
+        const renderBlocks = (items) => items.map((block) => {
+          const trimmed = block.trim();
+          if (!trimmed) return '';
+          if (/^\u0060\u0060\u0060/.test(trimmed)) {
+            const match = trimmed.match(/^\u0060\u0060\u0060[^\n]*\n?([\s\S]*?)\n?\u0060\u0060\u0060$/);
+            return '<pre><code>' + escapeHtml(match ? match[1] : trimmed.replace(/^\u0060\u0060\u0060/, '')) + '</code></pre>';
+          }
+          const heading = trimmed.match(/^(#{1,6})\s+(.+)$/);
+          if (heading) return '<h' + heading[1].length + '>' + formatInlineMarkdown(heading[2]) + '</h' + heading[1].length + '>';
+          if (/^(---+|___+|\*\*\*+)\s*$/.test(trimmed)) return '<hr>';
+          if (/^>\s?/.test(trimmed)) return '<blockquote>' + trimmed.split('\n').map((line) => formatInlineMarkdown(line.replace(/^>\s?/, ''))).join('<br>') + '</blockquote>';
+          const lines = trimmed.split('\n');
+          if (lines.every((line) => /^\s*[-*+]\s+/.test(line))) {
+            return '<ul>' + lines.map((line) => '<li>' + formatInlineMarkdown(line.replace(/^\s*[-*+]\s+/, '')) + '</li>').join('') + '</ul>';
+          }
+          if (lines.every((line) => /^\s*\d+[.)]\s+/.test(line))) {
+            return '<ol>' + lines.map((line) => '<li>' + formatInlineMarkdown(line.replace(/^\s*\d+[.)]\s+/, '')) + '</li>').join('') + '</ol>';
+          }
+          if (lines.length >= 2 && /^\s*\|/.test(lines[0]) && /^\s*\|?[\s:|-]+\|?\s*$/.test(lines[1])) {
+            const cells = (line) => line.trim().replace(/^\||\|$/g, '').split('|').map((cell) => cell.trim());
+            const head = cells(lines[0]);
+            const body = lines.slice(2).filter((line) => line.includes('|'));
+            return '<table><thead><tr>' + head.map((cell) => '<th>' + formatInlineMarkdown(cell) + '</th>').join('') + '</tr></thead><tbody>' + body.map((line) => '<tr>' + cells(line).map((cell) => '<td>' + formatInlineMarkdown(cell) + '</td>').join('') + '</tr>').join('') + '</tbody></table>';
+          }
+          return '<p>' + lines.map((line) => formatInlineMarkdown(line)).join('<br>') + '</p>';
+        }).join('');
+        return renderBlocks(blocks);
       };
       const appendMessage = (message, options = {}) => {
         const row = document.createElement("article");
