@@ -44,6 +44,29 @@
     .thinking-submenu{display:grid;gap:2px;margin:2px 0 2px 10px;padding-left:8px;border-left:1px solid var(--line)}
     .thinking-submenu[hidden]{display:none!important}
     .elia-settings-menu{gap:2px}
+    /* Liquid-glass motion for the model menu: elastic entrance, fluid submenu, springy taps. */
+    .elia-settings-menu{overflow:hidden;isolation:isolate;transform-origin:top left;animation:eliaLiquidPop .58s cubic-bezier(.16,1.35,.3,1) both;will-change:transform,opacity,filter}
+    .elia-settings-menu::before{content:"";position:absolute;inset:-45% -25%;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.56),transparent 48%),radial-gradient(ellipse at 85% 75%,rgba(120,170,255,.12),transparent 52%);animation:eliaLiquidDrift 7s ease-in-out infinite alternate}
+    .settings-menu-item{position:relative;transform:translateZ(0);transition:background-color .22s ease,transform .38s cubic-bezier(.2,1.6,.35,1),border-radius .3s ease}
+    .settings-menu-item:active{transform:scale(.965,.91);border-radius:13px}
+    .elia-settings-menu:not([hidden])>.settings-menu-item{animation:eliaMenuItemSpring .48s cubic-bezier(.16,1.35,.3,1) both}
+    .elia-settings-menu:not([hidden])>.settings-menu-item:nth-child(1){animation-delay:20ms}
+    .elia-settings-menu:not([hidden])>.settings-menu-item:nth-child(2){animation-delay:45ms}
+    .elia-settings-menu:not([hidden])>.settings-menu-item:nth-child(3){animation-delay:70ms}
+    .elia-settings-menu:not([hidden])>.settings-menu-item:nth-child(4){animation-delay:95ms}
+    .elia-settings-menu:not([hidden])>.settings-menu-item:nth-child(5){animation-delay:120ms}
+    .thinking-submenu{transform-origin:top left}
+    .thinking-submenu:not([hidden]){animation:eliaSubmenuLiquid .42s cubic-bezier(.16,1.35,.3,1) both}
+    .thinking-submenu:not([hidden]) .settings-menu-item{animation:eliaMenuItemSpring .36s cubic-bezier(.16,1.35,.3,1) both}
+    .thinking-submenu:not([hidden]) .settings-menu-item:nth-child(2){animation-delay:35ms}
+    .thinking-submenu:not([hidden]) .settings-menu-item:nth-child(3){animation-delay:70ms}
+    #thinkingSubmenuButton>span{display:inline-block;transition:transform .4s cubic-bezier(.16,1.35,.3,1)}
+    #thinkingSubmenuButton[aria-expanded="true"]>span{transform:rotate(90deg) scale(1.15)}
+    @keyframes eliaLiquidPop{0%{opacity:0;transform:translateY(-9px) scale(.86,.72);filter:blur(5px);border-radius:25px}58%{opacity:1;transform:translateY(2px) scale(1.025,.98);filter:blur(0);border-radius:19px}78%{transform:translateY(-1px) scale(.99,1.015);border-radius:16px}100%{opacity:1;transform:translateY(0) scale(1);border-radius:15px;filter:blur(0)}}
+    @keyframes eliaMenuItemSpring{0%{opacity:0;transform:translateY(7px) scale(.96,.88)}65%{opacity:1;transform:translateY(-2px) scale(1.01,1.03)}100%{opacity:1;transform:translateY(0) scale(1)}}
+    @keyframes eliaSubmenuLiquid{0%{opacity:0;transform:translateX(-8px) scale(.92,.8);filter:blur(3px)}65%{opacity:1;transform:translateX(2px) scale(1.015,1.04);filter:blur(0)}100%{opacity:1;transform:translateX(0) scale(1);filter:blur(0)}}
+    @keyframes eliaLiquidDrift{from{transform:translate3d(-3%,0,0) rotate(-3deg)}to{transform:translate3d(3%,2%,0) rotate(3deg)}}
+    @media(prefers-reduced-motion:reduce){.elia-settings-menu,.elia-settings-menu::before,.settings-menu-item,.thinking-submenu,.thinking-submenu .settings-menu-item{animation:none!important;transition:none!important}}
     .native-menu-heading{padding:8px 10px 5px;color:#85858b;font-size:11px;font-weight:650;letter-spacing:.25px}
     .native-menu-option{width:100%;min-height:35px;display:flex;align-items:center;gap:8px;padding:7px 10px;border:0;border-radius:9px;background:transparent;text-align:left;color:#202124;font-size:13px;cursor:pointer}
     .native-menu-option:hover,.native-menu-option:focus-visible{background:rgba(118,118,128,.13);outline:none}
