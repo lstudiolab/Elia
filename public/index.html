@@ -1984,6 +1984,9 @@
         try {
           const wantsImageGeneration = /\b(?:generate|create|make|draw|paint|render|produce)\b.{0,45}\b(?:an?\s+)?(?:image|picture|photo|illustration|artwork|drawing)\b|\b(?:image|picture|photo|illustration|artwork|drawing)\b.{0,35}\b(?:of|showing|with)\b/i.test(promptText);
           if (wantsImageGeneration && !imagesToSend.length) {
+            const typingRow = $("#typingIndicator");
+            if (typingRow?._tokenRevealTimer) window.clearTimeout(typingRow._tokenRevealTimer);
+            typingRow?.remove();
             const builtInReply = "I can help you plan an image and write a detailed prompt, but direct image generation is not available in this chat yet. Tell me the subject, style, colors, and composition you want, and I’ll prepare a prompt you can use in an image generator.";
             conversation.messages.push({ id: uid(), role: "assistant", content: builtInReply, errorKind: "image-generation-unavailable" });
             conversation.updatedAt = Date.now();
