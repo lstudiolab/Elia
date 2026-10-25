@@ -2651,6 +2651,39 @@
           $("#attachButton").setAttribute("aria-expanded", "false");
         }
       });
+      const voiceModeDialog = $("#voiceModeDialog");
+      const voiceOrbWrap = $("#voiceOrbWrap");
+      const voiceModeStatus = $("#voiceModeStatus");
+      const voiceModeText = $("#voiceModeText");
+      let voiceModeRecognition = null;
+      let voiceModePendingResponse = false;
+      $("#voiceModeButton").addEventListener("click", () => {
+        voiceModeText.value = ""; voiceOrbWrap.dataset.state = "idle"; voiceModeStatus.textContent = "Speak naturally, or type a message.";
+        if (typeof voiceModeDialog.showModal === "function") { if (!voiceModeDialog.open) voiceModeDialog.showModal(); } else voiceModeDialog.setAttribute("open","");
+      });
+      $("#voiceModeClose").addEventListener("click", () => { if (voiceModeRecognition) { try { voiceModeRecognition.stop(); } catch {} } voiceModeDialog.close(); });
+      voiceModeDialog.addEventListener("click", (event) => { if (event.target === voiceModeDialog) { if (voiceModeRecognition) { try { voiceModeRecognition.stop(); } catch {} } voiceModeDialog.close(); } });
+      $("#voiceModeListen").addEventListener("click", () => {
+        if (voiceModeRecognition) { try { voiceModeRecognition.stop(); } catch {} return; }
+        const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!Recognition) { voiceModeStatus.textContent = "Speech recognition is unavailable in this browser. Type your message below."; voiceModeText.focus(); return; }
+        try {
+          const recognition = new Recognition(); voiceModeRecognition = recognition;
+          recognition.lang = navigator.language || "en-US"; recognition.interimResults = true; recognition.continuous = false;
+          voiceOrbWrap.dataset.state = "listening"; voiceModeStatus.textContent = "Listening… speak when you are ready."; $("#voiceModeListen").textContent = "Stop listening";
+          recognition.onresult = (resultEvent) => { voiceModeText.value = Array.from(resultEvent.results).map((result) => result[0]?.transcript || "").join(" ").trim(); voiceModeStatus.textContent = voiceModeText.value ? "Ready when you are." : "Listening…"; };
+          recognition.onerror = (recognitionEvent) => { if (recognitionEvent.error !== "no-speech" && recognitionEvent.error !== "aborted") voiceModeStatus.textContent = "Microphone error: " + recognitionEvent.error + ". You can type below."; };
+          recognition.onend = () => { voiceModeRecognition = null; voiceOrbWrap.dataset.state = "idle"; $("#voiceModeListen").textContent = "Start listening"; if (voiceModeText.value.trim()) voiceModeStatus.textContent = "Ready to send your message."; };
+          recognition.start();
+        } catch { voiceModeRecognition = null; voiceOrbWrap.dataset.state = "idle"; $("#voiceModeListen").textContent = "Start listening"; voiceModeStatus.textContent = "Could not start the microphone. Type your message instead."; }
+      });
+      $("#voiceModeSend").addEventListener("click", () => {
+        if (busy) return showToast("Wait for the current response to finish.");
+        const text = voiceModeText.value.trim(); if (!text) { voiceModeStatus.textContent = "Speak or type a message first."; voiceModeText.focus(); return; }
+        if (voiceModeRecognition) { try { voiceModeRecognition.stop(); } catch {} }
+        voiceModePendingResponse = true; promptBox.value = text; resizePrompt(); voiceModeDialog.close(); send(text);
+      });
+      voiceModeText.addEventListener("keydown", (event) => { if ((event.metaKey || event.ctrlKey) && event.key === "Enter") $("#voiceModeSend").click(); });
       let activeRecognition = null;
       $("#dictateButton").addEventListener("click", () => {
         if (activeRecognition) { try { activeRecognition.stop(); } catch {} return; }
