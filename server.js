@@ -352,7 +352,7 @@ app.post("/api/chat", async (req, res) => {
           stream: false
         };
 
-        if (providerToolModels.has(model)) requestBody.reasoning_effort = "high";
+        if (providerToolModels.has(model)) requestBody.reasoning_effort = thinkingLevel;
 
         if (useWebSearch) {
           // Force the provider-hosted browser search for explicit/current research requests.
