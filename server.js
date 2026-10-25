@@ -222,7 +222,9 @@ app.post("/api/chat", async (req, res) => {
 
   const requestStartedAt = Date.now();
   try {
-    const systemPrompt = (await readFile(path.join(root, "systempromt.md"), "utf8")).trim();
+    const baseSystemPrompt = (await readFile(path.join(root, "systempromt.md"), "utf8")).trim();
+    const careInstructions = "Think carefully before responding. Check the request, constraints, and important facts. If essential information is missing, ask a concise clarifying question instead of guessing. For complex tasks, work in stages, check the result against the request, and provide brief progress updates when useful. Thinking level: " + thinkingLevel + ".";
+    const systemPrompt = [baseSystemPrompt, careInstructions].filter(Boolean).join("\n\n");
     if (!systemPrompt) {
       return res.status(500).json({ error: "Elia's system instructions are empty. Check systempromt.md." });
     }
