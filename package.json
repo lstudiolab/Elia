@@ -6,7 +6,8 @@
   "description": "Elia AI chat prototype powered by Groq",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "build": "g++ -std=c++17 -O2 -Wall -Wextra -pedantic tools.cpp -o elia-tools"
   },
   "engines": {
     "node": ">=20"
