@@ -2306,6 +2306,7 @@ $("#chatWorkspace").scrollTo({ top: 0, behavior: "auto" });
           : "";
         const feedbackMarkup = message.role === "assistant"
           ? '<div class="feedback-actions" aria-label="Rate this response" data-message-id="' + escapeHtml(message.id || (message.id = uid())) + '">'
+            + '<button class="feedback-button" type="button" data-speak="true" aria-label="Read answer aloud" aria-pressed="false" title="Read answer aloud"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9v6h4l5 4V5L7 9H3z"/><path d="M16 9a5 5 0 0 1 0 6m2-9a9 9 0 0 1 0 12"/></svg></button>'
             + '<button class="feedback-button ' + (message.feedback === "up" ? "selected" : "") + '" type="button" data-feedback="up" aria-label="Thumbs up" aria-pressed="' + String(message.feedback === "up") + '" title="Thumbs up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3Zm0 0 5-8c2 0 3 2 2 4l-1 4h6a2 2 0 0 1 2 2l-2 7a2 2 0 0 1-2 2H7"/></svg></button>'
             + '<button class="feedback-button ' + (message.feedback === "down" ? "selected" : "") + '" type="button" data-feedback="down" aria-label="Thumbs down" aria-pressed="' + String(message.feedback === "down") + '" title="Thumbs down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 14V3H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3Zm0 0 5 8c2 0 3-2 2-4l-1-4h6a2 2 0 0 0 2-2l-2-7a2 2 0 0 0-2-2H7"/></svg></button>'
             + '</div>' : "";
@@ -2495,6 +2496,36 @@ $("#chatWorkspace").scrollTo({ top: 0, behavior: "auto" });
       };
 
       thread.addEventListener("click", async (event) => {
+        const speakButton = event.target.closest("button[data-speak]");
+        if (speakButton) {
+          const actions = speakButton.closest(".feedback-actions");
+          const conversation = getCurrent();
+          const message = conversation?.messages.find((item) => item.role === "assistant" && item.id === actions?.dataset.messageId);
+          if (!message) return;
+          if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return showToast("Read-aloud is not supported in this browser.");
+          if (window.speechSynthesis.speaking && speakButton.getAttribute("aria-pressed") === "true") {
+            window.speechSynthesis.cancel();
+            document.querySelectorAll("[data-speak]").forEach((item) => item.setAttribute("aria-pressed","false"));
+            return;
+          }
+          window.speechSynthesis.cancel();
+          document.querySelectorAll("[data-speak]").forEach((item) => item.setAttribute("aria-pressed","false"));
+          const tick = String.fromCharCode(96);
+          const plainText = String(message.content || "")
+            .replace(new RegExp("!\\[([^\\]]*)\\]\\([^)]*\\)","g"),"$1")
+            .replace(new RegExp("\\[([^\\]]+)\\]\\([^)]*\\)","g"),"$1")
+            .replace(new RegExp(tick.repeat(3)+"[\\s\\S]*?"+tick.repeat(3),"g")," Code block omitted. ")
+            .replace(new RegExp(tick+"([^"+tick+"]+)"+tick,"g"),"$1")
+            .replace(/[*_>#|~-]/g," ").replace(/\s+/g," ").trim();
+          if (!plainText) return showToast("There is no text to read aloud.");
+          const utterance = new SpeechSynthesisUtterance(plainText);
+          utterance.lang = navigator.language || "en-US";
+          utterance.onend = () => speakButton.setAttribute("aria-pressed","false");
+          utterance.onerror = () => speakButton.setAttribute("aria-pressed","false");
+          speakButton.setAttribute("aria-pressed","true");
+          window.speechSynthesis.speak(utterance);
+          return;
+        }
         const button = event.target.closest("button[data-feedback]");
         if (!button || button.disabled) return;
         const actions = button.closest(".feedback-actions");
@@ -2631,6 +2662,41 @@ $("#chatWorkspace").scrollTo({ top: 0, behavior: "auto" });
         if (!event.target.closest(".attach-wrap")) {
           $("#attachMenu").classList.remove("open");
           $("#attachButton").setAttribute("aria-expanded", "false");
+        }
+      });
+      let activeRecognition = null;
+      $("#dictateButton").addEventListener("click", () => {
+        if (activeRecognition) { try { activeRecognition.stop(); } catch {} return; }
+        const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!Recognition) return showToast("Voice dictation is not available here. Use your keyboard microphone instead.");
+        try {
+          const recognition = new Recognition();
+          activeRecognition = recognition;
+          const originalText = promptBox.value.trim();
+          recognition.lang = navigator.language || "en-US";
+          recognition.interimResults = true;
+          recognition.continuous = false;
+          $("#dictateButton").setAttribute("aria-pressed","true");
+          $("#dictateButton").setAttribute("aria-label","Stop dictation");
+          recognition.onresult = (resultEvent) => {
+            const transcript = Array.from(resultEvent.results).map((result) => result[0]?.transcript || "").join(" ").trim();
+            promptBox.value = [originalText,transcript].filter(Boolean).join(originalText ? " " : "");
+            resizePrompt();
+          };
+          recognition.onerror = (recognitionEvent) => {
+            if (recognitionEvent.error !== "no-speech" && recognitionEvent.error !== "aborted") showToast("Voice dictation stopped: " + recognitionEvent.error + ".");
+          };
+          recognition.onend = () => {
+            activeRecognition = null;
+            $("#dictateButton").setAttribute("aria-pressed","false");
+            $("#dictateButton").setAttribute("aria-label","Dictate message");
+            resizePrompt();
+          };
+          recognition.start();
+        } catch {
+          activeRecognition = null;
+          $("#dictateButton").setAttribute("aria-pressed","false");
+          showToast("Could not start voice dictation. Check microphone permissions.");
         }
       });
       promptBox.addEventListener("input", resizePrompt);
