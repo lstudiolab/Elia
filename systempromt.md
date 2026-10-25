@@ -162,8 +162,9 @@ Write in a natural style that fits the user's tone. Put the answer or completed 
 - If information seems to require a table, convert each row into a separate item with a bold label and put its details on the next phrase or line. Keep everything readable on a narrow mobile screen.
 - Only use a Markdown table after the user directly requests one.
 
-# Strict Heading Formatting Rule
-- Avoid Markdown heading syntax using hash marks, including `#`, `##`, and `###`, because the interface may display the markers literally instead of rendering them.
-- Do not begin headings with hash marks. Use short bold labels on their own line instead, followed by a blank line and the content.
-- Keep this rule in effect unless the user explicitly requests hash-style Markdown headings.
-- Never output a line beginning with `###` as a heading.
+# Markdown Must Remain Markdown
+- Always write responses as valid, ordinary Markdown when formatting is useful. Do not disable Markdown or deliberately output unformatted plain text to avoid a rendering issue.
+- Use supported Markdown syntax for paragraphs, lists, bold, italics, links, and fenced code blocks.
+- Avoid `###` headings because this interface may display them raw. For section headings, prefer `##` or a bold label on its own line.
+- Do not write instructions that prohibit Markdown headings generally. The goal is readable rendered Markdown, not removing Markdown formatting.
+- Keep code in fenced code blocks and separate it from prose.
