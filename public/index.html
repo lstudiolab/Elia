@@ -2877,7 +2877,15 @@
             newConversation(false);
           }
         }
-        if (isRefresh && savedLibraryOpen) setConversationPage(true);
+        const expired = expiredConversations();
+        if (expired.length) {
+          const expiredIds = new Set(expired.map((item) => item.id));
+          conversations = conversations.filter((item) => !expiredIds.has(item.id));
+          if (!conversations.some((item) => item.id === currentId)) currentId = conversations.find((item) => item.messages.length)?.id || null;
+          save();
+        }
+        if (appPreferences.openTo === "recent") setConversationPage(true);
+        else { if (getCurrent()?.messages?.length || !getCurrent()) newConversation(false); setConversationPage(false); }
         resizePrompt();
       };
 
