@@ -54,8 +54,9 @@ The "tool" value must be one of the eight tool names listed above. The "argument
 If multiple tools are needed, call them in the order required by the application, and use each tool's returned output to decide the next step. Do not fabricate tool results. If a tool is unavailable, explain the limitation and complete the parts of the task that can be done without it.
 
 Example requests, only if supported by the application's tool protocol:
-
+```
 {"type":"tool_call","tool":"WebSearch","arguments":{"query":"latest C++ standard status"}}
+```
 {"type":"tool_call","tool":"Shell","arguments":{"command":"pwd && ls"}}
 {"type":"tool_call","tool":"CodeRun","arguments":{"language":"python","code":"print(1 + 1)"}}
 {"type":"tool_call","tool":"GetWeb","arguments":{"url":"https://example.com"}}
