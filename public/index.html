@@ -1544,6 +1544,7 @@
       };
       const save = () => {
         const savedAt = Date.now();
+        const selectedId = currentId;
         let serialized;
         try { serialized = JSON.stringify(conversations); }
         catch { showToast("Could not prepare this conversation for saving."); return; }
@@ -1554,14 +1555,14 @@
         try {
           localStorage.setItem(STORAGE_KEY, serialized);
           localStorage.setItem(LAST_SAVED_KEY, String(savedAt));
-          if (currentId) localStorage.setItem("elia-current-conversation-v1", currentId);
+          if (selectedId) localStorage.setItem("elia-current-conversation-v1", selectedId);
           localSaved = true;
         } catch {}
 
         if ("indexedDB" in window) {
           // Serializing writes prevents a slower, older snapshot from overwriting a newer one.
           persistenceQueue = persistenceQueue.catch(() => {}).then(
-            () => writeHistorySnapshot(serialized, savedAt, currentId)
+            () => writeHistorySnapshot(serialized, savedAt, selectedId)
           ).catch(() => {
             if (!localSaved) showToast("Could not save chat history on this device.");
           });
@@ -2181,16 +2182,17 @@
 
       const persistBeforeExit = () => {
         const savedAt = Date.now();
+        const selectedId = currentId;
         let serialized;
         try {
           serialized = JSON.stringify(conversations);
           localStorage.setItem(STORAGE_KEY, serialized);
           localStorage.setItem(LAST_SAVED_KEY, String(savedAt));
-          if (currentId) localStorage.setItem("elia-current-conversation-v1", currentId);
+          if (selectedId) localStorage.setItem("elia-current-conversation-v1", selectedId);
         } catch {}
         if (serialized && "indexedDB" in window) {
           persistenceQueue = persistenceQueue.catch(() => {}).then(
-            () => writeHistorySnapshot(serialized, savedAt, currentId)
+            () => writeHistorySnapshot(serialized, savedAt, selectedId)
           ).catch(() => {});
         }
       };
