@@ -4,12 +4,15 @@ A responsive, minimalist AI chat interface powered by Groq. The Groq credential 
 
 ## Features
 
-- Free-form chat with multi-turn conversation context
-- Responsive desktop and mobile interface
-- Local conversation history saved in the current browser
-- Start a new chat, clear a conversation, and export a chat as a text file
-- Suggested prompts and typing/loading states
-- Server-side Groq API proxy, timeout handling, and friendly error messages
+- Free-form multi-turn chat powered by a server-side Groq API proxy
+- Siri-inspired conversation library with masonry cards, grid/list layouts, full-history search, pinning, renaming, individual deletion, and bulk deletion
+- Local history using localStorage and IndexedDB, plus optional PostgreSQL-backed snapshots through `DATABASE_URL`
+- Export/import of conversation backups, including conversation titles, messages, attachment metadata, model/thinking selection, and UI preferences
+- Saved preferences for startup view, retention (forever/1 year/30 days), card preview length, light/dark/system appearance, reduced motion, and reduced transparency
+- Liquid Glass-inspired web styling for navigation and controls, with subtle pointer highlights, responsive transitions, and reduced-motion/transparency fallbacks
+- Browser speech dictation, a dedicated animated voice orb view, and spoken assistant responses where browser speech APIs are supported
+- Markdown rendering, horizontally scrollable tables, inline images, attachment previews, response feedback, suggested prompts, and typing states
+- Server-side API proxy, timeout/error handling, and health status without exposing the Groq credential
 
 ## Run locally
 
@@ -55,6 +58,14 @@ The service uses Render's injected `PORT` value automatically. `/api/health` rep
 - `POST /api/chat` — body: `{ "messages": [{ "role": "user", "content": "Hello" }] }`
 
 The chat endpoint validates message count and size, keeps the API key server-side, and forwards requests to Groq's OpenAI-compatible chat completions endpoint.
+
+## Conversation backup, preferences, and privacy notes
+
+- Backups are JSON files exported from **Settings**. Treat them as private: they contain conversation text and a sync key used to identify the cloud-history snapshot.
+- Import merges conversations by ID and favors the version with the newer `updatedAt` timestamp. Imported content is sanitized before it is rendered.
+- The optional retention setting deletes conversations older than the selected period after confirmation. This is permanent.
+- Voice dictation and read-aloud rely on browser speech APIs and microphone permission; availability varies by browser and operating system.
+- The glass effect is a CSS approximation for a web app. It cannot reproduce native Apple Liquid Glass rendering or access private Siri integrations, iCloud credentials, personal Apple-app data, or system-wide iOS actions.
 
 ## Persistent conversation history
 
