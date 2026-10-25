@@ -1850,6 +1850,29 @@
       const thinkingSelect = $("#thinkingSelect");
       const MODEL_PREF_KEY = "elia-model-preference-v1";
       const THINKING_PREF_KEY = "elia-thinking-preference-v1";
+      const APP_PREFERENCES_KEY = "elia-app-preferences-v1";
+      const defaultAppPreferences = { openTo:"recent", retention:"forever", preview:"medium", theme:"system", motion:"system", glass:"on" };
+      let appPreferences = { ...defaultAppPreferences };
+      try { const storedPreferences = JSON.parse(localStorage.getItem(APP_PREFERENCES_KEY) || "{}"); for (const key of Object.keys(defaultAppPreferences)) if (typeof storedPreferences[key] === "string") appPreferences[key] = storedPreferences[key]; } catch {}
+      if (!["recent","new"].includes(appPreferences.openTo)) appPreferences.openTo = "recent";
+      if (!["forever","365","30"].includes(appPreferences.retention)) appPreferences.retention = "forever";
+      if (!["short","medium","long"].includes(appPreferences.preview)) appPreferences.preview = "medium";
+      if (!["system","light","dark"].includes(appPreferences.theme)) appPreferences.theme = "system";
+      if (!["system","reduced"].includes(appPreferences.motion)) appPreferences.motion = "system";
+      if (!["on","reduced"].includes(appPreferences.glass)) appPreferences.glass = "on";
+      const applyAppPreferences = () => {
+        document.documentElement.dataset.theme = appPreferences.theme;
+        document.documentElement.dataset.motion = appPreferences.motion === "reduced" || (appPreferences.motion === "system" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) ? "reduced" : "full";
+        document.documentElement.dataset.glass = appPreferences.glass;
+        const cards = $("#conversationCards");
+        if (cards) { cards.classList.remove("preview-short","preview-medium","preview-long"); cards.classList.add("preview-" + appPreferences.preview); }
+        const themeMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeMeta) { const darkTheme = appPreferences.theme === "dark" || (appPreferences.theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches); themeMeta.setAttribute("content", darkTheme ? "#101012" : "#f6f6f4"); }
+      };
+      const persistAppPreferences = () => { try { localStorage.setItem(APP_PREFERENCES_KEY, JSON.stringify(appPreferences)); } catch {} applyAppPreferences(); };
+      const expiredConversations = (retention = appPreferences.retention, list = conversations) => { if (retention === "forever") return []; const cutoff = Date.now() - Number(retention) * 86400000; return list.filter((conversation) => Number(conversation.updatedAt || conversation.createdAt || Date.now()) < cutoff); };
+      applyAppPreferences();
+
       try {
         const savedModel = localStorage.getItem(MODEL_PREF_KEY);
         const savedThinking = localStorage.getItem(THINKING_PREF_KEY);
