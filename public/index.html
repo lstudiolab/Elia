@@ -1560,6 +1560,10 @@
       let remoteSaveQueue = Promise.resolve();
       const LAST_SAVED_KEY = "elia-chat-saved-at-v1";
       let conversations = [];
+      try {
+        const savedConversations = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        if (Array.isArray(savedConversations)) conversations = savedConversations.filter((item) => item && typeof item.id === "string" && Array.isArray(item.messages));
+      } catch {}
       let persistenceQueue = Promise.resolve();
       let currentId = null;
       let busy = false;
@@ -1579,6 +1583,23 @@
       const updateSettingsLabels = () => {
         const highOption = Array.from(thinkingSelect.options).find((option) => option.value === "high");
         if (highOption) highOption.textContent = modelSelect.value === "qwen/qwen3.8-27b" ? "Thinking · High (16K max)" : "Thinking · High (20K)";
+      };
+      const modelNames = [
+        { value: "meta-models/muse-spark-open", names: ["elia oplus", "oplus", "muse spark", "muse-spark"] },
+        { value: "openai/gpt-oss-20b", names: ["elia awlus", "awlus", "gpt oss 20b", "gpt-oss-20b"] },
+        { value: "qwen/qwen3.8-27b", names: ["elia argus", "argus", "qwen 3.8 27b", "qwen3.8-27b"] },
+        { value: "openai/gpt-oss-120b", names: ["elia astrata", "astrata", "gpt oss 120b", "gpt-oss-120b"] }
+      ];
+      const requestedModel = (text) => {
+        const normalized = String(text || "").toLowerCase().replace(/[^a-z0-9.+-]+/g, " ").trim();
+        if (!/\b(change|switch|change over|use|select|set|make)\b/.test(normalized) || !/\b(model|ai|assistant|elia|to)\b/.test(normalized)) return null;
+        return modelNames.find((item) => item.names.some((name) => normalized.includes(name))) || null;
+      };
+      const setSelectedModel = (model) => {
+        modelSelect.value = model.value;
+        try { localStorage.setItem(MODEL_PREF_KEY, model.value); } catch {}
+        updateSettingsLabels();
+        modelSelect.dispatchEvent(new Event("change", { bubbles: true }));
       };
       updateSettingsLabels();
       modelSelect.addEventListener("change", () => {
@@ -1954,6 +1975,24 @@
         setNotice("");
         if (!currentId || !getCurrent()) newConversation(false);
         const conversation = getCurrent();
+        const modelCommand = pendingFiles.length ? null : requestedModel(text);
+        if (modelCommand) {
+          setSelectedModel(modelCommand);
+          conversation.messages.push({ id: uid(), role: "user", content: text, displayContent: text });
+          conversation.messages.push({ id: uid(), role: "assistant", content: "I’ve switched to **" + modelCommand.names[0].replace(/^elia /, "Elia ") + "**. The model menu is updated, and I’ll use it for your next response." });
+          conversation.title = titleFor(conversation.messages);
+          conversation.updatedAt = Date.now();
+          promptBox.value = "";
+          resizePrompt();
+          welcome.style.display = "none";
+          thread.classList.add("visible");
+          appendMessage(conversation.messages[conversation.messages.length - 2]);
+          appendMessage(conversation.messages[conversation.messages.length - 1]);
+          save();
+          renderHistory();
+          scrollToLatest();
+          return;
+        }
         const filesToSend = pendingFiles.slice();
         pendingFiles = [];
         renderPendingFiles();
