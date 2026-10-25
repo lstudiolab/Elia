@@ -1727,6 +1727,37 @@
     :root[data-theme="dark"] .conversation-card-more { color:#f5f5f7;background:rgba(40,40,45,.8);border-color:rgba(255,255,255,.15); }
     :root[data-theme="dark"] .conversation-card-menu { background:rgba(36,36,41,.9);color:#f5f5f7;border-color:rgba(255,255,255,.16); }
     @media(hover:none) { .conversation-card-more { opacity:1;transform:none;width:29px;height:29px; } }
+    .voice-mode-button { width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:rgba(255,255,255,.38);color:var(--ink);cursor:pointer;transition:transform .24s ease,background .2s ease; }
+    .voice-mode-button:hover { transform:scale(1.04);background:var(--panel); }
+    .voice-dialog { width:min(430px,calc(100vw - 24px));max-width:calc(100vw - 24px);padding:0;overflow:hidden;border:1px solid rgba(255,255,255,.72);border-radius:34px;background:rgba(249,249,252,.91);color:#1c1c1e;box-shadow:0 24px 90px rgba(0,0,0,.25);-webkit-backdrop-filter:blur(32px) saturate(160%);backdrop-filter:blur(32px) saturate(160%); }
+    .voice-dialog::backdrop { background:rgba(18,18,22,.35);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px); }
+    .voice-dialog[open] { animation:elia-preferences-enter .28s cubic-bezier(.18,.8,.25,1) both; }
+    .voice-mode-surface { min-height:500px;padding:20px 24px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center; }
+    .voice-mode-header { width:100%;display:flex;align-items:center;justify-content:space-between;align-self:stretch; }
+    .voice-mode-kicker { color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.18em; }
+    .voice-orb-wrap { width:240px;height:240px;display:grid;place-items:center;margin:6px auto 9px;position:relative;isolation:isolate; }
+    .voice-orb { width:150px;height:150px;position:relative;border-radius:50%;background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.98) 0%,rgba(207,224,255,.88) 12%,rgba(155,170,252,.92) 28%,rgba(195,139,245,.85) 52%,rgba(90,116,224,.94) 72%,rgba(44,51,119,.98) 100%);box-shadow:inset -17px -18px 32px rgba(17,22,77,.35),inset 10px 9px 20px rgba(255,255,255,.72),0 0 28px rgba(129,145,255,.42),0 0 78px rgba(180,130,247,.24);filter:saturate(115%);animation:voice-orb-float 5s ease-in-out infinite; }
+    .voice-orb::before,.voice-orb::after,.voice-orb span { content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none; }
+    .voice-orb::before { background:radial-gradient(ellipse at 28% 22%,rgba(255,255,255,.78),transparent 40%),radial-gradient(ellipse at 74% 74%,rgba(101,112,236,.65),transparent 52%);mix-blend-mode:screen;animation:voice-orb-light 4.5s ease-in-out infinite alternate; }
+    .voice-orb::after { inset:10px 7px 18px 12px;border:1px solid rgba(255,255,255,.52);box-shadow:inset 0 0 18px rgba(255,255,255,.12);transform:rotate(-23deg) scaleY(.72); }
+    .voice-orb span:nth-child(1) { background:radial-gradient(ellipse at 30% 33%,rgba(255,255,255,.68),transparent 36%);transform:translate(11px,-8px) scale(.9);mix-blend-mode:screen;animation:voice-orb-swell 4s ease-in-out infinite alternate; }
+    .voice-orb span:nth-child(2) { background:radial-gradient(ellipse at 70% 63%,rgba(95,117,255,.8),transparent 52%);transform:translate(-9px,7px);mix-blend-mode:multiply;animation:voice-orb-swell 5s ease-in-out infinite alternate-reverse; }
+    .voice-orb span:nth-child(3) { inset:17px 24px 14px 8px;border:1px solid rgba(255,255,255,.24);transform:rotate(35deg) scaleY(.8); }
+    .voice-orb-wrap[data-state="listening"] .voice-orb { animation:voice-orb-float 1.8s ease-in-out infinite,voice-orb-listen 1.4s ease-in-out infinite;box-shadow:inset -17px -18px 32px rgba(17,22,77,.35),inset 10px 9px 20px rgba(255,255,255,.72),0 0 38px rgba(87,139,255,.68),0 0 105px rgba(174,130,255,.52); }
+    .voice-orb-wrap[data-state="thinking"] .voice-orb { animation:voice-orb-swell 1.2s ease-in-out infinite alternate; }
+    @keyframes voice-orb-float { 0%,100%{transform:translateY(0) rotate(-5deg) scale(1)}50%{transform:translateY(-7px) rotate(5deg) scale(1.025)} }
+    @keyframes voice-orb-light { from{transform:translate(-5px,-3px) rotate(-12deg)}to{transform:translate(8px,4px) rotate(14deg)} }
+    @keyframes voice-orb-swell { from{transform:scale(.94) rotate(-5deg)}to{transform:scale(1.06) rotate(8deg)} }
+    @keyframes voice-orb-listen { 0%,100%{filter:saturate(115%) brightness(1)}50%{filter:saturate(145%) brightness(1.13)} }
+    .voice-mode-surface h2 { margin:0 0 7px;font-size:24px;letter-spacing:-.6px; }
+    .voice-mode-status { min-height:35px;margin:0 0 18px;color:var(--muted);font-size:13px;line-height:1.45; }
+    .voice-mode-surface textarea { width:100%;resize:vertical;min-height:72px;max-height:140px;padding:12px 14px;border:1px solid var(--line);border-radius:17px;background:rgba(255,255,255,.64);color:var(--ink);font:inherit;font-size:14px;line-height:1.5; }
+    .voice-mode-actions { width:100%;display:flex;gap:9px;margin-top:13px; }
+    .voice-mode-actions button { flex:1; }
+    :root[data-theme="dark"] .voice-dialog { background:rgba(30,30,35,.94);color:var(--ink);border-color:var(--line); }
+    :root[data-theme="dark"] .voice-mode-surface textarea { background:rgba(16,16,19,.66);color:var(--ink);border-color:var(--line); }
+    @media(max-width:390px) { .voice-mode-surface { min-height:460px;padding:17px; }.voice-orb-wrap { width:208px;height:208px; }.voice-orb { width:130px;height:130px; } }
+    @media(prefers-reduced-motion:reduce) { .voice-orb,.voice-orb::before,.voice-orb span { animation:none!important; } }
     .voice-input-button { width:32px;height:32px;flex:0 0 32px;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:var(--muted);cursor:pointer;transition:transform .2s ease,background .2s ease,color .2s ease; }
     .voice-input-button:hover { background:rgba(128,128,136,.12);color:var(--ink); }
     .voice-input-button[aria-pressed="true"] { background:#ffe9eb;color:#c82333;animation:elia-voice-pulse 1.25s ease-in-out infinite; }
@@ -1803,6 +1834,7 @@
               <button class="attach-option" type="button" data-picker="file"><span aria-hidden="true">↥</span> Add files</button>
             </div>
           </div>
+          <button class="voice-mode-button" id="voiceModeButton" type="button" aria-label="Open voice mode" title="Voice mode"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v2M12 19v2M5.64 5.64l1.42 1.42M16.94 16.94l1.42 1.42M3 12h2M19 12h2M5.64 18.36l1.42-1.42M16.94 7.06l1.42-1.42"/><circle cx="12" cy="12" r="4"/></svg></button>
           <div class="composer-wrap">
             <div class="notice" id="notice" role="alert"></div>
             <div class="pending-attachments" id="pendingAttachments"></div>
@@ -1837,6 +1869,15 @@
       <p class="preferences-note">For another device, import the same backup. Cloud syncing requires a configured database. Backups contain your conversation history and a sync key; keep them private.</p>
       <div class="preferences-footer"><button type="button" id="preferencesCancel" class="preferences-secondary">Cancel</button><button type="button" id="preferencesSave" class="preferences-primary">Save settings</button></div>
     </form>
+  </dialog>
+  <dialog id="voiceModeDialog" class="voice-dialog" aria-labelledby="voiceModeTitle">
+    <div class="voice-mode-surface">
+      <div class="voice-mode-header"><span class="voice-mode-kicker">ELIA VOICE</span><button type="button" id="voiceModeClose" class="preferences-close" aria-label="Close voice mode">×</button></div>
+      <div class="voice-orb-wrap" id="voiceOrbWrap" data-state="idle"><div class="voice-orb"><span></span><span></span><span></span></div></div>
+      <h2 id="voiceModeTitle">Talk to Elia</h2><p class="voice-mode-status" id="voiceModeStatus">Speak naturally, or type a message.</p>
+      <textarea id="voiceModeText" rows="3" maxlength="12000" placeholder="Say something, or type here…" aria-label="Voice conversation input"></textarea>
+      <div class="voice-mode-actions"><button type="button" class="preferences-secondary" id="voiceModeListen">Start listening</button><button type="button" class="preferences-primary" id="voiceModeSend">Send to Elia</button></div>
+    </div>
   </dialog>
 
   <script>
