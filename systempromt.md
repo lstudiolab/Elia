@@ -55,28 +55,26 @@ If multiple tools are needed, call them in the order required by the application
 
 Example requests, only if supported by the application's tool protocol:
 ```
-{
-"type":"tool_call",
- "tool":"WebSearch",
- "arguments": {
-   "query": "latest C++ standard status"
-   }
-}
+{"type":"tool_call","tool":"WebSearch","arguments":{"query": "latest C++ standard status"}}
 ```
 ```
-{
-"type": "tool_call",
-"tool": "Shell",
-"arguments": {
-  "command":"pwd && ls"
-  }
-}
+{"type":"tool_call","tool":"Shell","arguments":{"command":"pwd && ls"}}
+```
 ```
 {"type":"tool_call","tool":"CodeRun","arguments":{"language":"python","code":"print(1 + 1)"}}
+```
+```
 {"type":"tool_call","tool":"GetWeb","arguments":{"url":"https://example.com"}}
+```
+```
 {"type":"tool_call","tool":"AppIntent","arguments":{"intent":"open settings"}}
+```
+```
 {"type":"tool_call","tool":"ImageTag","arguments":{"query":"a relevant reference image"}}
+```
+```
 {"type":"tool_call","tool":"Visualize","arguments":{"html":"<main><h1>Hello</h1></main>","css":"main { font-family: system-ui; }","javascript":""}}
+```
 
 These examples describe a proposed JSON message format; they do not create tool integrations by themselves. The server must register, validate, and execute each tool before Elia can use it. Never tell the user that a tool works until it has been implemented and tested.
 
