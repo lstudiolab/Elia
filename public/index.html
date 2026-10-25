@@ -2606,6 +2606,49 @@
         save(); renderHistory(); renderChat(); renderConversationCards();
         showToast("Selected conversations deleted.");
       });
+      const preferencesDialog = $("#appPreferencesDialog");
+      const fillPreferencesForm = () => {
+        $("#prefOpenTo").value = appPreferences.openTo;
+        $("#prefRetention").value = appPreferences.retention;
+        $("#prefPreview").value = appPreferences.preview;
+        $("#prefTheme").value = appPreferences.theme;
+        $("#prefMotion").value = appPreferences.motion;
+        $("#prefGlass").value = appPreferences.glass;
+      };
+      const openPreferences = () => {
+        fillPreferencesForm();
+        if (typeof preferencesDialog.showModal === "function") { if (!preferencesDialog.open) preferencesDialog.showModal(); }
+        else preferencesDialog.setAttribute("open", "");
+      };
+      $("#conversationPreferencesButton").addEventListener("click", openPreferences);
+      $("#chatPreferencesButton").addEventListener("click", openPreferences);
+      $("#preferencesClose").addEventListener("click", () => preferencesDialog.close());
+      $("#preferencesCancel").addEventListener("click", () => preferencesDialog.close());
+      preferencesDialog.addEventListener("click", (event) => { if (event.target === preferencesDialog) preferencesDialog.close(); });
+      $("#preferencesSave").addEventListener("click", () => {
+        const next = { openTo:$("#prefOpenTo").value, retention:$("#prefRetention").value, preview:$("#prefPreview").value, theme:$("#prefTheme").value, motion:$("#prefMotion").value, glass:$("#prefGlass").value };
+        const expired = expiredConversations(next.retention);
+        if (expired.length && next.retention !== appPreferences.retention && !window.confirm("This setting will permanently delete " + expired.length + " conversation" + (expired.length === 1 ? "" : "s") + " last active outside the selected period. Continue?")) { fillPreferencesForm(); return; }
+        appPreferences = next;
+        persistAppPreferences();
+        if (expired.length) {
+          const expiredIds = new Set(expired.map((item) => item.id));
+          conversations = conversations.filter((item) => !expiredIds.has(item.id));
+          if (!conversations.some((item) => item.id === currentId)) currentId = conversations.find((item) => item.messages.length)?.id || null;
+        }
+        if (appPreferences.openTo === "new" && getCurrent()?.messages?.length) newConversation(false);
+        if (!currentId && appPreferences.openTo === "new") newConversation(false);
+        renderHistory(); renderChat(); renderConversationCards(); save();
+        preferencesDialog.close(); showToast("Settings saved.");
+      });
+      const glassControls = ".composer,.attach-button,.send-button,.library-action,.library-view-toggle,.elia-settings-menu,.attach-menu,.conversation-menu,.preferences-close";
+      document.addEventListener("pointermove", (event) => {
+        const target = event.target.closest?.(glassControls);
+        if (!target) return;
+        const rect = target.getBoundingClientRect(); if (!rect.width || !rect.height) return;
+        target.style.setProperty("--glass-x", Math.max(0,Math.min(100,((event.clientX-rect.left)/rect.width)*100)).toFixed(1) + "%");
+        target.style.setProperty("--glass-y", Math.max(0,Math.min(100,((event.clientY-rect.top)/rect.height)*100)).toFixed(1) + "%");
+      }, { passive:true });
       $("#searchConversationsButton").addEventListener("click", () => {
         const search = $("#librarySearch");
         const opening = !search.classList.contains("open");
