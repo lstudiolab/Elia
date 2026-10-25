@@ -442,11 +442,17 @@ app.post("/api/chat", async (req, res) => {
       requestedRoute: selectedComplexModel ? "complex" : "standard",
       actualRoute,
       model: data.model || actualModel,
+      requestedModel: selectedModel,
+      thinkingLevel,
+      maxCompletionTokens,
       webSearch: useWebSearch
     }));
     return res.json({
       reply,
       model: data.model || actualModel,
+      requestedModel: selectedModel,
+      thinkingLevel,
+      maxCompletionTokens,
       modelRoute: actualRoute,
       webSearchUsed: useWebSearch,
       durationMs,
